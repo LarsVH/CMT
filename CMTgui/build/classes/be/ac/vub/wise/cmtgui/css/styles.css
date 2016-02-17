@@ -1,0 +1,507 @@
+.hbLabel{
+	-fx-min-width: 250;
+	-fx-pref-width: 250;
+	-fx-min-height: 30;
+	-fx-pref-height: 30;
+	-fx-alignment: center;
+	-fx-background-color: #3F51B5;
+	-fx-text-fill: #C5CAE9;
+	-fx-padding: 2px;
+	-fx-font-size: 12;
+	-fx-font-weight: bold;
+}
+.hbLabelTitle{
+	-fx-min-width: 400;
+	-fx-pref-width: 400;
+	-fx-min-height: 25;
+	-fx-pref-height: 25;
+	-fx-alignment: center;
+	-fx-background-color: #3F51B5;
+	-fx-text-fill: #E8EAF6;
+	-fx-padding: 2px;
+	-fx-font-size: 12;
+	-fx-font-weight: bold;
+}
+.lbActionDrop{
+	-fx-min-width: 150;
+	-fx-pref-width: 150;
+	-fx-min-height: 65;
+	-fx-pref-height: 65;
+	-fx-alignment: center;
+	-fx-border-color: #C2185B;
+	 -fx-background-color:derive(#C2185B,100%) ;
+	-fx-text-fill: grey;
+	-fx-padding: 2px;
+}
+
+.labFactNoId{
+	-fx-min-width: 150;
+	-fx-pref-width: 150;
+	-fx-min-height: 65;
+	-fx-pref-height: 65;
+	-fx-alignment: center;
+	-fx-border-color: #0097A7;
+	 -fx-background-color:derive(#0097A7,100%) ;
+	-fx-text-fill: grey;
+	-fx-padding: 2px;
+}
+
+.labToggleEU{
+    -fx-min-width: 150;
+	-fx-pref-width: 150;
+	-fx-min-height: 65;
+	-fx-pref-height: 65;
+	-fx-alignment: center;
+	-fx-border-color: #0097A7;
+	 -fx-background-color:derive(#0097A7,100%) ;
+	-fx-text-fill: grey;
+	-fx-padding: 2px;
+    
+}
+.labToggleEU:hover{
+    -fx-border-color: #006064;
+    -fx-background-color: #0097A7 ;
+    -fx-text-fill: white;
+}
+.labFactWithId{
+	-fx-min-width: 150;
+	-fx-pref-width: 150;
+	-fx-min-height: 65;
+	-fx-pref-height: 65;
+	-fx-alignment: center;
+	 -fx-background-color:#0097A7 ;
+	-fx-text-fill: white;
+	-fx-padding: 2px;
+}
+
+.labOutputTemp{
+	-fx-min-width: 150;
+	-fx-pref-width: 150;
+	-fx-min-height: 65;
+	-fx-pref-height: 65;
+	-fx-background-color:#0097A7;
+	-fx-alignment: center;
+	-fx-text-fill: white;
+}
+.vbParValue{
+	-fx-min-width: 150;
+	-fx-pref-width: 150;
+	-fx-min-height: 65;
+	-fx-background-color:#0097A7;
+	-fx-alignment: center;
+	-fx-text-fill: white;
+	-fx-padding: 3px;
+}
+
+.vbParValueAction{
+	-fx-min-width: 150;
+	-fx-pref-width: 150;
+	-fx-min-height: 65;
+	-fx-background-color:#C2185B;
+	-fx-alignment: center;
+	-fx-text-fill: white;
+	-fx-padding: 3px;
+}
+
+.paneFillRight{
+	-fx-min-width: 125;
+	-fx-pref-width: 125;	
+	-fx-max-width: 125;
+	
+	-fx-background-color: #3F51B5;	
+}
+
+.paneFill{
+	-fx-min-width: 125;
+	-fx-max-width: 125;
+	-fx-pref-width: 125;	
+	-fx-min-height: 85;
+	-fx-max-height: 85;
+	-fx-pref-height:85;
+	-fx-background-color: #3F51B5;
+}
+
+
+.paneAfterInputLab{
+	-fx-min-width: 50;
+	-fx-pref-width: 50;	
+	-fx-min-height: 50;
+	-fx-pref-height: 50;
+	-fx-background-color: #3F51B5;
+}
+
+.paneAfterHbPar{
+	-fx-min-width: 250;
+	-fx-pref-width: 250;	
+	-fx-min-height: 50;
+	-fx-pref-height: 50;
+	-fx-background-color: #3F51B5;
+}
+
+.hbPane{
+	-fx-min-width: 75;
+	-fx-pref-width: 75;	
+	-fx-min-height: 20;
+	-fx-max-height: 20;
+}
+
+.hbPaneColored{
+	-fx-min-width: 125;
+	-fx-max-width: 125;
+	-fx-pref-width: 125;	
+	-fx-min-height: 20;
+	-fx-max-height: 20;
+	-fx-background-color: #3F51B5;
+}
+
+.hbPaneLarge{
+	-fx-min-width: 75;
+	-fx-pref-width: 75;	
+	-fx-min-height: 115;
+	-fx-max-height: 115;
+}
+
+.hbPaneColoredLarge{
+	-fx-min-width: 125;
+	-fx-max-width: 125;
+	-fx-pref-width: 125;	
+	-fx-min-height: 115;
+	-fx-max-height: 115;
+	-fx-background-color: #3F51B5;
+}
+
+.hbPaneColoredDefault{
+	-fx-min-width: 125;
+	-fx-max-width: 125;
+	-fx-pref-width: 125;	
+	-fx-min-height: 50;
+	-fx-max-height: 50;
+	-fx-background-color: #3F51B5;
+	-fx-text-fill: white;
+	-fx-font-size: 13;
+	-fx-font-weight: bold;
+	-fx-font-style: italic;
+	-fx-alignment:center;
+}
+
+
+.paneEnd{
+	-fx-min-width: 250;
+	-fx-max-width: 250;
+	-fx-pref-width: 250;	
+	-fx-min-height: 25;
+	-fx-max-height: 25;
+	-fx-background-color: #3F51B5;
+}
+
+.paneEndFill{
+	-fx-min-width: 75;
+	-fx-max-width: 75;
+	-fx-pref-width: 75;	
+	-fx-min-height: 25;
+	-fx-max-height: 25;
+}
+
+.lbHeaderSides{
+	-fx-min-width: 75;
+	-fx-pref-width: 75;	
+	-fx-min-height: 25;
+	-fx-pref-height: 25;
+	-fx-background-color: #3F51B5;
+	-fx-text-fill: #E8EAF6;
+	-fx-padding: 4px;
+	-fx-font-size: 12;
+	-fx-font-weight: bold;
+	-fx-font-style: italic;
+	
+}
+
+
+
+.lab{
+	-fx-background-color: #0097A7 ;
+	-fx-text-fill: white;
+	-fx-alignment: center-left;
+	-fx-padding: 2px;
+	-fx-min-height: 35;
+	-fx-pref-height: 35;
+}
+
+.labRule{
+	-fx-background-color: #546E7A ;
+	-fx-text-fill: white;
+	-fx-alignment: center-left;
+	-fx-padding: 2px;
+	-fx-min-height: 35;
+	-fx-pref-height: 35;
+}
+
+
+.tf_name_header{
+	-fx-text-fill: derive(#000000,110%);	
+	-fx-min-width:150;
+	-fx-pref-width:150;
+	-fx-min-height: 22;
+	-fx-pref-height: 22;
+}
+.rb_template{
+	-fx-text-fill: white;
+	-fx-alignment: center-left;
+}
+.lab1{
+	-fx-background-color: #3F51B5;
+	-fx-font-size: 13;
+	-fx-text-fill: white;
+	-fx-padding: 2px;
+	 -fx-graphic: url("file:C:/Users/Sandra/Documents/Research/JasmienCode/CMTgui/src/be/ac/vub/wise/cmtgui/icons/temp.png");
+}
+
+.lab2{
+	-fx-background-color: #0097A7 ;
+	-fx-font-size: 13;
+	-fx-text-fill: white;
+	-fx-padding:2px;
+	 -fx-graphic: url("file:C:/Users/Sandra/Documents/Research/JasmienCode/CMTgui/src/be/ac/vub/wise/cmtgui/icons/activity.png");
+}
+
+.lab3{
+	-fx-background-color: #3F51B5 ;
+	-fx-font-size: 13;
+	-fx-text-fill: white;
+	-fx-padding:0px;
+	
+}
+.lab4{
+	-fx-background-color: #0097A7 ;
+	-fx-font-size: 13;
+	-fx-text-fill: white;
+	-fx-padding:0px;
+	
+}
+
+.labact{
+	-fx-background-color: #0097A7 ;
+	-fx-font-size: 13;
+	-fx-text-fill: white;
+	-fx-padding:2px;
+	-fx-graphic: url("file:C:/Users/Sandra/Documents/Research/JasmienCode/CMTgui/src/be/ac/vub/wise/cmtgui/icons/activity.png");
+}
+
+.labtime{
+	-fx-background-color:#0097A7 ;
+	-fx-font-size: 13;
+	-fx-text-fill: white;
+	-fx-padding:2px;
+	-fx-graphic: url("file:C:/Users/Sandra/Documents/Research/JasmienCode/CMTgui/src/be/ac/vub/wise/cmtgui/icons/time.png");
+}
+
+.labper{
+	-fx-background-color: #0097A7 ;
+	-fx-font-size: 13;
+	-fx-text-fill: white;
+	-fx-padding:2px;
+	-fx-graphic: url("file:C:/Users/Sandra/Documents/Research/JasmienCode/CMTgui/src/be/ac/vub/wise/cmtgui/icons/person.png");
+}
+
+.labloc{
+	-fx-background-color: #0097A7 ;
+	-fx-font-size: 13;
+	-fx-text-fill: white;
+	-fx-padding:2px;
+	-fx-graphic: url("file:C:/Users/Sandra/Documents/Research/JasmienCode/CMTgui/src/be/ac/vub/wise/cmtgui/icons/loc.png");
+}
+
+.labobj{
+	-fx-background-color: #0097A7 ;
+	-fx-font-size: 13;
+	-fx-text-fill: white;
+	-fx-padding:2px;
+	-fx-graphic: url("file:C:/Users/Sandra/Documents/Research/JasmienCode/CMTgui/src/be/ac/vub/wise/cmtgui/icons/obj.png");
+}
+
+.labMyRules{
+	-fx-background-color: #546E7A;
+	-fx-font-size: 13;
+	-fx-text-fill: white;
+	-fx-padding:2px;
+	-fx-graphic: url("file:C:/Users/Sandra/Documents/Research/JasmienCode/CMTgui/src/be/ac/vub/wise/cmtgui/icons/rule.png");
+	
+}
+
+.labaction{
+	-fx-background-color: #C2185B;
+	-fx-font-size: 13;
+	-fx-text-fill: white;
+	-fx-padding:2px;
+	 -fx-graphic: url("file:C:/Users/Sandra/Documents/Research/JasmienCode/CMTgui/src/be/ac/vub/wise/cmtgui/icons/action.png");
+}
+
+.labNewFact{
+	-fx-text-fill: white;
+	-fx-font-size: 13;
+}
+
+.background{
+	-fx-background-color: #B0BEC5  ;
+}
+
+.tab-pane .tab-header-area .tab-header-background {
+    -fx-background-color: #B0BEC5  ;
+}
+
+.buttonAct{
+	-fx-background-color: #00838F;
+	-fx-text-fill: white;
+	-fx-border-radius:5;
+	-fx-background-radius: 5;
+	-fx-min-width: 60;
+        -fx-min-height: 25; 
+        -fx-max-width: 60;
+        -fx-max-height: 25;
+        -fx-alignment: center;
+}
+
+.buttonAct:hover{
+	-fx-background-color: #006064;
+	-fx-border-radius:5;
+	-fx-background-radius: 5;
+}
+
+.buttonRule{
+	-fx-background-color: #455A64;
+	-fx-text-fill: white;
+	-fx-border-radius:5;
+	-fx-background-radius: 5;
+	-fx-min-width: 60;
+        -fx-min-height: 25; 
+        -fx-max-width: 60;
+        -fx-max-height: 25;
+        -fx-alignment: center;
+}
+
+.buttonRule:hover{
+	-fx-background-color: #37474F;
+	-fx-border-radius:5;
+	-fx-background-radius: 5;
+}
+
+.buttonPlus {
+	-fx-background-radius: 20;
+        -fx-min-width: 20;
+        -fx-min-height: 20; 
+        -fx-max-width: 20;
+        -fx-max-height: 20;
+	-fx-background-color: transparent;
+	-fx-graphic: url('file:C:/Users/Sandra/Documents/Research/JasmienCode/CMTgui/src/be/ac/vub/wise/cmtgui/icons/plusCyanDark.png');
+ 	
+}
+
+.buttonPlus:hover{
+	-fx-background-color: #80CBC4 ;
+	-fx-graphic: url('file:C:/Users/Sandra/Documents/Research/JasmienCode/CMTgui/src/be/ac/vub/wise/cmtgui/icons/plus.png');
+}
+
+.listview .scroll-bar:horizontal .track,
+.mylistview .scroll-bar:vertical .track{
+    -fx-background-color:transparent;
+    -fx-border-color:transparent;
+    -fx-background-radius: 0em;
+    -fx-border-radius:2em;
+}
+
+.listview .scroll-bar:horizontal .increment-button ,
+.listview .scroll-bar:horizontal .decrement-button {
+    -fx-background-color:transparent;
+    -fx-background-radius: 0em;
+    -fx-padding:0 0 10 0;
+}
+
+.listview .scroll-bar:vertical .increment-button ,
+.listview .scroll-bar:vertical .decrement-button {
+    -fx-background-color:transparent;
+    -fx-background-radius: 0em;
+    -fx-padding:0 10 0 0;
+}
+
+.listview  .scroll-bar .increment-arrow,
+.listview  .scroll-bar .decrement-arrow{
+    -fx-shape: " ";
+    -fx-padding:0;
+}
+
+.listview .scroll-bar:horizontal .thumb,
+.listview .scroll-bar:vertical .thumb {
+    -fx-background-color:derive(#000000,130%);
+    -fx-background-insets: 2, 0, 0;
+    -fx-background-radius: 2em;
+}
+
+.listview .scroll-bar:horizontal .thumb:hover,
+.listview .scroll-bar:vertical .thumb:hover {
+    -fx-background-color:derive(#000000,110%);
+}
+
+.combo-box .arrow-button{
+    -fx-background-color:  #00838F;
+}
+
+.combo-box .arrow-button:hover{
+    -fx-background-color:  #006064;
+}
+
+.combo-box .list-cell{
+	-fx-background-color:  #00838F;
+	-fx-text-fill: white;
+	-fx-padding: 1;
+	-fx-alignment: center-left;
+}
+.combo-box{
+	-fx-border-color:#00838F;
+	-fx-background-color: #0097A7;
+	-fx-border-radius:5;
+	-fx-background-radius: 5;
+	-fx-min-width: 90;
+	-fx-pref-width: 90;
+	-fx-min-height: 22;
+	-fx-pref-height: 22;
+}
+.combo-box .list-cell:selected{
+	-fx-background-color: #0097A7;
+	-fx-text-fill: white;
+}
+.combo-box .list-cell:hover{
+	-fx-background-color:  #006064;
+}
+
+.butFillIn{
+    -fx-min-width: 80;
+	-fx-pref-width: 80;
+        -fx-max-width: 80;
+	-fx-min-height: 25;
+        -fx-max-height: 25;
+	-fx-background-color:#00838F;
+	-fx-alignment: center;
+	-fx-text-fill: #00ACC1;
+	-fx-padding: 3px;
+}
+
+.butFillIn:hover{
+    -fx-background-color:  #006064;
+    -fx-text-fill: white;
+}
+.butFillInAction{
+    -fx-min-width: 80;
+	-fx-pref-width: 80;
+        -fx-max-width: 80;
+	-fx-min-height: 25;
+        -fx-max-height: 25;
+	-fx-background-color:#AD1457;
+	-fx-alignment: center;
+	-fx-text-fill: #F06292;
+	-fx-padding: 3px;
+}
+
+.butFillInAction:hover{
+    -fx-background-color:  #880E4F;
+    -fx-text-fill: white;
+}

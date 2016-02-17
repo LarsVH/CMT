@@ -1,0 +1,78 @@
+package rules
+import be.ac.vub.wise.cmtserver.facts.Person
+import function be.ac.vub.wise.cmtserver.functions.Func2.samePerson
+import be.ac.vub.wise.cmtserver.events.Test1
+rule "ruleTest1" 
+  when 
+ $0:Person(name== "Sandra" , $00:name) 
+ $2:Person(name== "Sandra" , $20:name) 
+ eval(samePerson($00, $20)) 
+
+ then 
+insert( new Test1()); 
+ end 
+ 
+import be.ac.vub.wise.cmtserver.events.T2
+import be.ac.vub.wise.cmtserver.facts.Person
+import function be.ac.vub.wise.cmtserver.functions.Func2.samePerson
+import be.ac.vub.wise.cmtserver.events.Test1
+rule "ruleT2" 
+  when 
+ $0:Test1() 
+$2:Person(name== "Sandra" , $20:name) 
+ $4:Person(name== "Sandra" , $40:name) 
+ eval(samePerson($20, $40)) 
+
+ then 
+T2 T2T2= new T2(); 
+ T2T2.setName1( $2.name); 
+insert(T2T2); 
+ end 
+
+import be.ac.vub.wise.cmtserver.facts.Person
+import function be.ac.vub.wise.cmtserver.functions.Func2.samePerson
+import be.ac.vub.wise.cmtserver.events.Test3
+import be.ac.vub.wise.cmtserver.events.Test1
+rule "ruleTest3" 
+  when 
+ $0:Test1() 
+$2:Person(name== "Sandra" , $20:name) 
+ $4:Person(name== "Sandra" , $40:name) 
+ eval(samePerson($20, $40)) 
+
+ then 
+Test3 Test3Test3= new Test3(); 
+ Test3Test3.setName1( $2.name); 
+Test3Test3.setName2( $4.name); 
+insert(Test3Test3); 
+ end 
+
+import be.ac.vub.wise.cmtserver.facts.Person
+import function be.ac.vub.wise.cmtserver.functions.Func2.samePerson
+import be.ac.vub.wise.cmtserver.events.Test4
+rule "ruleTest4" 
+  when 
+ $0:Person(name== "Sandra" , $00:name) 
+ $2:Person(name== "Vince" , $20:name) 
+ eval(samePerson($00, $20)) 
+
+ then 
+insert( new Test4()); 
+ end 
+ 
+import be.ac.vub.wise.cmtserver.facts.Person
+import function be.ac.vub.wise.cmtserver.functions.Func2.samePerson
+import be.ac.vub.wise.cmtserver.events.Test5
+import be.ac.vub.wise.cmtserver.events.Test4
+rule "ruleTest5" 
+  when 
+ $0:Test4() 
+$2:Person(name== "Sandra" , $20:name) 
+ $4:Person(name== "Sandra" , $40:name) 
+ eval(samePerson($20, $40)) 
+
+ then 
+Test5 Test5Test5= new Test5(); 
+ Test5Test5.setName1( $2.name); 
+insert(Test5Test5); 
+ end 

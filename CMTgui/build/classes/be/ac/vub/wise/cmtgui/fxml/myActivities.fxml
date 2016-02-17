@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.paint.*?>
+<?import javafx.scene.shape.*?>
+<?import javafx.scene.text.*?>
+<?import be.ac.vub.wise.cmtgui.controllers.UserTab?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.layout.Pane?>
+
+<UserTab id="userTab"  prefHeight="100" minHeight="800.0" prefWidth="966.0" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/2.2" fx:controller="be.ac.vub.wise.cmtgui.controllers.UserTab">
+  <children>
+    <SplitPane fx:id="sp_main" dividerPositions="0.15871369294605808" focusTraversable="true" minHeight="921" prefWidth="900.0">
+      <items>
+      <HBox minWidth="355.0" maxWidth="355.0">
+      		<Pane prefWidth="5" minWidth="5"/>
+            <VBox layoutX="10.0" layoutY="10.0" minWidth="170.0" prefWidth="170.0">
+              <children>
+              		<Pane minHeight="10" prefHeight="10.0" prefWidth="170.0" />
+                    <Label text="Time" styleClass="labtime" minWidth="170" prefWidth="170"/>
+                    <ListView fx:id="lv_input_time" minHeight="200"  prefHeight="200.0" prefWidth="120.0" styleClass="listview" />
+                    <Pane minHeight="10" prefHeight="10.0" prefWidth="170" />
+                    <Label minWidth="170" prefWidth="170" text="My Activities" styleClass="lab2"/>
+                    <ListView fx:id="lv_userActivities" minHeight="200" prefHeight="200.0" styleClass="listview" />
+                    <Pane minHeight="10" prefHeight="10.0" prefWidth="170.0" />
+                    <Label minWidth="170" prefWidth="170" text="Activities" styleClass="labact" />
+                    <ListView fx:id="lv_input_activities"  minHeight="410"  prefHeight="410.0" prefWidth="120.0" styleClass="listview" />
+              </children>
+            </VBox>
+        	<Pane prefWidth="5" minWidth="5"/>
+            <VBox layoutX="10.0" layoutY="10.0" minWidth="170.0" prefWidth="170.0">
+              <children>
+              		<Pane minHeight="10" prefHeight="10.0" prefWidth="170.0" />
+              		<HBox minWidth="170" maxWidth="170" maxHeight="23.0" minHeight="10.0"  styleClass="lab4" >
+              		<Label text="Persons" styleClass="labper" minWidth="145"/>
+              		<Button fx:id="Person" styleClass="buttonPlus" maxHeight="23.0" minHeight="10.0" onAction="#newFactDialog"/>
+              		</HBox>
+                    <ListView fx:id="lv_input_persons"  minHeight="200.0" prefHeight="200.0" prefWidth="170.0" styleClass="listview" />
+                    <Pane minHeight="10" prefHeight="10.0" prefWidth="126.0" />
+                    <HBox minWidth="170" maxWidth="170" maxHeight="23.0" minHeight="10.0"  styleClass="lab4" >
+                    <Label text="Locations" styleClass="labloc" minWidth="145"/>
+                    <Button fx:id="Location" styleClass="buttonPlus" maxHeight="23.0" minHeight="10.0" onAction="#newFactDialog"/>
+                    	</HBox>
+                    <ListView fx:id="lv_input_locations"  minHeight="200.0" prefHeight="200.0" prefWidth="170.0" styleClass="listview" />
+                    <Pane minHeight="10" prefHeight="10.0" prefWidth="126.0" />
+                    <HBox minWidth="170" maxWidth="170" maxHeight="23.0" minHeight="10.0"  styleClass="lab4" >
+                    <Label text="Objects" styleClass="labobj" minWidth="145"/>
+                    <Button fx:id="object" styleClass="buttonPlus" maxHeight="23.0" minHeight="10.0" onAction="#newFactDialog"/>
+                    	</HBox>
+                    <TreeView fx:id="tv_input_objects"  minHeight="410.0" prefHeight="410.0" prefWidth="170.0" styleClass="listview"/>
+              </children>
+            </VBox>
+         	<Pane prefWidth="5" minWidth="5"/>
+      </HBox>
+      <VBox >
+      		<Pane minHeight="10" prefHeight="10"/>
+       		<HBox fx:id="hbHeader" styleClass="background">
+  	 			
+		  		<Pane prefWidth="650" minWidth="650" minHeight="35" prefHeight="35" />
+		  	
+		  		
+  			</HBox>
+	        <AnchorPane fx:id="ap_workbench" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="600.0" minWidth="1020.0" prefHeight="800.0" prefWidth="1020.0">
+	          
+	        </AnchorPane>
+      </VBox>
+      <HBox minWidth="180.0" maxWidth="180.0"> 
+      		<Pane prefWidth="5" minWidth="5"/>
+		     <VBox layoutX="10.0" layoutY="10.0" minWidth="170.0" prefWidth="170.0">
+		              <children>
+		              		<Pane minHeight="10" prefHeight="10.0" prefWidth="170" />
+		              		<Label  minWidth="170" prefWidth="170" styleClass="lab1" text="Templates"/>
+		                    <TreeView fx:id="tv_templates" minWidth="170" prefWidth="170"  minHeight="200" prefHeight="200.0" styleClass="listview"/>
+		                    
+		                    <Pane minHeight="10" prefHeight="10.0" prefWidth="126.0" />
+		                    <Label text="Actions" styleClass="labaction" minWidth="170"/>
+		                    <ListView fx:id="lv_actions"  minHeight="410.0" prefHeight="410.0" minWidth="170" prefWidth="170" styleClass="listview" />
+		                    
+		                    <Pane minHeight="10" prefHeight="10.0" prefWidth="126.0" />
+		                    <Label text="My Rules" styleClass="labMyRules" minWidth="170"/>
+		                    <ListView fx:id="lv_myRules" minHeight="200"  prefHeight="200.0" minWidth="170" prefWidth="170" styleClass="listview"/>
+		     
+		              </children>
+		      </VBox>
+		      <Pane prefWidth="5" minWidth="5"/>
+        </HBox> 
+      </items>
+    </SplitPane>
+  </children>
+</UserTab>

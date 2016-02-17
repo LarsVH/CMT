@@ -1,0 +1,259 @@
+.templateBox{
+	 -fx-border-width: 2px;
+	 -fx-border-color: #009688;
+	 -fx-border-style: solid;
+	 -fx-background-color: #E0E0E0;
+}
+
+.lab{
+	-fx-background-color: #009688 ;
+	-fx-text-fill: white;
+}
+.labHeader{
+		-fx-background-color: #E0E0E0 ;
+	-fx-text-fill: #009688;
+	-fx-font-weight: bold;
+	-fx-font-size: 14px;
+	-fx-alignment: center;
+	-fx-underline: true;
+}
+.labInBox{
+	-fx-background-color: #EEEEEE;
+	-fx-text-fill: derive(#000000,110%);
+	-fx-alignment: center;
+	-fx-border-color: #BDBDBD;
+	-fx-border-radius:5;
+	-fx-background-radius: 5;
+	
+}
+.labInHeaderVbInput{
+	-fx-text-fill:white;
+	-fx-min-width: 75;
+	-fx-pref-width: 75;
+        -fx-max-width: 75;
+     
+}
+
+.labInHeaderVbInputEvent{
+	-fx-text-fill:white;
+	-fx-min-width: 183;
+	-fx-pref-width: 183;
+}
+
+.labInHeaderAction{
+	-fx-text-fill:white;
+	-fx-min-width: 255;
+	-fx-pref-width: 255;
+}
+
+.labInHeaderVbIFEvent{
+	-fx-text-fill:white;
+	-fx-min-width: 162;
+	-fx-pref-width: 162;
+}
+
+.labInHeaderVbFunction{
+	-fx-text-fill:white;
+	-fx-min-width: 138;
+	-fx-pref-width: 138;
+}
+
+.labInParTypeHbInput{
+	-fx-min-width: 104;
+	-fx-pref-width: 104;
+	-fx-alignment: center-left;
+	-fx-padding: 5,2,2,2;
+}
+
+.labInParTypeHbInputEvent{
+	-fx-min-width: 62;
+	-fx-pref-width: 62;
+        -fx-max-width: 62;
+	-fx-alignment: center-left;
+	-fx-padding: 5,2,2,2;
+}
+
+.labInParFunctionEvent{
+	-fx-min-width: 263;
+	-fx-pref-width: 263;
+	-fx-alignment: center-left;
+	-fx-padding: 5,2,2,2;
+}
+
+.labInParTypeHbOutput{
+	-fx-alignment: center-left;
+	-fx-padding: 5,2,2,2;
+}
+
+
+.tf_name{
+	-fx-text-fill: #000000;	
+	-fx-min-width:90;
+	-fx-pref-width:90;
+	-fx-min-height: 22;
+	-fx-pref-height: 22;
+}
+.tf_name_Activity{
+	-fx-text-fill: #000000;	
+	-fx-min-width:190;
+	-fx-pref-width:190;
+	-fx-min-height: 22;
+	-fx-pref-height: 22;
+}
+.tf_name_header{
+	-fx-text-fill: #000000;	
+	-fx-min-width:150;
+	-fx-pref-width:150;
+	-fx-min-height: 22;
+	-fx-pref-height: 22;
+}
+
+.background{
+	-fx-background-color: #009688 ;
+}
+
+.rb_template{
+	-fx-text-fill: white;
+}
+
+.button{
+	-fx-background-color: #00796B;
+	-fx-text-fill: white;
+	-fx-border-radius:5;
+	-fx-background-radius: 5;
+}
+
+.button:hover{
+	-fx-background-color: #004D40;
+	-fx-border-radius:5;
+	-fx-background-radius: 5;
+}
+.boxes{
+	-fx-border-color:#009688;
+	-fx-border-radius: 5,5,0,0;
+}
+.headerBox{
+	-fx-background-color:  #009688;
+	-fx-border-radius:5;
+	-fx-background-radius: 5;
+	-fx-text-fill: white;
+        
+}
+.headerBoxOutputHa{
+	-fx-background-color: #009688;
+	-fx-border-radius:5;
+	-fx-background-radius: 5;
+	-fx-text-fill: white;
+	-fx-padding: 5, 2, 4, 2;
+	-fx-alignment: center-left;
+}
+.combo-box .arrow-button{
+    -fx-background-color:  transparent;
+    -fx-min-width: 10;
+	-fx-pref-width: 10;
+        -fx-max-width: 10;
+    
+}
+
+.combo-box .arrow-button:hover{
+    -fx-background-color:  #004D40;
+}
+
+.combo-box .list-cell{
+	-fx-background-color:  #00796B;
+	-fx-text-fill: white;
+	-fx-padding: 1;
+	-fx-alignment: center-left;
+}
+.combo-box{
+	-fx-border-color:#00796B;
+	-fx-background-color: #009688;
+	-fx-border-radius:5;
+	-fx-background-radius: 5;
+	-fx-min-width: 90;
+	-fx-pref-width: 90;
+        -fx-max-width: 90;
+	-fx-min-height: 22;
+	-fx-pref-height: 22;
+}
+.combo-box .list-cell:selected{
+	-fx-background-color: #009688;
+	-fx-text-fill: white;
+}
+.combo-box .list-cell:hover{
+	-fx-background-color:  #004D40;
+}
+
+.comboOps{
+    -fx-min-width: 75;
+	-fx-pref-width: 75;
+        -fx-max-width: 75;
+	-fx-min-height: 22;
+	-fx-pref-height: 22;
+    
+}
+
+.boxOps{
+    -fx-min-width: 48;
+	-fx-pref-width: 48;
+        -fx-max-width: 48;
+	-fx-min-height: 22;
+	-fx-pref-height: 22;
+}
+
+.textFieldInputBox{
+    -fx-padding: 3 1 1 1;
+    -fx-min-width: 90;
+    -fx-pref-width: 90;
+    -fx-max-width: 90;
+    -fx-min-height: 22;
+    -fx-pref-height: 22;
+    -fx-alignment: center-left;
+}
+.vb-drops{
+	-fx-border-color: #009688;
+	-fx-border-radius:3;
+	-fx-background-radius: 3;
+}
+
+.buttonArrow {
+	-fx-background-radius: 21;
+        -fx-min-width: 21;
+        -fx-min-height: 21; 
+        -fx-max-width: 21;
+        -fx-max-height: 21;
+	-fx-background-color:  #00796B;
+	-fx-graphic: url('file:C:/Users/Sandra/Documents/Research/JasmienCode/CMTgui/src/be/ac/vub/wise/cmtgui/icons/arrow.png');
+ 	
+}
+
+.buttonArrow:hover{
+	-fx-background-color: #80CBC4 ;
+	-fx-background-radius: 21;
+        -fx-min-width: 21;
+        -fx-min-height: 21; 
+        -fx-max-width: 21;
+        -fx-max-height: 21;
+	-fx-graphic: url('file:C:/Users/Sandra/Documents/Research/JasmienCode/CMTgui/src/be/ac/vub/wise/cmtgui/icons/arrowHover.png');
+}
+
+.buttonClose {
+	-fx-background-radius: 21;
+        -fx-min-width: 21;
+        -fx-min-height: 21; 
+        -fx-max-width: 21;
+        -fx-max-height: 21;
+	-fx-background-color:  #00796B;
+	-fx-graphic: url('file:C:/Users/Sandra/Documents/Research/JasmienCode/CMTgui/src/be/ac/vub/wise/cmtgui/icons/close.png');
+ 	
+}
+
+.buttonClose:hover{
+	-fx-background-color: #80CBC4 ;
+	-fx-background-radius: 21;
+        -fx-min-width: 21;
+        -fx-min-height: 21; 
+        -fx-max-width: 21;
+        -fx-max-height: 21;
+	-fx-graphic: url('file:C:/Users/Sandra/Documents/Research/JasmienCode/CMTgui/src/be/ac/vub/wise/cmtgui/icons/closeHover.png');
+}

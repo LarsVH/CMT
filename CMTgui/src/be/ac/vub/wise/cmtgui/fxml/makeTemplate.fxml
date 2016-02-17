@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import be.ac.vub.wise.cmtgui.controllers.ExpertTab?>
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.paint.*?>
+<?import javafx.scene.text.*?>
+
+<ExpertTab id="expertTab"  prefHeight="100" minHeight="800.0" prefWidth="966.0" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/2.2" fx:controller="be.ac.vub.wise.cmtgui.controllers.ExpertTab">
+    <children>
+        <SplitPane fx:id="sp_main" dividerPositions="0.15871369294605808, 0.8412863070539419" focusTraversable="true" minHeight="921" prefWidth="900.0">
+            <items>
+                <AnchorPane maxHeight="1.7976931348623157E308" maxWidth="220.0" minWidth="210.0" >
+                    <children>
+                        <VBox layoutX="10.0" layoutY="10.0" minWidth="120.0" prefWidth="200.0">
+              <children>
+              		
+              		<HBox minWidth="200" maxHeight="23.0" minHeight="10.0"  styleClass="lab3" >
+              		<Label text="Templates" styleClass="lab1" minWidth="175"/>
+              		<Button fx:id="Template" styleClass="buttonPlus" maxHeight="23.0" minHeight="10.0" onAction="#newTemplate"/>
+              		</HBox>
+                    <ListView fx:id="lv_templates"  minHeight="200" prefHeight="200.0" prefWidth="170.0" styleClass="listview"/>
+                    <Pane minHeight="10" prefHeight="10.0" prefWidth="126.0" />
+                    <Label text="Input Blocks" minWidth="200" styleClass="labact"/>
+                    <TreeView fx:id="tv_inputs" minHeight="600" prefHeight="600.0" prefWidth="170.0" styleClass="listview" />                    
+              </children>
+            </VBox>
+                               
+                    </children>
+                </AnchorPane>
+                <AnchorPane fx:id="ap_workbench" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="600.0" minWidth="11" prefHeight="800.0"  />
+                <AnchorPane maxHeight="1.7976931348623157E308" minWidth="210.0" maxWidth="220.0">
+          <children>
+            <VBox layoutX="10.0" layoutY="10.0" minWidth="120.0" prefWidth="200.0">
+              <children>
+              		<Label text="Functions" styleClass="labMyRules" minWidth="200"/>
+                    <ListView fx:id="lv_functions"  minHeight="200.0" prefHeight="200.0" prefWidth="170.0" styleClass="listview" />
+                    <Pane minHeight="10" prefHeight="10.0" prefWidth="126.0" />
+                    <Label text="Actions" styleClass="labaction" minWidth="200"/>
+                    <ListView fx:id="lv_actions"  minHeight="600.0" prefHeight="600.0" prefWidth="170.0" styleClass="listview" />
+              </children>
+            </VBox>
+          </children>
+        </AnchorPane>
+            </items>
+        </SplitPane>
+    </children>
+
+</ExpertTab>

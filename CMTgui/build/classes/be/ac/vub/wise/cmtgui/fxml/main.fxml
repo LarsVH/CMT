@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.shape.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.Pane?>
+
+<Pane styleClass="background" prefHeight="900" prefWidth="966.0" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/2.2">
+<VBox styleClass="background" maxHeight="1.7976931348623157E308" minHeight="900" prefHeight="900" minWidth="1600" prefWidth="1600.0" >
+  <children>
+	<TabPane minHeight="950" prefHeight="950" tabClosingPolicy="UNAVAILABLE">
+    	<tabs>
+        	<Tab fx:id="tb_activities" text="Context Modelling">
+            	<content>
+                	<fx:include fx:id="userTab" source="myActivities.fxml"/>
+            	</content>
+        	</Tab>
+        	<Tab fx:id="tb_activities2" text="Make Templates">
+            	<content>
+               	 	<fx:include fx:id="expertTab" source="makeTemplate.fxml"/> 
+            	</content>
+        	</Tab>
+        	
+    	</tabs>
+	</TabPane>
+</children>
+</VBox>
+</Pane>

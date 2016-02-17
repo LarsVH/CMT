@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.shape.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.Button?>
+
+<VBox fx:id="mainVb" styleClass="background" maxHeight="1.7976931348623157E308"  prefHeight="900" prefWidth="966.0" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/2.2">
+  <children>
+	<Pane minHeight="20"/>
+	<HBox>
+		<Pane minWidth="20"/>
+		<VBox >
+		<Label text="Choose:" styleClass="labNewFact"/>
+		<Pane minHeight="20"/>
+		<ListView minHeight="300" prefHeight="300"  minWidth="100" prefWidth="100" fx:id="list"/>
+		</VBox>
+		<Pane minWidth="40" minHeight="20"/>
+		<VBox >
+			<Label text="Properties:" styleClass="labNewFact"/>
+			<Pane minHeight="20"/>
+			<VBox fx:id="attributeBox">
+			</VBox>
+		</VBox>
+	</HBox>
+	<Pane minHeight="20"/>
+	<HBox>
+		<Pane minWidth="20"/>
+		<Button fx:id="bt_create" text="Create"/>
+		<Pane minWidth="10" minHeight="20"/>
+		<Button fx:id="bt_cancel" text="Cancel"/>
+	</HBox>
+	
+</children>
+</VBox>

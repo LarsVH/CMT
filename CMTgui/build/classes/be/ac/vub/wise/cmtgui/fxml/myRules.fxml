@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.paint.*?>
+<?import javafx.scene.shape.*?>
+<?import javafx.scene.text.*?>
+<?import org.contextbox.gui.user.controllers.RuleTab?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.control.Button?>
+
+<RuleTab id="ruleTab"  prefHeight="100" minHeight="800.0" prefWidth="966.0" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/2.2" fx:controller="org.contextbox.gui.user.controllers.RuleTab">
+  <children>
+    <SplitPane fx:id="sp_main" dividerPositions="0.15871369294605808" focusTraversable="true" minHeight="921" prefWidth="900.0">
+      <items>
+        <AnchorPane maxHeight="1.7976931348623157E308"   minWidth="210.0" maxWidth="220.0">
+          <children>
+            <VBox layoutX="10.0" layoutY="10.0" minWidth="120.0" prefWidth="200.0">
+              <children>
+              		<Pane minHeight="10" prefHeight="10.0" prefWidth="126.0" />
+              		<Label minWidth="200" styleClass="lab1" text="Templates"/>
+                    <ListView fx:id="tv_templates"  minHeight="200" prefHeight="200.0" prefWidth="170.0" styleClass="listview" />
+                    <Pane minHeight="10" prefHeight="10.0" prefWidth="126.0" />
+                    <Label text="Actions" minWidth="200" styleClass="labaction"/>
+                    <ListView fx:id="tv_output_actions" minHeight="200" prefHeight="200.0" prefWidth="170.0" styleClass="listview"/>
+                    <Pane minHeight="10" prefHeight="10.0" prefWidth="126.0" />
+                    <Label text="Activities" styleClass="labact" minWidth="200"/>
+                    <ListView fx:id="tv_input_activities"  minHeight="200"  prefHeight="200.0" prefWidth="170.0" styleClass="listview"/>
+                    <Pane minHeight="10" prefHeight="10.0" prefWidth="126.0" />
+                    <Label text="Time" styleClass="labtime" minWidth="200"/>
+                    <ListView fx:id="tv_input_time" minHeight="200"  prefHeight="200.0" prefWidth="170.0" styleClass="listview" />
+                    
+              </children>
+            </VBox>
+          </children>
+        </AnchorPane>
+        <AnchorPane fx:id="ap_workbench" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="600.0" minWidth="400.0" prefHeight="800.0" prefWidth="650.0">
+          <children>
+            <Pane fx:id="pn_dropzone1" layoutX="200.0" layoutY="0.0" prefHeight="800.0" prefWidth="40.0">
+              <children>
+                <Line endX="20.0" endY="890.0" layoutX="0.0" layoutY="0.0" startX="20.0" startY="20.0">
+                  <stroke>
+                    <Color blue="0.87" green="0.87" red="0.87" fx:id="x2" />
+                  </stroke>
+                </Line>
+              </children>
+            </Pane>
+            <Pane fx:id="pn_dropzone2" layoutX="440.0" layoutY="0.0" prefHeight="800.0" prefWidth="40.0">
+              <children>
+                <Line endX="20.0" endY="890.0" layoutX="0.0" layoutY="0.0" startX="20.0" startY="20.0" stroke="$x2" />
+              </children>
+            </Pane>
+            <Pane fx:id="pn_dropzone3" layoutX="680.0" layoutY="0.0" prefHeight="800.0" prefWidth="40.0">
+              <children>
+                <Line endX="20.0" endY="890.0" layoutX="0.0" layoutY="0.0" startX="20.0" startY="20.0" stroke="$x2" />
+              </children>
+            </Pane>
+            <Pane fx:id="pn_dropzone4" layoutX="920.0" layoutY="0.0" prefHeight="800.0" prefWidth="40.0">
+              <children>
+                <Line endX="20.0" endY="890.0" layoutX="0.0" layoutY="0.0" startX="20.0" startY="20.0" stroke="$x2" />
+              </children>
+            </Pane>
+          </children>
+        </AnchorPane>
+        <AnchorPane maxHeight="1.7976931348623157E308" minWidth="210.0" maxWidth="220.0">
+          <children>
+            <VBox layoutX="10.0" layoutY="10.0" minWidth="120.0" prefWidth="200.0">
+              <children>
+              		<HBox minWidth="200" maxHeight="23.0" minHeight="10.0"  styleClass="lab4" >
+              		<Label text="Persons" styleClass="labper" minWidth="175"/>
+              		<Button fx:id="Person" styleClass="buttonPlus" maxHeight="23.0" minHeight="10.0" onAction="#newFactDialog"/>
+              		</HBox>
+                    <ListView fx:id="tv_input_persons"  minHeight="200.0" prefHeight="200.0" prefWidth="170.0" styleClass="listview" />
+                    <Pane minHeight="10" prefHeight="10.0" prefWidth="126.0" />
+                    <HBox minWidth="200" maxHeight="23.0" minHeight="10.0"  styleClass="lab4" >
+                    <Label text="Locations" styleClass="labloc" minWidth="175"/>
+                    <Button fx:id="Location"  styleClass="buttonPlus" maxHeight="23.0" minHeight="10.0" onAction="#newFactDialog"/>
+                    	</HBox>
+                    <ListView fx:id="tv_input_locations"  minHeight="200.0" prefHeight="200.0" prefWidth="170.0" styleClass="listview"/>
+                    <Pane minHeight="10" prefHeight="10.0" prefWidth="126.0" />
+                    <HBox minWidth="200" maxHeight="23.0" minHeight="10.0"  styleClass="lab4" >
+                    <Label text="Objects" styleClass="labobj" minWidth="175"/>
+                    <Button fx:id="object" styleClass="buttonPlus" maxHeight="23.0" minHeight="10.0" onAction="#newFactDialog"/>
+                    	</HBox>
+                    <TreeView fx:id="tv_input_objects"  minHeight="190.0" prefHeight="190.0" prefWidth="170.0" styleClass="listview" />
+     				<Pane minHeight="10" prefHeight="10.0" prefWidth="126.0" />
+                    <Label text="My Rules" styleClass="labMyRules" minWidth="200"/>
+                    <ListView fx:id="tv_myRules" minHeight="190"  prefHeight="190.0" prefWidth="170.0" styleClass="listview"/>
+              </children>
+            </VBox>
+          </children>
+        </AnchorPane>
+      </items>
+    </SplitPane>
+  </children>
+</RuleTab>
