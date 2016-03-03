@@ -13,11 +13,11 @@ import javafx.scene.input.DataFormat;
  */
 public class ConstantsGUI {
     
-    public static final String ICON16 = "/home/lars/Copy/2e_ma/Thesis/CMT_GIT/CMT_code/CMTgui/src/be/ac/vub/wise/cmtgui/icons/logocmt.png"; 
-    public static final String ICON32 = "/home/lars/Copy/2e_ma/Thesis/CMT_GIT/CMT_code/CMTgui/src/be/ac/vub/wise/cmtgui/icons/logocmt.png"; 
+    public static final String ICON16 = "/Users/Tim/Documents/Git Projects/CMT/CMTgui/src/be/ac/vub/wise/cmtgui/icons/logocmt.png"; 
+    public static final String ICON32 = "/Users/Tim/Documents/Git Projects/CMT/CMTgui/src/be/ac/vub/wise/cmtgui/icons/logocmt.png"; 
     public static final String PATHFXML = "/be/ac/vub/wise/cmtgui/fxml/";
     public static final String PATHCSS = "/be/ac/vub/wise/cmtgui/css/";
-    public static final String IMBUT = "/home/lars/Copy/2e_ma/Thesis/CMT_GIT/CMT_code/CMTgui/src/be/ac/vub/wise/cmtgui/icons/edit.png"; 
+    public static final String IMBUT = "/Users/Tim/Documents/Git Projects/CMT/CMTgui/src/be/ac/vub/wise/cmtgui/icons/edit.png"; 
     
     public final static DataFormat functionDataFormat = new DataFormat("function");
     public final static DataFormat parameterDataFormat = new DataFormat("parameter");

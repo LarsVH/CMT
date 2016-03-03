@@ -11,7 +11,7 @@ package be.ac.vub.wise.cmtserver.util;
  */
 public class Constants {
     public static final String URLWS = "http://localhost:8080/CMTServerRestFull/pubsub"; // CHANGE PORT TO YOUR GLASSFISH INSTALLATION
-    private static final String PATHCMTPROJECT = "/home/lars/Copy/2e_ma/Thesis/CMT_GIT/CMT_code/"; // CHANGE TO YOUR PROJECT DIRECTORY!!!
+    private static final String PATHCMTPROJECT = "/Users/Tim/Documents/Git Projects/CMT/"; // CHANGE TO YOUR PROJECT DIRECTORY!!!
     
     public static final String CLASSPATH = PATHCMTPROJECT + "CMTServerRestFull/target/classes"; // path to target/classes folder
     public static final String ROOTFOLDERFORJAR = PATHCMTPROJECT + "CMTServerRestFull/target"; // path to target/classes folder
@@ -42,11 +42,4 @@ public class Constants {
     public static final String ACTIVITY = "activity";
     
     public static final String PATHDRL = PATHCMTPROJECT + "CMTServerRestFull/src/main/resources/rules/rules.drl";
-
-
-    
-    
-
-
-
 }

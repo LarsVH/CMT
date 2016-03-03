@@ -1,5 +1,5 @@
-be/ac/vub/wise/cmtserver/facts/Location.class
 be/ac/vub/wise/cmtserver/blocks/ActionFieldAnno.class
+be/ac/vub/wise/cmtserver/facts/Location.class
 be/ac/vub/wise/cmtserver/db/DatabaseManager.class
 be/ac/vub/wise/cmtserver/functions/Func2.class
 be/ac/vub/wise/cmtserver/blocks/Time.class
@@ -32,10 +32,10 @@ be/ac/vub/wise/cmtserver/blocks/Binding.class
 be/ac/vub/wise/cmtserver/blocks/FactType.class
 be/ac/vub/wise/cmtserver/events/Test3.class
 be/ac/vub/wise/cmtserver/rest/Main.class
-be/ac/vub/wise/cmtserver/restfull/CMTPubSub.class
 be/ac/vub/wise/cmtserver/blocks/Action.class
 be/ac/vub/wise/cmtserver/blocks/CMTField.class
 be/ac/vub/wise/cmtserver/drools/DroolsComponent.class
+be/ac/vub/wise/cmtserver/restfull/CMTPubSub.class
 be/ac/vub/wise/cmtserver/drools/IDroolsComponent.class
 be/ac/vub/wise/cmtserver/blocks/BindingInfo.class
 be/ac/vub/wise/cmtserver/blocks/ActionClient.class
@@ -51,8 +51,8 @@ be/ac/vub/wise/cmtserver/blocks/Fact.class
 be/ac/vub/wise/cmtserver/blocks/TemplateActions.class
 be/ac/vub/wise/cmtserver/blocks/IFBlock.class
 be/ac/vub/wise/cmtserver/events/T2.class
-be/ac/vub/wise/cmtserver/restfull/CMTCore.class
 be/ac/vub/wise/cmtserver/db/IDbComponent.class
+be/ac/vub/wise/cmtserver/restfull/CMTCore.class
 be/ac/vub/wise/cmtserver/events/Test5.class
 be/ac/vub/wise/cmtserver/rest/Main$1.class
 be/ac/vub/wise/cmtserver/blocks/ClientRemote.class
@@ -61,8 +61,8 @@ be/ac/vub/wise/cmtserver/db/Result.class
 be/ac/vub/wise/cmtserver/restfull/CMTRest.class
 be/ac/vub/wise/cmtserver/blocks/Parameters.class
 be/ac/vub/wise/cmtserver/util/HelperClass.class
-be/ac/vub/wise/cmtserver/blocks/OutputHA.class
 be/ac/vub/wise/cmtserver/blocks/Activity.class
+be/ac/vub/wise/cmtserver/blocks/OutputHA.class
 be/ac/vub/wise/cmtserver/blocks/RoleDrools.class
 be/ac/vub/wise/cmtserver/core/CMTDelegator.class
 be/ac/vub/wise/cmtserver/db/DatabaseManager$DbSource.class
