@@ -3,3 +3,4 @@ CMTClientJava/build/classes/be/ac/vub/wise/cmtclient/util/Constants.class
 CMTClientJava/build/classes/be/ac/vub/wise/cmtclient/util/ConverterCoreBlocks.class
 CMTgui/build
 .idea
+CMTServerRestFull/target
