@@ -115,7 +115,8 @@ public class CMTClient {
             Logger.getLogger(CMTClient.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-    
+    // Declare what events you (= sensor) are going to send (object.getClass -> sent class to CMT)
+    // Object = eventobject, isActivity = true, isCustom = made by usr/prgmr, uriField = label, varList = ignore -> '(),  varFormat (ignore) -> ""
     public static void shortcutRegisterEventInCMT(Object object, boolean isActivity, boolean isCustom, String uriField, ArrayList<String> varList, String varFormat){
         FactType event = ConverterCoreBlocks.fromEventClassToFactType(object.getClass(), isActivity, isCustom, uriField, varList, varFormat);
         registerEventTypeInCMT(event);
@@ -134,6 +135,7 @@ public class CMTClient {
         }
     }
     
+    // Convert Eventobject to JSON
     public static void shortcutAddEventInCMT(Object object){
         try {
             JSONObject json = ConverterCoreBlocks.fromFactObjectToJSON(object);

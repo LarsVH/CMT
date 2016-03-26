@@ -67,8 +67,8 @@ public class ConverterCoreBlocks {
     public static JSONObject fromFunctionClassToJSON(Class<?> functionClass){
         JSONObject result = new JSONObject();
         String packname = functionClass.getPackage().getName();
-        String packurl = packname.replace(".","\\");
-	String classUri = System.getProperty("user.dir")+"\\src\\" + packurl +"\\" + functionClass.getSimpleName() + ".java";
+        String packurl = packname.replace(".","/");
+	String classUri = System.getProperty("user.dir")+"/src/" + packurl +"/" + functionClass.getSimpleName() + ".java";
         try {
             String res = FileUtils.readFileToString(new File(classUri), System.getProperty("file.encoding"));
             ArrayList<String> methods = parseJavaFileMethods(res);
