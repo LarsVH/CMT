@@ -121,6 +121,26 @@ public class DbComponent implements IDbComponent{
 		return null;
 	}
         
+        public HashSet<Template> getAvailableTemplates(){
+            HashSet<Template> forms = new HashSet<Template>();
+		Collection<Object> result = database.read(Template.class, "").getResults();
+		if(result != null){
+			for(Object obj : result){
+				if(obj instanceof Template){
+					Template form = (Template) obj;
+					
+					forms.add(form);
+				}
+			}
+                         
+			return forms;
+		}
+		
+		return null;
+            
+        }
+        
+        
 	@Override
 	public boolean addContextForm(Template form) {
 	

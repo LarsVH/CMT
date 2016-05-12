@@ -62,7 +62,7 @@ public class CMTCore {
     private CMTCore(){
     
     }
-    
+    // Singleton (LvH)
     public static CMTCore get(){
 	if(core == null){
             core = new CMTCore();
@@ -105,7 +105,8 @@ public class CMTCore {
         
         return true;
     }
-    
+    // Creates *.java file to be inserted in Drools (LvH)
+    // P.e. Person, Location
     public void registerFactClass(JSONObject json){
         String className = HelperClass.toUppercaseFirstLetter(json.getString("className"));
         String uriField = json.getString("uriField");

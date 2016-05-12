@@ -12,6 +12,9 @@ import java.util.ArrayList;
  *
  * @author Sandra
  */
+// FactType: Represents Event
+// EVENT
+//--------
 public class FactType implements IFactType, Serializable{
     //{"className":<>, "type":< fact || time || activity> , "activityCustom": boolean (only if activity type), "varList": [{var:<>}, ..], "varFormat": <>, 
     // "uriField":<>, "fields":[{"fieldName":<>, "fieldType":<>}]}

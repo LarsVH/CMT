@@ -373,7 +373,7 @@ public class CMTRest {
         obj.put("facts", arr);
         return Response.status(201).entity(obj.toString()).build() ;
     }
-    
+      
     @GET // {"className" , "uriField" , "object"}
     @Path("/getAllFacts")
     @Produces("application/json")

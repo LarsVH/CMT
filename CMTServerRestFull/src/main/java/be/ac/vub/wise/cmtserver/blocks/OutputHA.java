@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 
+// The new situation resulting from a situation template (TemplateHA)
 public class OutputHA implements Serializable{
 
 	LinkedList<Binding> bindings;

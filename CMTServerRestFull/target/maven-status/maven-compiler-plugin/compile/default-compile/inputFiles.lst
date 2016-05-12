@@ -1,5 +1,6 @@
 /home/lars/Copy/2e_ma/Thesis/CMT_GIT/CMT_code/CMTServerRestFull/src/main/java/be/ac/vub/wise/cmtserver/db/IDbComponent.java
 /home/lars/Copy/2e_ma/Thesis/CMT_GIT/CMT_code/CMTServerRestFull/src/main/java/be/ac/vub/wise/cmtserver/events/Test3.java
+/home/lars/Copy/2e_ma/Thesis/CMT_GIT/CMT_code/CMTServerRestFull/src/main/java/be/ac/vub/wise/cmtserver/events/TestSituatie.java
 /home/lars/Copy/2e_ma/Thesis/CMT_GIT/CMT_code/CMTServerRestFull/src/main/java/be/ac/vub/wise/cmtserver/blocks/ActionFieldAnno.java
 /home/lars/Copy/2e_ma/Thesis/CMT_GIT/CMT_code/CMTServerRestFull/src/main/java/be/ac/vub/wise/cmtserver/blocks/BindingInfo.java
 /home/lars/Copy/2e_ma/Thesis/CMT_GIT/CMT_code/CMTServerRestFull/src/main/java/be/ac/vub/wise/cmtserver/rest/Main.java
@@ -12,6 +13,7 @@
 /home/lars/Copy/2e_ma/Thesis/CMT_GIT/CMT_code/CMTServerRestFull/src/main/java/be/ac/vub/wise/cmtserver/blocks/Fact.java
 /home/lars/Copy/2e_ma/Thesis/CMT_GIT/CMT_code/CMTServerRestFull/src/main/java/be/ac/vub/wise/cmtserver/functions/Func2.java
 /home/lars/Copy/2e_ma/Thesis/CMT_GIT/CMT_code/CMTServerRestFull/src/main/java/be/ac/vub/wise/cmtserver/db/Result.java
+/home/lars/Copy/2e_ma/Thesis/CMT_GIT/CMT_code/CMTServerRestFull/src/main/java/be/ac/vub/wise/cmtserver/sharing/Sharing.java
 /home/lars/Copy/2e_ma/Thesis/CMT_GIT/CMT_code/CMTServerRestFull/src/main/java/be/ac/vub/wise/cmtserver/db/Settings.java
 /home/lars/Copy/2e_ma/Thesis/CMT_GIT/CMT_code/CMTServerRestFull/src/main/java/be/ac/vub/wise/cmtserver/blocks/Operator.java
 /home/lars/Copy/2e_ma/Thesis/CMT_GIT/CMT_code/CMTServerRestFull/src/main/java/be/ac/vub/wise/cmtserver/core/CMTDelegator.java
@@ -60,6 +62,7 @@
 /home/lars/Copy/2e_ma/Thesis/CMT_GIT/CMT_code/CMTServerRestFull/src/main/java/be/ac/vub/wise/cmtserver/events/Test1.java
 /home/lars/Copy/2e_ma/Thesis/CMT_GIT/CMT_code/CMTServerRestFull/src/main/java/be/ac/vub/wise/cmtserver/db/Db4oDefaultProperties.java
 /home/lars/Copy/2e_ma/Thesis/CMT_GIT/CMT_code/CMTServerRestFull/src/main/java/be/ac/vub/wise/cmtserver/blocks/EventInput.java
+/home/lars/Copy/2e_ma/Thesis/CMT_GIT/CMT_code/CMTServerRestFull/src/main/java/be/ac/vub/wise/cmtserver/sharing/RuleShare.java
 /home/lars/Copy/2e_ma/Thesis/CMT_GIT/CMT_code/CMTServerRestFull/src/main/java/be/ac/vub/wise/cmtserver/blocks/EventVariables.java
 /home/lars/Copy/2e_ma/Thesis/CMT_GIT/CMT_code/CMTServerRestFull/src/main/java/be/ac/vub/wise/cmtserver/restfull/CMTPubSub.java
 /home/lars/Copy/2e_ma/Thesis/CMT_GIT/CMT_code/CMTServerRestFull/src/main/java/be/ac/vub/wise/cmtserver/drools/DroolsComponent.java

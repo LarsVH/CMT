@@ -107,7 +107,7 @@ public class CMTDelegator {
     public HashSet<TemplateHA> getAllTemplateHA(){
         return dbComp.getAvailableTemplateHA();
     }
-    
+   
     public void addAction(Action action){
         dbComp.addAction(action);
     }
@@ -119,7 +119,7 @@ public class CMTDelegator {
     public Action getAction(String className){
         return dbComp.getAction(className);
     }
-    
+    // Returns the class of a specific facttype (pe. Location)
     public FactType getFactTypeWithName(String name){
         return dbComp.getFactTypeWithName(name);
     }
@@ -127,7 +127,7 @@ public class CMTDelegator {
     public IFactType getFact(String className, String uriField, String value){
         return dbComp.getFact(className, uriField, value);
     }
-    
+    // Returns all fact INSTANCES(pe. kitchen) of a specific type (pe Location)
     public HashSet<IFactType> getFactsWithType(String className){
         return dbComp.getFactsWithType(className);
     }

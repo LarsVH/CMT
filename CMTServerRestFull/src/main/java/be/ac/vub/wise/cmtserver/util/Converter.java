@@ -708,16 +708,16 @@ public class Converter {
             LinkedList<IFBlock> ifblocks = temp.getIfBlocks();
             LinkedList<String> operators = temp.getOperators();
             JSONArray arrIfBlocks = new JSONArray();
-            for(int i=0; i<ifblocks.size();i++){
+            for(int i=0; i<ifblocks.size();i++){        // Loop over the IFBlocks
                 IFBlock ifblock = ifblocks.get(i);
                 JSONObject obj = new JSONObject();
-                obj.put("index", i);
-                if(ifblock.getFunction() != null){
+                obj.put("index", i);                    // Assing (volgnummer) index to each block
+                if(ifblock.getFunction() != null){      // Dispatch on block type: Function
                     JSONObject func = fromFunctionToJSON(ifblock.getFunction());
                     obj.put("function", func);
                     obj.put("typeBlock", "function");
                 }
-                if(ifblock.getEvent() != null){
+                if(ifblock.getEvent() != null){         // Dispatch on block type: Event
                     JSONObject event = fromFactTypeToJSON(ifblock.getEvent());
                     obj.put("event", event);
                     obj.put("typeBlock", "activity");
@@ -739,9 +739,9 @@ public class Converter {
             result.put("ifblocks", arrIfBlocks);
             result.put("operators", arrOperators);
             result.put("name", temp.getName());
-            if(temp.getClass().isAssignableFrom(TemplateHA.class)){
+            if(temp.getClass().isAssignableFrom(TemplateHA.class)){ // Determine subclass: TemplateHA or TemplateActions
                 result.put("tempType", "TemplateHA");
-                result.put("output", fromOutputHAToJSON(((TemplateHA)temp).getOutput()));
+                result.put("output", fromOutputHAToJSON(((TemplateHA)temp).getOutput())); // Cast to subclass and convert
             }else{
                 if(temp.getClass().isAssignableFrom(TemplateActions.class)){
                     result.put("tempType", "TemplateActions");

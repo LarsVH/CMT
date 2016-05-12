@@ -4,8 +4,8 @@ import java.io.Serializable;
 
 public class BindingInputFact implements BindingParameter, Serializable{
 	
-	public IFactType inputObject;
-	public String factId; // uriField value!!
+	public IFactType inputObject; // is a FactType or a Fact
+	public String factId; // uriField value!! -> vb."Vince" -> to determine the instance in case of a Fact
 	
 	
         public BindingInputFact(){}

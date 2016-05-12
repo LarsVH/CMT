@@ -1,13 +1,44 @@
 package rules
+import be.ac.vub.wise.cmtserver.events.BeddyActivity
 import be.ac.vub.wise.cmtserver.facts.Location
 import function be.ac.vub.wise.cmtserver.functions.Func2.InBed
-import be.ac.vub.wise.cmtserver.events.TestSituatie
-rule "ruleTestSituatie" 
+rule "ruleBeddyActivity" 
   when 
- $0:Location(room== "Vince Bedroom" ) 
+ $0:Location(room== "Living Room" ) 
  eval(InBed($0)) 
+eval(InBed($0)) 
 
  then 
-insert( new TestSituatie()); 
+insert( new BeddyActivity()); 
+ end 
+ 
+import be.ac.vub.wise.cmtserver.facts.Location
+import function be.ac.vub.wise.cmtserver.functions.Func2.InBed
+import be.ac.vub.wise.cmtserver.events.BeddyActivityPM
+rule "ruleBeddyActivityPM" 
+  when 
+ $0:Location(room== "Living Room" ) 
+ eval(InBed($0)) 
+eval(InBed($0)) 
+
+ then 
+BeddyActivityPM BeddyActivityPMBeddyActivityPM= new BeddyActivityPM(); 
+ BeddyActivityPMBeddyActivityPM.setRoom1( $0.room); 
+insert(BeddyActivityPMBeddyActivityPM); 
+ end 
+
+import be.ac.vub.wise.cmtserver.events.BeddyActivity
+import be.ac.vub.wise.cmtserver.events.BeddyAct2
+import be.ac.vub.wise.cmtserver.facts.Location
+import function be.ac.vub.wise.cmtserver.functions.Func2.InBed
+rule "ruleBeddyAct2" 
+  when 
+ $0:BeddyActivity() 
+$2:Location(room== "My Bedroom" ) 
+ eval(InBed($2)) 
+eval(InBed($2)) 
+
+ then 
+insert( new BeddyAct2()); 
  end 
  

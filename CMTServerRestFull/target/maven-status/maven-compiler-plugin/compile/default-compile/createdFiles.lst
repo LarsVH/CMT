@@ -5,6 +5,7 @@ be/ac/vub/wise/cmtserver/functions/Func2.class
 be/ac/vub/wise/cmtserver/blocks/Time.class
 be/ac/vub/wise/cmtserver/events/Test1.class
 be/ac/vub/wise/cmtserver/blocks/Event.class
+be/ac/vub/wise/cmtserver/sharing/Sharing.class
 be/ac/vub/wise/cmtserver/db/IDatabaseConnector.class
 be/ac/vub/wise/cmtserver/blocks/BindingIF.class
 be/ac/vub/wise/cmtserver/blocks/IFactType.class
@@ -52,7 +53,9 @@ be/ac/vub/wise/cmtserver/blocks/TemplateActions.class
 be/ac/vub/wise/cmtserver/blocks/IFBlock.class
 be/ac/vub/wise/cmtserver/events/T2.class
 be/ac/vub/wise/cmtserver/restfull/CMTCore.class
+be/ac/vub/wise/cmtserver/sharing/RuleShare.class
 be/ac/vub/wise/cmtserver/db/IDbComponent.class
+be/ac/vub/wise/cmtserver/events/TestSituatie.class
 be/ac/vub/wise/cmtserver/events/Test5.class
 be/ac/vub/wise/cmtserver/rest/Main$1.class
 be/ac/vub/wise/cmtserver/blocks/ClientRemote.class
