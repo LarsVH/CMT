@@ -19,7 +19,7 @@ public class FactType implements IFactType, Serializable{
     //{"className":<>, "type":< fact || time || activity> , "activityCustom": boolean (only if activity type), "varList": [{var:<>}, ..], "varFormat": <>, 
     // "uriField":<>, "fields":[{"fieldName":<>, "fieldType":<>}]}
     String className;
-    String type;
+    String type;    // fact or activity
     boolean isCustom;
     ArrayList<String> varList;
     String varFormat;

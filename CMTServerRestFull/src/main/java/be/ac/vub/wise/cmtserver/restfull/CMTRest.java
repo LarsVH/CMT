@@ -24,6 +24,7 @@ import be.ac.vub.wise.cmtserver.blocks.Rule;
 import be.ac.vub.wise.cmtserver.blocks.TemplateActions;
 import be.ac.vub.wise.cmtserver.blocks.TemplateHA;
 import be.ac.vub.wise.cmtserver.blocks.UriFactType;
+import be.ac.vub.wise.cmtserver.sharing.SharingImportExport;
 import be.ac.vub.wise.cmtserver.util.Constants;
 import be.ac.vub.wise.cmtserver.util.Converter;
 import com.google.gson.Gson;
@@ -35,6 +36,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -431,6 +433,29 @@ public class CMTRest {
             Logger.getLogger(CMTRest.class.getName()).log(Level.SEVERE, null, ex);
         }
     
+    }
+    
+    @GET
+    @Path("/shareTemplate/{tmplname}")
+    @Produces("application/json")
+    public Response shareTemplate(@PathParam("tmplname") String tmplName){
+        SharingImportExport sharing = new SharingImportExport();
+        
+        HashSet<TemplateHA> temps = CMTDelegator.get().getAllTemplateHA(); // -> gets all HA templates| maybe narrow down to a specific one
+        Iterator i = temps.iterator();
+        TemplateHA retTmpl = new TemplateHA();
+        retTmpl.name = "not found";
+        while(i.hasNext()){
+            TemplateHA currTmpl = (TemplateHA) i.next();
+            if(currTmpl.name.equals(tmplName)){
+                retTmpl = currTmpl;
+                break;
+            }
+        }
+    
+        JSONObject out = sharing.exportActivity(retTmpl);
+                
+        return Response.status(201).entity(out.toString()).build();
     }
     
 }

@@ -2,7 +2,7 @@ package be.ac.vub.wise.cmtserver.blocks;
 
 import java.io.Serializable;
 
-public class BindingInputFact implements BindingParameter, Serializable{
+public class BindingInputFact implements BindingInputBlock, Serializable{
 	
 	public IFactType inputObject; // is a FactType or a Fact
 	public String factId; // uriField value!! -> vb."Vince" -> to determine the instance in case of a Fact

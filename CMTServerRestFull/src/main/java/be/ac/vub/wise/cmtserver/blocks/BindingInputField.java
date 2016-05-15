@@ -2,7 +2,7 @@ package be.ac.vub.wise.cmtserver.blocks;
 
 import java.io.Serializable;
 
-public class BindingInputField implements BindingParameter, Serializable {
+public class BindingInputField implements BindingInputBlock, Serializable {
 	
 	public IFactType inputObject;
 	public String factId;
@@ -11,15 +11,19 @@ public class BindingInputField implements BindingParameter, Serializable {
 	
         public BindingInputField(){}
         
+        @Override
 	public IFactType getInputObject() {
 		return inputObject;
 	}
+        @Override
 	public void setInputObject(IFactType inputObject) {
 		this.inputObject = inputObject;
 	}
+        @Override
 	public String getFactId() {
 		return factId;
 	}
+        @Override
 	public void setFactId(String factId) {
 		this.factId = factId;
 	}
@@ -34,6 +38,7 @@ public class BindingInputField implements BindingParameter, Serializable {
 	
 	public int indexObj;
         
+        @Override
 	public int getIndexObj() {
 		return indexObj;
 	}

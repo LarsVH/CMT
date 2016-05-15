@@ -14,7 +14,7 @@ import org.json.JSONObject;
  */
 public interface Sharing {
     
-    public JSONObject exportActivity(Template exporttmpl);
+    public JSONObject exportActivity(Template templ);
     public void importTemplateRule(JSONObject json);
     
     

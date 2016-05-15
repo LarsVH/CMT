@@ -1,5 +1,9 @@
 package be.ac.vub.wise.cmtserver.sharing;
 
+import be.ac.vub.wise.cmtserver.blocks.Binding;
+import be.ac.vub.wise.cmtserver.blocks.BindingInputBlock;
+import be.ac.vub.wise.cmtserver.blocks.BindingParameter;
+import be.ac.vub.wise.cmtserver.blocks.Fact;
 import be.ac.vub.wise.cmtserver.blocks.FactType;
 import be.ac.vub.wise.cmtserver.blocks.Function;
 import be.ac.vub.wise.cmtserver.blocks.IFBlock;
@@ -33,74 +37,114 @@ import org.kie.api.definition.type.Role.Type;
 public class SharingImportExport implements Sharing {
 
     @Override
-    public JSONObject exportActivity(Template exporttmpl) {
+    public JSONObject exportActivity(Template templ) {
+        JSONObject resultjson = null;
         
-        
-        
-        
-        
-        
-        
-        
-        HashMap<String, TemplateHA> outputBlockNameToTemplateHA = prepareOutputBlockIndex();
+        try {
+            resultjson = prepareTemplateSkeletonJSON(templ);
+            JSONArray initJArray = new JSONArray();
+            
+            
+            resultjson.put("init", initJArray);
 
-        IndexableArraySet<Template> tmpls = new IndexableArraySet<>();
-        //IndexableArraySet<Template> processedtmpls = new IndexableArraySet<>();
-
-        HashMap<Template, LinkedList<FactType>> templateToFactInstances = new HashMap<>();
-        HashMap<Template, LinkedList<FactType>> templateToEventInstances = new HashMap<>();
-        
-
-        IndexableArraySet<String> types = new IndexableArraySet<>();
-        IndexableArraySet<Function> functions = new IndexableArraySet<>();
-
-        JSONObject resultjson = new JSONObject();
-        JSONArray jTemplates = new JSONArray();
-        JSONArray jFunctions = new JSONArray();
-        JSONArray jFacts = new JSONArray();
-
-        tmpls.add(exporttmpl);
-
-        for (int i = 0; i < tmpls.size(); i++) {
-            try {
-                // Loop over tmpls idxArraySet (! decrement i when deleting)
-                Template currTmpl = tmpls.get(i);
-                if (tmpls.isProcessed(currTmpl)) {  // If template is already processed, move on to the next one
-                    continue;
-                }
-                // Convert currTmpl to JSON and add to the JSON templates array
-                JSONObject jTmpl = Converter.fromTemplateToJSON(currTmpl); // FIXME: templates moeten aan hun instanties gekoppeld worden
-                jTemplates.put(jTmpl);
-                tmpls.markProcessed(currTmpl);
-
-                /** DOEL:
-                 * Sorteer de IFBlocks per soort
-                 * 
-                 */
-                LinkedList<IFBlock> ifBlocks = currTmpl.ifBlocks;
-                LinkedList<FactType> factInstances = new LinkedList<>();
-                LinkedList<FactType> eventInstances = new LinkedList<>();
-                sortIFBlocks(ifBlocks, types, factInstances, eventInstances, functions);
-                templateToFactInstances.put(currTmpl, factInstances);
-                templateToEventInstances.put(currTmpl, eventInstances);
-                                
-
-                       
-                processFunctions(functions, types, jFunctions);
-                
-                
-                
-                // Deprecated
-                processTypes(types, outputBlockNameToTemplateHA, jFacts, tmpls); //!!!ATTENTION: processTypes adds new Templates to tmpls: check the iterator!!!!
-
-            } catch (Exception ex) {
-                java.util.logging.Logger.getLogger(SharingImportExport.class.getName()).log(Level.SEVERE, null, ex);
-            }
+        } catch (Exception ex) {
+            java.util.logging.Logger.getLogger(SharingImportExport.class.getName()).log(Level.SEVERE, null, ex);
         }
-
         return resultjson;
     }
+    
+    public JSONObject prepareTemplateSkeletonJSON(Template templ) throws Exception{
+        JSONObject res = Converter.fromTemplateToJSON(templ);
+        res.remove("ifblocks");
+        
+        JSONArray nestedIFBlocks = new JSONArray();
+        processIFBlocks(templ, nestedIFBlocks);
+        
+        res.put("ifblocks", nestedIFBlocks);
+        
+        return res;       
+    }
 
+    public JSONArray processEvent(FactType event){            
+        // Event is already written to JSON, we only need to write declarations if IFBlocks contain custom events
+        
+        if(event.isIsCustom()) // If event is custom, we have to check the IFBlocks on other custom events
+           return processCustomEvent(event);      
+        return null; // FIXME
+    }
+    
+    public JSONArray processCustomEvent(FactType event) {
+        JSONArray resultJArray = new JSONArray();
+        resultJArray.put(Converter.fromFactTypeToJSON(event));
+        // Retrieving the corrseponding template
+        // >> SQL: Search template responsible for "event"
+        Template t = null;
+        // >> SQL: check for custom event IFBlocks (! recursively!!!!)
+        boolean hasCustomEvents_t = false;
+        
+        if(!hasCustomEvents_t)// No custom events -> converter already converted everything
+            return resultJArray; 
+        return null; // FIXME
+    }
+
+    public void processIFBlocks(Template t, JSONArray resultBlocks) throws Exception {
+        // Else: going through IFBlocks and do recursive calls on the custom events
+        LinkedList<IFBlock> ifBlocks = t.getIfBlocks();
+
+        for (IFBlock currBlock : ifBlocks) {
+            JSONObject jIFBlock = new JSONObject();
+            JSONObject jFuncEvent;
+            JSONArray jRecArray = new JSONArray();
+
+            if (currBlock.getEvent() != null) {
+                jFuncEvent = Converter.fromFactTypeToJSON(currBlock.getEvent());
+                jRecArray = processEvent(currBlock.getEvent());
+
+                jIFBlock.put("event", jFuncEvent);
+                jIFBlock.put("typeBlock", "activity");
+
+            } else if (currBlock.getFunction() != null) {
+                Function func = currBlock.getFunction();
+                jFuncEvent = Converter.fromFunctionToJSON(func);
+                LinkedList<Binding> bindings = currBlock.getBindings();
+                // >> SQL endpoint: check of Functie custom events bevat als PM
+
+                jRecArray = processBindings(bindings);
+
+                jIFBlock.put("function", jFuncEvent);
+                jIFBlock.put("typeBlock", "function");
+
+            } else {
+                jIFBlock = null;
+                throw new Exception("IFBlock does not contain an Event or Function");
+            }
+            jIFBlock.put("declarations", jRecArray);
+            resultBlocks.put(jIFBlock);
+        }
+    }
+    
+    public JSONArray processBindings(LinkedList<Binding> bindings) {
+        JSONArray jResBindings = null;
+        for (Binding currBinding : bindings) {
+            BindingParameter endBinding = currBinding.getEndBinding();
+            BindingInputBlock bindingInputBlock = (BindingInputBlock) endBinding;
+            IFactType inputObject = bindingInputBlock.getInputObject();
+             if(inputObject instanceof FactType){
+                jResBindings = processEvent((FactType) inputObject);
+                // check FactType of string 'type'
+                // case "activity" -> recursive processEvent
+                // case "fact" -> continue
+             }
+             else if(inputObject instanceof Fact){
+                 continue;
+                 
+             }
+        }
+        return jResBindings;
+    }
+
+
+    @Deprecated
     // Loops over IFBlocks of a template
     // For each IFBlock:
     // - Retrieve event(FactType) xor function(Function)
@@ -112,8 +156,8 @@ public class SharingImportExport implements Sharing {
         for (int i = 0; i < ifBlocks.size(); i++) {
             IFBlock currBlock = ifBlocks.get(i);
             if (currBlock.getEvent() != null) { // Event can be Fact or Event
-                FactType event = currBlock.getEvent(); 
-                
+                FactType event = currBlock.getEvent();
+
                 if (isAnnotatedAs(event, Type.FACT)) {
                     // Put the current instance in the factInstance list, so they can be assigned to the corresponding template
                     factInstances.add(event);
@@ -124,12 +168,14 @@ public class SharingImportExport implements Sharing {
 
                 /**
                  * De oplossing: Schrijf zelf een converter naar JSON voor
-                 * niet-template classen. Let wel op: FACTS: we gaan de instances van facts moeten bijhouden wanneer we ze in types
-                 * steken >> Opl: je kan FactTypes rechtstreeks uit de DB opvragen en met Converter serializeren (je krijgt dan een
-                 * "FactType" terug) >> We moeten instanties ook delen.
-                 * >> Probleem: de JSON converter converteert of naar class of naar instantie. => Class + instantie nodig (of zelf converter
-                 * schrijven) 
-                 * FUNCTIONS: kunnen parameters hebben: TO ASK: zijn
+                 * niet-template classen. Let wel op: FACTS: we gaan de
+                 * instances van facts moeten bijhouden wanneer we ze in types
+                 * steken >> Opl: je kan FactTypes rechtstreeks uit de DB
+                 * opvragen en met Converter serializeren (je krijgt dan een
+                 * "FactType" terug) >> We moeten instanties ook delen. >>
+                 * Probleem: de JSON converter converteert of naar class of naar
+                 * instantie. => Class + instantie nodig (of zelf converter
+                 * schrijven) FUNCTIONS: kunnen parameters hebben: TO ASK: zijn
                  * die ook default Java types? Neen-> vb. Location (! deze types
                  * zijn wel altijd voorgeprogrammeerd) >> Hoe de semantiek van
                  * een functie verzenden? (java file als string??) @ask Sandra
@@ -159,12 +205,13 @@ public class SharingImportExport implements Sharing {
 
     }
 
+    @Deprecated
     // Checks if a Fact/Event is annotated as Type.FACT/EVENT
     public boolean isAnnotatedAs(IFactType f, Type t) {
         Type annotation = f.getClass().getAnnotation(Role.class).value();
         return annotation.equals(t);
     }
-
+    @Deprecated
     public void processFunctions(IndexableArraySet<Function> functions, IndexableArraySet<String> types, JSONArray jFunctions) throws Exception {
         for (int i = 0; i < functions.size(); i++) {
             Function currfunc = functions.get(i);
@@ -175,7 +222,7 @@ public class SharingImportExport implements Sharing {
 
         // TODO: retrieve parameters and put in types; convert currfunc to JSON and mark as processed in functions
     }
-
+    @Deprecated
     public void processParameters(LinkedHashMap<String, String> parameters, IndexableArraySet<String> types) throws Exception {
         Iterator<String> it = parameters.keySet().iterator();
         for (Map.Entry<String, String> pm : parameters.entrySet()) {
@@ -186,7 +233,7 @@ public class SharingImportExport implements Sharing {
             }
         }
     }
-
+    @Deprecated
     // TODO: how to make the determination of the type more generic
     public void processTypes(IndexableArraySet<String> types, HashMap<String, TemplateHA> outputIdx, JSONArray jFacts, IndexableArraySet<Template> tmpls) {
         for (String type : types) {
@@ -220,6 +267,7 @@ public class SharingImportExport implements Sharing {
         // TODO
     }
 
+    @Deprecated
     // Future: Don't load all templates, but just query the db4O using native queries: http://www.ibm.com/developerworks/library/j-db4o2/
     // Creates a quick access hash map mapping Situations on the templates they are generated by
     public HashMap<String, TemplateHA> prepareOutputBlockIndex() {
