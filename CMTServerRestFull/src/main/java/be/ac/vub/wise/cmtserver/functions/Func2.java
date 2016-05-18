@@ -7,7 +7,7 @@ import java.io.Serializable;
 public class Func2 implements IFunctionClass, Serializable {
 
     @Parameters(parameters = "room ")
-    public static boolean InBed() {
+    public static boolean InBed(be.ac.vub.wise.cmtserver.facts.Location room) {
         return true;
     }
 }
