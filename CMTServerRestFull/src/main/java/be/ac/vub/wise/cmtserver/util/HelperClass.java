@@ -31,6 +31,7 @@ import javax.tools.ToolProvider;
 public class HelperClass {
     
     public static synchronized void compile(String source, String className1, String var){
+        System.out.println("7>>>>> compile(" + source + ", " + className1 + ", " + var);
         String className = toUppercaseFirstLetter(className1);
         File root = new File(Constants.JAVAFILEPATH + var);
 	
@@ -38,17 +39,19 @@ public class HelperClass {
 	sourceFile.getParentFile().mkdirs();
 	try {
             new FileWriter(sourceFile).append(source).close();
-            System.setProperty("java.class.path", System.getProperty("java.class.path") + ";"+ Constants.KIEJARPATH);
-            System.setProperty("java.class.path", System.getProperty("java.class.path") + ";" + Constants.COMMONSPATH);
-            System.setProperty("java.class.path", System.getProperty("java.class.path") + ";" + Constants.CLASSPATH);
+            System.setProperty("java.class.path", System.getProperty("java.class.path") + File.pathSeparator+ Constants.KIEJARPATH);
+            System.setProperty("java.class.path", System.getProperty("java.class.path") + File.pathSeparator + Constants.COMMONSPATH);
+            System.setProperty("java.class.path", System.getProperty("java.class.path") + File.pathSeparator + Constants.CLASSPATH);
             JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
+            System.out.println("9>>>>>>>>>>> compiler sourceFile path: " + sourceFile.getPath());
+            System.out.println("10>>>>>>>>>> current class path: " + System.getProperty("java.class.path"));
             int err = compiler.run(null, null, null, sourceFile.getPath());
             if(err == 0){
 		File roots = new File(Constants.JAVAFILEPATH +var);			
                 File sFile = new File(roots, className+".class");
 		InputStream inputStr = new FileInputStream(sFile);
                 File rootoutputClass = new File(Constants.CLASSPATH);
-		File targetFileClass = new File(rootoutputClass, var+"\\"+className+".class"); 
+		File targetFileClass = new File(rootoutputClass, var+"/"+className+".class"); 
 		targetFileClass.getParentFile().mkdirs();
 		OutputStream outputClass = new FileOutputStream(targetFileClass);
 		byte[] buf = new byte[1024];
@@ -62,8 +65,8 @@ public class HelperClass {
 		Files.delete(sFile.toPath());
                 
                 String clname = "";
-                String war = "WEB-INF\\classes\\";
-                String inputDic ="\\";
+                String war = "WEB-INF/classes/";
+                String inputDic ="/";
                 switch(var){
                     case Constants.PACKAGEFACTSSLASH:
                         clname = Constants.PACKAGEFACTS + "."+className;
@@ -89,10 +92,15 @@ public class HelperClass {
                 // copy cl file to war folder dic then change war
                 
                 File rootsWAR = new File(Constants.CLASSPATH + inputDic );			
-                File sFileWAR = new File(rootsWAR, "\\"+className+".class");
+                File sFileWAR = new File(rootsWAR, "/"+className+".class");
+                
+                System.out.println("5>>>>>> \n" + 
+                        "rootsWAR: " + rootsWAR.getAbsolutePath() +
+                        "sFileWAR: " + sFileWAR.getAbsolutePath());
+                
 		InputStream inputStrWAR = new FileInputStream(sFileWAR);
-                File rootoutputClassWAR = new File(Constants.CLASSPATHDicFolder + "\\" +war);
-		File targetFileClassWAR = new File(rootoutputClassWAR, "\\"+className+".class"); 
+                File rootoutputClassWAR = new File(Constants.CLASSPATHDicFolder + "/" +war);
+		File targetFileClassWAR = new File(rootoutputClassWAR, "/"+className+".class"); 
 		targetFileClassWAR.getParentFile().mkdirs();
 		OutputStream outputClassWAR = new FileOutputStream(targetFileClassWAR);
 		byte[] bufWAR = new byte[1024];
@@ -103,7 +111,7 @@ public class HelperClass {
 		outputClassWAR.close();
 		inputStrWAR.close();			
                
-                Runtime.getRuntime().exec("jar -uvf CMTServerRestFull-1.0-SNAPSHOT.war -C CMTServerRestFull-1.0-SNAPSHOT "+ new File(war + "\\" + className + ".class"), null, new File(Constants.ROOTFOLDERFORJAR));
+                Runtime.getRuntime().exec("jar -uvf CMTServerRestFull-1.0-SNAPSHOT.war -C CMTServerRestFull-1.0-SNAPSHOT "+ new File(war + "/" + className + ".class"), null, new File(Constants.ROOTFOLDERFORJAR));
                // Thread.sleep(1000);
                 
                 Class[] parameters = new Class[]{URL.class};
@@ -120,6 +128,8 @@ public class HelperClass {
                 Object ob = Class.forName(clname);
                 
             }
+            else
+                System.out.println("8>>>>>>>>>>>> Compile error");
 	} catch (FileNotFoundException ex) {
             Logger.getLogger(HelperClass.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
