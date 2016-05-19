@@ -770,7 +770,7 @@ public class Converter {
                 result.put("indexObj", bindFact.getIndexObj());
                 if(bindFact.getInputObject() instanceof Fact){
                     result.put("factId", bindFact.getFactId());
-                    result.put("inputObjectType", "fact");
+                    result.put("inpobutObjectType", "fact");
                     result.put("inputObject", fromFactToJSON((Fact)bindFact.getInputObject()) );
                 }else{
                     if(bindFact.getInputObject() instanceof FactType){
@@ -1103,17 +1103,12 @@ public class Converter {
         return result;
     }
     
-    private static JSONArray fromListBindingsToJSON(LinkedList<Binding> bindings){
+    public static JSONArray fromListBindingsToJSON(LinkedList<Binding> bindings){
         JSONArray arrBindings = new JSONArray();
         try{
                 for(int ii=0; ii<bindings.size();ii++){
-                    JSONObject objBind = new JSONObject();
-                    objBind.put("index", ii);
                     Binding binding = bindings.get(ii);
-                    BindingParameter startBind = binding.getStartBinding();
-                    BindingParameter endBind = binding.getEndBinding();
-                    objBind.put("startBinding", fromBindingParameterToJSON(startBind));
-                    objBind.put("endBinding", fromBindingParameterToJSON(endBind));
+                    JSONObject objBind = fromBindingToJSON(binding, ii);  
                     arrBindings.put(objBind);
                 }
         } catch (JSONException ex) {
@@ -1122,6 +1117,21 @@ public class Converter {
         return arrBindings;
     }
     
+    // (LvH)
+    // Per binding converter
+    // Needed for exporter
+    public static JSONObject fromBindingToJSON(Binding binding, int index) {
+        JSONObject objBind = new JSONObject();
+        objBind.put("index", index);
+
+        BindingParameter startBind = binding.getStartBinding();
+        BindingParameter endBind = binding.getEndBinding();
+        objBind.put("startBinding", fromBindingParameterToJSON(startBind));
+        objBind.put("endBinding", fromBindingParameterToJSON(endBind));
+
+        return objBind;
+    }
+
     public static LinkedList<Binding> fromJSONtoListBindings(JSONArray arrbindings){
         LinkedList<Binding> bindings = new LinkedList<Binding>();
         try{

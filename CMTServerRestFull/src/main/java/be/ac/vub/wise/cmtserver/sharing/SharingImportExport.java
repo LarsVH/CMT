@@ -1,8 +1,13 @@
 package be.ac.vub.wise.cmtserver.sharing;
 
 import be.ac.vub.wise.cmtserver.blocks.Binding;
+import be.ac.vub.wise.cmtserver.blocks.BindingIF;
 import be.ac.vub.wise.cmtserver.blocks.BindingInputBlock;
+import be.ac.vub.wise.cmtserver.blocks.BindingInputFact;
+import be.ac.vub.wise.cmtserver.blocks.BindingInputField;
+import be.ac.vub.wise.cmtserver.blocks.BindingOutput;
 import be.ac.vub.wise.cmtserver.blocks.BindingParameter;
+import be.ac.vub.wise.cmtserver.blocks.EventInput;
 import be.ac.vub.wise.cmtserver.blocks.Fact;
 import be.ac.vub.wise.cmtserver.blocks.FactType;
 import be.ac.vub.wise.cmtserver.blocks.Function;
@@ -45,10 +50,7 @@ public class SharingImportExport implements Sharing {
         
         try {
             resultjson = prepareTemplateSkeletonJSON(templ);
-            JSONArray initJArray = new JSONArray();
-            
-            
-            resultjson.put("init", initJArray);
+
 
         } catch (Exception ex) {
             java.util.logging.Logger.getLogger(SharingImportExport.class.getName()).log(Level.SEVERE, null, ex);
@@ -72,27 +74,32 @@ public class SharingImportExport implements Sharing {
     }
     
     // Check whether or not an event is custom and therefore needs further processing
-    public JSONArray processEvent(FactType event){            
-        // Event is already written to JSON, we only need to write declarations if IFBlocks contain custom events
+    public JSONArray processEvent(FactType event) throws Exception{            
+        //True:  Event is already written to JSON, we only need to write declarations if IFBlocks contain custom events
         
         if(event.isIsCustom()) // If event is custom, we have to check the IFBlocks on other custom events
            return processCustomEvent(event);      
-        return null; // FIXME
+        return new JSONArray(); // Event not custom? => return empty array
     }
     
     // In case of a custom event
         // 1. Convert the event using the built-in event converter
-    public JSONArray processCustomEvent(FactType event) {
-        JSONArray resultJArray = new JSONArray();
-        resultJArray.put(Converter.fromFactTypeToJSON(event));
+    public JSONArray processCustomEvent(FactType event) throws Exception {
+        JSONArray jResultArray = new JSONArray();
+
+
         // Retrieving the corrseponding template
         // >> SQL: Search template responsible for "event"
         Template _t = eventToTemplate.get(event.getClassName());
         // >> SQL: check for custom event IFBlocks (! recursively!!!!)
-        boolean hasCustomEvents_t = true;
+        boolean hasCustomEvents_t = false;
+
+        if (hasCustomEvents_t) {
+           jResultArray.put(prepareTemplateSkeletonJSON(_t));
+        } 
+        else // No custom events -> converter already converted everything
+            return jResultArray;    // !! We might still have to convert the template using the built-in converter
         
-        if(!hasCustomEvents_t)// No custom events -> converter already converted everything
-            return resultJArray; 
         return null; // FIXME
     }
     // Processes the IFBlocks: delegates depending on IFBlock = event/function
@@ -107,11 +114,15 @@ public class SharingImportExport implements Sharing {
     public void processIFBlocks(Template t, JSONArray resultBlocks) throws Exception {
         LinkedList<IFBlock> ifBlocks = t.getIfBlocks();
 
-        for (IFBlock currBlock : ifBlocks) {
+        for (int i=0; i<ifBlocks.size(); i++) {
+            
+            IFBlock currBlock = ifBlocks.get(i);
             JSONObject jIFBlock = new JSONObject();
             JSONObject jFuncEvent;
             JSONArray jRecArray = new JSONArray();
-
+            
+            jIFBlock.put("index", i);
+            
             if (currBlock.getEvent() != null) {
                 jFuncEvent = Converter.fromFactTypeToJSON(currBlock.getEvent()); // <<<FIXME: dubbele conversie!
                 // ^^^^ >> processEvent convert al...
@@ -123,21 +134,18 @@ public class SharingImportExport implements Sharing {
             } else if (currBlock.getFunction() != null) {
                 Function func = currBlock.getFunction();
                 jFuncEvent = Converter.fromFunctionToJSON(func);
-                LinkedList<Binding> bindings = currBlock.getBindings();
-                // >> SQL endpoint: check of Functie custom events bevat als PM
-                // ??? Wat als er inderdaad geen custom events inzitten?
-                // -> dan moeten we toch nog altijd de bindings processen???
-
-                jRecArray = processBindings(bindings);
-
+            
                 jIFBlock.put("function", jFuncEvent);
-                jIFBlock.put("typeBlock", "function");
+                jIFBlock.put("typeBlock", "function");    
 
             } else {
                 jIFBlock = null;
                 throw new Exception("IFBlock does not contain an Event or Function");
-            }
-            jIFBlock.put("declarations", jRecArray);
+            }     
+            LinkedList<Binding> bindings = currBlock.getBindings();
+            jRecArray = processBindings(bindings);            
+            jIFBlock.put("bindings", jRecArray);
+            
             resultBlocks.put(jIFBlock);
         }
     }
@@ -146,27 +154,77 @@ public class SharingImportExport implements Sharing {
         // 2. Determine whether or not one of the parameters is bound to a FactType (= any) or a specific Fact
         // 3. In case of a FactType, we need to recursively process the event
         // 4. In case of a specific Fact, -> not needed **<<<<<<<< TO CHECK
-    public JSONArray processBindings(LinkedList<Binding> bindings) {
+    // Returns a JSONarray (incl. required declarations) for key "bindings:"
+    public JSONArray processBindings(LinkedList<Binding> bindings) throws ClassNotFoundException, Exception {
         JSONArray jResBindings = null;
-        for (Binding currBinding : bindings) {
+        for (int i=0; i < bindings.size(); i++) {
+            Binding currBinding = bindings.get(i);
+            JSONObject objBind;          
+
+            objBind = Converter.fromBindingToJSON(currBinding, i);
+            
+            JSONArray declarations = new JSONArray();
+
             BindingParameter endBinding = currBinding.getEndBinding();
             BindingInputBlock bindingInputBlock = (BindingInputBlock) endBinding;
             IFactType inputObject = bindingInputBlock.getInputObject();
+            
+            // InputObject is ALWAYS an event (a function can never be in the endbindings)
+                // Check if 
              if(inputObject instanceof FactType){
-                jResBindings = processEvent((FactType) inputObject);
-                // check FactType of string 'type'
-                // case "activity" -> recursive processEvent
-                // case "fact" -> continue
+                FactType inputObjectEvent = (FactType) inputObject;
+
+                boolean isCustom = inputObjectEvent.isIsCustom();
+                if(isCustom){                
+                 declarations = processEvent(inputObjectEvent);
+                }
+                else {
+                    // inputObject is not custom -> no declarations needed
+                    // => declarations: []
+                }
              }
              else if(inputObject instanceof Fact){
                  continue;      //**<<<<<<<< TO CHECK
                  
              }
+             objBind.put("declarations", declarations);
+             jResBindings.put(objBind);
         }
         return jResBindings;
     }
 
+    @Deprecated
+    public Class bindingParameterType(BindingParameter par) {
+        if (par instanceof BindingInputFact) {
+            BindingInputFact bindFact = (BindingInputFact) par;
+            if (bindFact.getInputObject() instanceof Fact) {
+                return Fact.class;
+            } else if (bindFact.getInputObject() instanceof FactType) {
+                return FactType.class;
+            } else if (bindFact.getInputObject() instanceof EventInput) {
+                return EventInput.class;
+            }
+        } else if (par instanceof BindingInputField) {
+            BindingInputField bindFact = (BindingInputField) par;
+            if (bindFact.getInputObject() instanceof Fact) {
+                return Fact.class;
+            } else if(bindFact.getInputObject() instanceof FactType){
+                return FactType.class;
+            } else if(bindFact.getInputObject() instanceof EventInput){
+                return EventInput.class;                                
+            }
+        }
+        else {
+            if(par instanceof BindingIF){
+                return BindingIF.class;
+            } else if(par instanceof BindingOutput){
+                return BindingOutput.class;
+            }
+        }
+        return null; // Error: class unknown
+    }
 
+    
     @Deprecated
     // Loops over IFBlocks of a template
     // For each IFBlock:
