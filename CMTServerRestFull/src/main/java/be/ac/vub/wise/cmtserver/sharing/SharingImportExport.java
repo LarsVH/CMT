@@ -35,10 +35,13 @@ import org.kie.api.definition.type.Role.Type;
  * @author lars
  */
 public class SharingImportExport implements Sharing {
+    
+    HashMap<String,TemplateHA> eventToTemplate = new HashMap<>();
 
     @Override
     public JSONObject exportActivity(Template templ) {
         JSONObject resultjson = null;
+        eventToTemplate = this.prepareOutputBlockIndex();
         
         try {
             resultjson = prepareTemplateSkeletonJSON(templ);
@@ -52,7 +55,10 @@ public class SharingImportExport implements Sharing {
         }
         return resultjson;
     }
-    
+    // Preparing the initial JSON skeleton
+        // 1. Convert the template using the standard converter
+        // 2. Remove the IFBlocks in order to create nested IFBlocks
+        // 3. processIFBlocks (= loop over the IFBlocks and create nested ones)
     public JSONObject prepareTemplateSkeletonJSON(Template templ) throws Exception{
         JSONObject res = Converter.fromTemplateToJSON(templ);
         res.remove("ifblocks");
@@ -64,7 +70,8 @@ public class SharingImportExport implements Sharing {
         
         return res;       
     }
-
+    
+    // Check whether or not an event is custom and therefore needs further processing
     public JSONArray processEvent(FactType event){            
         // Event is already written to JSON, we only need to write declarations if IFBlocks contain custom events
         
@@ -73,22 +80,31 @@ public class SharingImportExport implements Sharing {
         return null; // FIXME
     }
     
+    // In case of a custom event
+        // 1. Convert the event using the built-in event converter
     public JSONArray processCustomEvent(FactType event) {
         JSONArray resultJArray = new JSONArray();
         resultJArray.put(Converter.fromFactTypeToJSON(event));
         // Retrieving the corrseponding template
         // >> SQL: Search template responsible for "event"
-        Template t = null;
+        Template _t = eventToTemplate.get(event.getClassName());
         // >> SQL: check for custom event IFBlocks (! recursively!!!!)
-        boolean hasCustomEvents_t = false;
+        boolean hasCustomEvents_t = true;
         
         if(!hasCustomEvents_t)// No custom events -> converter already converted everything
             return resultJArray; 
         return null; // FIXME
     }
-
+    // Processes the IFBlocks: delegates depending on IFBlock = event/function
+        // 1. Loop over the IFBlocks
+        // 2. In case of an event: 
+            // 2a. Use the built-in event converter
+            // 2b. Delegate to "processEvent" to determine whether it is custom and needs further processing
+        // 3. In case of a function
+            // 3a. Use the built-in function converter
+            // 3b. SQL: check (!recursively) if the function contains any custom events
+            // 3c. If needed, delegate to "processBindings"
     public void processIFBlocks(Template t, JSONArray resultBlocks) throws Exception {
-        // Else: going through IFBlocks and do recursive calls on the custom events
         LinkedList<IFBlock> ifBlocks = t.getIfBlocks();
 
         for (IFBlock currBlock : ifBlocks) {
@@ -97,7 +113,8 @@ public class SharingImportExport implements Sharing {
             JSONArray jRecArray = new JSONArray();
 
             if (currBlock.getEvent() != null) {
-                jFuncEvent = Converter.fromFactTypeToJSON(currBlock.getEvent());
+                jFuncEvent = Converter.fromFactTypeToJSON(currBlock.getEvent()); // <<<FIXME: dubbele conversie!
+                // ^^^^ >> processEvent convert al...
                 jRecArray = processEvent(currBlock.getEvent());
 
                 jIFBlock.put("event", jFuncEvent);
@@ -108,6 +125,8 @@ public class SharingImportExport implements Sharing {
                 jFuncEvent = Converter.fromFunctionToJSON(func);
                 LinkedList<Binding> bindings = currBlock.getBindings();
                 // >> SQL endpoint: check of Functie custom events bevat als PM
+                // ??? Wat als er inderdaad geen custom events inzitten?
+                // -> dan moeten we toch nog altijd de bindings processen???
 
                 jRecArray = processBindings(bindings);
 
@@ -122,7 +141,11 @@ public class SharingImportExport implements Sharing {
             resultBlocks.put(jIFBlock);
         }
     }
-    
+    // Processes function bindings
+        // 1. Loop over the bindings
+        // 2. Determine whether or not one of the parameters is bound to a FactType (= any) or a specific Fact
+        // 3. In case of a FactType, we need to recursively process the event
+        // 4. In case of a specific Fact, -> not needed **<<<<<<<< TO CHECK
     public JSONArray processBindings(LinkedList<Binding> bindings) {
         JSONArray jResBindings = null;
         for (Binding currBinding : bindings) {
@@ -136,7 +159,7 @@ public class SharingImportExport implements Sharing {
                 // case "fact" -> continue
              }
              else if(inputObject instanceof Fact){
-                 continue;
+                 continue;      //**<<<<<<<< TO CHECK
                  
              }
         }
