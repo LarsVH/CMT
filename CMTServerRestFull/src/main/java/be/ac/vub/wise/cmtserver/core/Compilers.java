@@ -14,6 +14,7 @@ import be.ac.vub.wise.cmtserver.blocks.BindingInputField;
 import be.ac.vub.wise.cmtserver.blocks.BindingOutput;
 import be.ac.vub.wise.cmtserver.blocks.BindingParameter;
 import be.ac.vub.wise.cmtserver.blocks.CMTField;
+import be.ac.vub.wise.cmtserver.blocks.CMTParameter;
 import be.ac.vub.wise.cmtserver.blocks.EventInput;
 import be.ac.vub.wise.cmtserver.blocks.Fact;
 import be.ac.vub.wise.cmtserver.blocks.FactType;
@@ -25,12 +26,18 @@ import be.ac.vub.wise.cmtserver.blocks.Template;
 import be.ac.vub.wise.cmtserver.blocks.TemplateActions;
 import be.ac.vub.wise.cmtserver.blocks.TemplateHA;
 import be.ac.vub.wise.cmtserver.util.Constants;
+import be.ac.vub.wise.cmtserver.util.Converter;
 import be.ac.vub.wise.cmtserver.util.HelperClass;
+import java.io.File;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 /**
  *
@@ -195,7 +202,8 @@ public class Compilers {
             System.out.println("------------------ fun cons " + ifb.getType() + " --------- " + Constants.FUNCTION);
             if(ifb.getType().equals(Constants.FUNCTION)){
                 String func = "eval("+ ifb.getFunction().getName()+"(";
-                for(String parName : ifb.getFunction().getParameters().keySet()){
+                for(CMTParameter par: ifb.getFunction().getParameters()){
+                    String parName = par.getParName();
                     String parValue = parametersIfSide.get(ifb.getBindings().getFirst().getStartBinding().getIndexObj()).get(parName);
                     func += parValue + ", ";
                 }
@@ -395,7 +403,7 @@ public class Compilers {
     
   public static FactType createNewActivity(TemplateHA temp){ // return facttype
         //String className, String type, String uriField, ArrayList<CMTField> fields
-        
+        System.out.println("- in new situ");
         OutputHA output = temp.getOutput();
         
         
@@ -411,7 +419,128 @@ public class Compilers {
         result.setVarFormat("");
         result.setVarList( new ArrayList<String>());
         result.setIsCustom(true);
+        result.setCategory("My Situations");
         
+        // create java class
+        
+        String className = HelperClass.toUppercaseFirstLetter(HelperClass.getSimpleNameAll(result.getClassName()));
+        String typeEvent = result.getType();
+        String extendsClass = "";
+        boolean custom = false;
+        boolean isActivity = false;
+        switch(typeEvent){
+            case "activity":
+                 extendsClass = "be.ac.vub.wise.cmtserver.blocks.Activity";
+                 isActivity = true;
+                 custom = result.isIsCustom();
+                 break;
+            case "time":
+                extendsClass = "import be.ac.vub.wise.cmtserver.blocks.Time";
+                break;
+        }
+        
+        String uriField = result.getUriField();
+        
+        String varFormat = result.getVarFormat();
+        
+        
+            String source = "package "+ Constants.PACKAGEEVENTS+ ";"
+                                    + "import " + Constants.PACKAGEBLOCKS +"UriFactType; import org.kie.api.definition.type.Role; import org.kie.api.definition.type.Role.Type; "
+                                    + "import java.io.Serializable; import " + Constants.PACKAGEBLOCKS +"IFactType; "
+                                    + "import org.apache.commons.lang3.builder.EqualsBuilder; import org.apache.commons.lang3.builder.HashCodeBuilder; "
+                                    + "import be.ac.vub.wise.cmtserver.blocks.EventVariables;  import be.ac.vub.wise.cmtserver.blocks.Time; import be.ac.vub.wise.cmtserver.blocks.Activity;"
+                                    + "@Role(Type.EVENT) @UriFactType(id = \""+ uriField+"\") ";
+            
+            if(result.getVarList().isEmpty() ){ // then format -- todo add exception if both are empty
+                if(varFormat.isEmpty()){
+                    source += "@EventVariables(list = \"\", format=\"\")";
+                }else{
+                    source += "@EventVariables(list = \"\", format=\"format\")";
+                }
+            }else{
+                source += "@EventVariables(list = \"list\", format=\"\")";
+            }
+            
+            source += " public class " +className + " extends "+extendsClass+" { ";
+            
+            if(result.getVarList().isEmpty()){ 
+                if(varFormat.isEmpty()){
+                    source += " public "+ className+"(){"; // constructor
+                            
+                }else{
+                    source += " java.lang.String format = \"\"; "
+                            + " public "+ className+"(){" // constructor
+                            + " this.format = \""+varFormat+"\"; ";
+                }
+                if(isActivity){
+                    source += " super.setCustom("+custom+"); } ";
+                } else{
+                    source +="}";
+                }        
+            }else{
+                source += " public java.util.LinkedList<String> list = null; "
+                        + " public "+ className+"(){" // constructor
+                        + " this.list = new java.util.LinkedList<String>(); ";
+                if(isActivity){
+                    source += " super.setCustom("+custom+"); ";
+                }
+                for(int i = 0; i<result.getVarList().size(); i++){
+                    String var = result.getVarList().get(i);
+                    source += " this.list.add(\""+var+"\"); "; //populate list
+                }
+                
+                source +="}";
+            }
+            
+            for(int i = 0; i< result.getFields().size(); i++){
+                CMTField field = result.getFields().get(i);
+                String type = field.getType();
+                String fieldName = field.getName();
+                if(!type.contains("java")){
+                    String[] splitLastPoint = type.split("\\.");
+                    int z = splitLastPoint.length;
+                    String simpleClassName = type;
+                    if(z>0){
+                        simpleClassName= splitLastPoint[z-1];
+                    }
+                    if(checkTypeClassPath(simpleClassName)){
+                        //String okType = StringUtils.capitalize(type);
+                        source = addSetterGetters(source, fieldName, Constants.PACKAGEFACTS+"."+simpleClassName);
+                    }
+                }else{
+                    source = addSetterGetters(source, fieldName, type);
+                }
+            }
+            
+            source += "}";
+            HelperClass.compile(source, className, Constants.PACKAGEEVENTSSLASH);
+            
+            CMTDelegator.get().registerEventType(result);
+                    
+        
+        
+        
+        return result;
+    }
+    
+  private static boolean checkTypeClassPath(String type){
+        
+        String classUri = Constants.CLASSPATH +"\\\\"+Constants.PACKAGEFACTSSLASH+"\\\\"+type + ".class";
+        
+        String classUriEv = Constants.CLASSPATH +"\\\\"+Constants.PACKAGEEVENTSSLASH+"\\\\"+type + ".class";
+        if(Files.exists(new File(classUri).toPath()) || Files.exists(new File(classUriEv).toPath())  ){
+            return true;
+        } return false;
+    }
+  
+  private static String addSetterGetters(String source, String fieldName, String type){
+        String capField = StringUtils.capitalize(fieldName);
+        String result = source;
+                    result += " public " + type + " " + fieldName + " ;" 
+                            + " public void set"+capField+"("+type+" " + fieldName +"){"
+                            + " this."+fieldName+" = " +fieldName+ ";} "
+                            + " public " + type + " get"+capField+"(){"
+                            + " return this."+fieldName+";} ";
         return result;
     }
     

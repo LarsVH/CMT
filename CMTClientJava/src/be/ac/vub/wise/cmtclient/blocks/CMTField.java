@@ -21,13 +21,14 @@ public class CMTField implements Serializable{
     boolean isVar;
     String format;
     ArrayList<String> options;
+    int sql_id = 0;
 
     public CMTField(String name, String type){
         this.name = name;
         this.type = type;
         isVar = false;
         options = new ArrayList<>();
-        format = "";
+        format ="";
     }
     
     public String getName() {
@@ -80,6 +81,14 @@ public class CMTField implements Serializable{
     
     public void addOption(String option){
         options.add(option);
+    }
+
+    public int getSql_id() {
+        return sql_id;
+    }
+
+    public void setSql_id(int sql_id) {
+        this.sql_id = sql_id;
     }
 
     @Override

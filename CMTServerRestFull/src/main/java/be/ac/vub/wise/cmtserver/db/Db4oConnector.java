@@ -16,6 +16,7 @@ import com.db4o.config.EmbeddedConfiguration;
 import com.db4o.ext.StoredClass;
 import com.db4o.ta.Activatable;
 import com.db4o.ta.TransparentActivationSupport;
+import java.util.List;
 
 
 /**
@@ -193,6 +194,11 @@ public class Db4oConnector implements IDatabaseConnector {
                 }
                 return res;
 	}
+        
+        public List<Object> readByExample(Object obj){
+            ObjectSet set = db.queryByExample(obj);
+            return set;
+        }
 	
 	/**
 	 * Parses a query.

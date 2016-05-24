@@ -1,5 +1,6 @@
 package be.ac.vub.wise.cmtserver.db;
 
+import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -212,6 +213,10 @@ public class DatabaseManager implements IDatabaseConnector{
 		return database.read(classConstraint, filter);
 	}
 	
+        public List<Object> readByExample(Object obj){
+            return database.readByExample(obj);
+        }
+        
 	/**
 	 * Updates a set of instances in the database.
 	 * @param elements the instances to be updated. 

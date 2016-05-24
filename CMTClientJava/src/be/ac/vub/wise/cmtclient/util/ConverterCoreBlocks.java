@@ -299,6 +299,7 @@ public class ConverterCoreBlocks {
             
             Fact factObject = new Fact(json.getString("className"), json.getString("uriField"));
             ArrayList<CMTField> fields = new ArrayList<>();
+            factObject.setId(json.getInt("sqlId"));
             JSONArray arrfields = json.getJSONArray("fields");
             for(int i=0; i< arrfields.length();i++){
                 JSONObject jsonField = arrfields.getJSONObject(i);
@@ -395,7 +396,7 @@ public class ConverterCoreBlocks {
             FactType facttype = new FactType(name, "fact", uriField, fields);
             facttype.setVarFormat(varFormat);
             facttype.setVarList(varList);
-         
+            facttype.setCategory(object.getString("category"));
             return facttype;
         } catch (JSONException ex) {
             Logger.getLogger(ConverterCoreBlocks.class.getName()).log(Level.SEVERE, null, ex);
@@ -419,24 +420,24 @@ public class ConverterCoreBlocks {
     }
 
     public static Function fromJSONtoFunction(JSONObject object){
-        try {
+         try {
             Function func = new Function();
             func.setName(object.getString("methodName"));
             func.setEncapClass(object.getString("encapClass"));
-            LinkedHashMap<String,String> pars = new LinkedHashMap<String,String>();
+            func.setSql_id(object.getInt("sqlId"));
+            ArrayList<CMTParameter> pars = new ArrayList<>();
             JSONArray arrPars = object.getJSONArray("pars");
             HashMap<Integer,CMTParameter> indexFunctions = new HashMap<Integer, CMTParameter>();
             for(int a= 0; a<arrPars.length(); a++){
                 JSONObject parO = arrPars.getJSONObject(a);
                 CMTParameter p = new CMTParameter();
                 p.setParName(parO.getString("parName"));
-                p.setType(getSimpleNameAll(parO.getString("parType")));
-                indexFunctions.put(parO.getInt("index"), p);   
+                p.setType(parO.getString("parType"));
+                p.setPosition(parO.getInt("index"));   
+                p.setSql_id(parO.getInt("sqlId"));
+                                pars.add(p);
             }
-            for(int b =0; b<indexFunctions.size(); b++){
-                CMTParameter par = indexFunctions.get(b);
-                pars.put(par.getParName(), par.getType());
-            }
+            
             func.setParameters(pars);
             return func;
         } catch (JSONException ex) {
@@ -449,20 +450,17 @@ public class ConverterCoreBlocks {
         if(func != null){
             JSONObject result = new JSONObject();
             try {
-                result.put("methodName", func.getName());
                 result.put("encapClass", func.getEncapClass());
-                LinkedHashMap<String,String> parameters = func.getParameters();
+                result.put("methodName", func.getName());
+                result.put("sqlId", func.getSql_id());
+                ArrayList<CMTParameter> parameters = func.getParameters();
                 JSONArray arrPars = new JSONArray();
-                Iterator<String> it = parameters.keySet().iterator();
-                int index = 0;
-                while(it.hasNext()){
+                for(CMTParameter p : parameters){
                     JSONObject parObj = new JSONObject();
-                    String key = it.next();
-                    String value = parameters.get(key);
-                    parObj.put("parName", key);
-                    parObj.put("parType", value);
-                    parObj.put("index", index);
-                    index += 1;
+                    parObj.put("parName", p.getParName());
+                    parObj.put("parType", p.getType());
+                    parObj.put("index", p.getPosition());
+                    parObj.put("sqlId", p.getSql_id());
                     arrPars.put(parObj);
                 }
                 result.put("pars", arrPars);
@@ -479,6 +477,7 @@ public class ConverterCoreBlocks {
             Rule rule = new Rule();
             rule.setName(object.getString("name"));
             rule.setDrlRule(object.getString("drlRule"));
+            rule.setSql_id(object.getInt("sqlId"));
             return rule;
         } catch (JSONException ex) {
             Logger.getLogger(ConverterCoreBlocks.class.getName()).log(Level.SEVERE, null, ex);
@@ -591,6 +590,12 @@ public class ConverterCoreBlocks {
             JSONArray jsonIfBlocks = json.getJSONArray("ifblocks");
             JSONArray jsonOperators = json.getJSONArray("operators");
             temp.setName(json.getString("name"));
+            temp.setSql_id(json.getInt("sqlId"));
+            if(json.has("category")){
+            temp.setCategory(json.getString("category"));
+            }else{
+                temp.setCategory("");
+            }
             int stop = jsonIfBlocks.length();
             ArrayList<Operator> ops = new ArrayList<Operator>();
             for(int iii = 0; iii<jsonOperators.length(); iii ++){
@@ -677,6 +682,7 @@ public class ConverterCoreBlocks {
             CMTField field = new CMTField(json.getString("fieldName"), json.getString("fieldType"));
             field.setIsVar(json.getBoolean("input"));
             field.setFormat(json.getString("format"));
+            field.setSql_id(json.getInt("sqlId"));
             JSONArray opt = json.getJSONArray("options");
             for(int i =0; i<opt.length(); i++){
                 field.addOption(opt.getString(i));
@@ -738,6 +744,8 @@ public class ConverterCoreBlocks {
             result.put("ifblocks", arrIfBlocks);
             result.put("operators", arrOperators);
             result.put("name", temp.getName());
+            result.put("category", temp.getCategory());
+            result.put("sqlId", temp.getSql_id());
             if(temp.getClass().isAssignableFrom(TemplateHA.class)){
                 result.put("tempType", "TemplateHA");
                 result.put("output", fromOutputHAToJSON(((TemplateHA)temp).getOutput()));
@@ -1041,6 +1049,7 @@ public class ConverterCoreBlocks {
         try{
             result.put("className", fact.getClassName());
             result.put("uriField", fact.getUriField());
+            result.put("sqlId", fact.getId());
             ArrayList<CMTField> fields = fact.getFields();
             JSONArray arrFields = new JSONArray();
             for(CMTField field : fields){
@@ -1068,6 +1077,7 @@ public class ConverterCoreBlocks {
             result.put("isCustom", facttype.isIsCustom());
             result.put("uriField", facttype.getUriField());
             result.put("varFormat", facttype.getVarFormat());
+            result.put("category", facttype.getCategory());
             ArrayList<String> varList = facttype.getVarList();
             JSONArray varListjson = new JSONArray();
             for(String st : varList){
@@ -1095,6 +1105,7 @@ public class ConverterCoreBlocks {
             objField.put("fieldType", field.getType());
             objField.put("input", field.isIsVar());
             objField.put("format", field.getFormat());
+            objField.put("sqlId", field.getSql_id());
             JSONArray arrOptions = new JSONArray();
             for(String option : field.getOptions()){
                 arrOptions.put(option);

@@ -16,6 +16,7 @@ public class Fact implements IFactType, Serializable{
     public String className;
     public String uriField;
     public ArrayList<CMTField> fields;
+    public int id = 0;
     
     public Fact(String className, String uriField){
         this.className = className;
@@ -47,16 +48,23 @@ public class Fact implements IFactType, Serializable{
     }
     
     public String getUriValue(){
-        System.out.println("---- " + fields.size());
         for(CMTField f:fields){
-            System.out.println("--- fact name " + f.getName());
-            System.out.println("----- uri" + uriField);
             if(f.getName().equals(uriField)){
                 return f.getValue().toString();
             }
         }
         return "";
     }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+    
+    
     
     
 }

@@ -5,14 +5,18 @@
  */
 package be.ac.vub.wise.cmtclient.blocks;
 
+import java.io.Serializable;
+
 /**
  *
  * @author Sandra
  */
-public class CMTParameter {
+public class CMTParameter implements Serializable{
     
     String parName;
     String type;
+    int position;
+    int sql_id = 0;
 
     public String getParName() {
         return parName;
@@ -28,6 +32,22 @@ public class CMTParameter {
 
     public void setType(String type) {
         this.type = type;
+    }
+
+    public int getPosition() {
+        return position;
+    }
+
+    public void setPosition(int position) {
+        this.position = position;
+    }
+
+    public int getSql_id() {
+        return sql_id;
+    }
+
+    public void setSql_id(int sql_id) {
+        this.sql_id = sql_id;
     }
 
     

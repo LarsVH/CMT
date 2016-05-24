@@ -423,6 +423,18 @@ public class CMTClient {
         }
     }
     
+    public static void registerFacttypeInCMT(FactType type){
+        try {
+            
+            JSONObject json = ConverterCoreBlocks.fromFactTypeToJSON(type);
+            String stjson = json.toString();
+            String result = stjson.trim().trim();
+            HttpResponse<String> request = Unirest.post(url+"/registerFactClass").body(result).asString();
+        } catch (UnirestException ex) {
+            Logger.getLogger(CMTClient.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
     public static FactType getFactTypeFactWithName(String name){
         try{
             HttpResponse<String> request = Unirest.get(url+"/getFactTypeFact/"+ConverterCoreBlocks.toUppercaseFirstLetter(name)).asString();
@@ -439,8 +451,8 @@ public class CMTClient {
     }
     
     public static void createNewActivity(TemplateHA temp){
-        FactType newActType = Compilers.createNewActivity(temp);
-        registerEventTypeInCMT(newActType);
+   //     FactType newActType = Compilers.createNewActivity(temp);
+     //   registerEventTypeInCMT(newActType);
         String result = ConverterCoreBlocks.fromTemplateToJSON(temp).toString();
           try {
               HttpResponse<String> request = Unirest.post(url+"/compileAndAddRule").body(result).asString();

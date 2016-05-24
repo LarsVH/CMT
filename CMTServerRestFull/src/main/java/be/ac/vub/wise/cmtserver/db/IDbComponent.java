@@ -2,6 +2,7 @@ package be.ac.vub.wise.cmtserver.db;
 
 import be.ac.vub.wise.cmtserver.blocks.Action;
 import be.ac.vub.wise.cmtserver.blocks.FactType;
+import be.ac.vub.wise.cmtserver.blocks.Fact;
 import be.ac.vub.wise.cmtserver.blocks.Function;
 import be.ac.vub.wise.cmtserver.blocks.IFactType;
 import be.ac.vub.wise.cmtserver.blocks.IFunctionClass;
@@ -24,14 +25,19 @@ public interface IDbComponent {
     public HashSet<TemplateActions> getAvailableTemplateActions();
     
     public HashSet<IFactType> getFacts();
+    public Fact getFact(int sqlid);
+    public Fact getFactInFactForm(String className, String uriField, String value);
+    public HashSet<Fact> getFactsInFactVersions() ;
     public IFactType getFact(String className, String uriField, String value);
     public HashSet<FactType> getAvailableFactTypes();
     public void registerEventType(FactType type);
     public HashSet<FactType> getAvailableEventTypes();
     public FactType getFactTypeWithName(String name);
     public HashSet<IFactType> getFactsWithType(String classNamed);
+    public HashSet<Fact> getFactsInFactVersionWithType(String classNamed) ;
     public void registerFactType(FactType type); // also for events -- just keeps the classname
     public void addFact(IFactType fact);
+    public void addFactinFactForm(Fact fact);
     public boolean removeFact(IFactType fact);
     public void addFunction(Function function);
     public HashSet<Function> getFunctions();
@@ -44,7 +50,9 @@ public interface IDbComponent {
     public void addRule(Rule rule);
     public HashSet<Rule> getRules();
     public Rule getRule(String name);
+    public void addRule(Rule rule, Template temp);
     
     public boolean restartDb();
     public void closeDb();
+    public Template getTemplateOfSituation(String situationName);
 }

@@ -224,11 +224,18 @@ public class Converter {
     
     public static Fact fromJSONtoFact(JSONObject json){
         try {
+            
             String clName = json.getString("className");
             String uriField = json.getString("uriField");
           
+            // if urifield is empty look up 
+            if(uriField.isEmpty()){
+                FactType type = CMTDelegator.get().getFactTypeWithName(clName);
+                uriField = type.getUriField();
+            }
             
-            Fact factObject = new Fact(json.getString("className"), json.getString("uriField"));
+            Fact factObject = new Fact(json.getString("className"), uriField);
+            factObject.setId(json.getInt("sqlId"));
             ArrayList<CMTField> fields = new ArrayList<>();
             JSONArray arrfields = json.getJSONArray("fields");
             for(int i=0; i< arrfields.length();i++){
@@ -237,12 +244,13 @@ public class Converter {
                 fields.add(fromJSONtoCMTField(jsonField));
             }
             factObject.setFields(fields);
-            System.out.println("-- clName is  " + clName);
-            IFactType db = CMTDelegator.get().getFact(clName, uriField, factObject.getUriValue());
-            System.out.println("-- db is" +db);
-            if(db !=null){
-                Fact toret = fromObjectToFactInstance(db);
-                return toret;
+            if(!CMTDelegator.get().getDbComponentVersion().equals("SQL")){
+                IFactType db = CMTDelegator.get().getFact(clName, uriField, factObject.getUriValue());
+
+                if(db !=null){
+                    Fact toret = fromObjectToFactInstance(db);
+                    return toret;
+                }
             }
             return factObject;
         
@@ -289,6 +297,7 @@ public class Converter {
                     break;
             }
             FactType facttype = new FactType(name, typeClass, uriField, fields);
+            facttype.setCategory(object.getString("category"));
             facttype.setVarFormat(varFormat);
             facttype.setVarList(varList);
             if(typeClass.equals("activity")){
@@ -327,7 +336,7 @@ public class Converter {
             FactType facttype = new FactType(name, "fact", uriField, fields);
             facttype.setVarFormat(varFormat);
             facttype.setVarList(varList);
-               
+            facttype.setCategory(object.getString("category"));
             return facttype; 
             }
            
@@ -358,7 +367,8 @@ public class Converter {
             Function func = new Function();
             func.setName(object.getString("methodName"));
             func.setEncapClass(object.getString("encapClass"));
-            LinkedHashMap<String,String> pars = new LinkedHashMap<String,String>();
+            func.setSql_id(object.getInt("sqlId"));
+            ArrayList<CMTParameter> pars = new ArrayList<>();
             JSONArray arrPars = object.getJSONArray("pars");
             HashMap<Integer,CMTParameter> indexFunctions = new HashMap<Integer, CMTParameter>();
             for(int a= 0; a<arrPars.length(); a++){
@@ -366,12 +376,11 @@ public class Converter {
                 CMTParameter p = new CMTParameter();
                 p.setParName(parO.getString("parName"));
                 p.setType(parO.getString("parType"));
-                indexFunctions.put(parO.getInt("index"), p);   
+                p.setPosition(parO.getInt("index"));  
+                p.setSql_id(parO.getInt("sqlId"));
+                pars.add(p);
             }
-            for(int b =0; b<indexFunctions.size(); b++){
-                CMTParameter par = indexFunctions.get(b);
-                pars.put(par.getParName(), par.getType());
-            }
+            
             func.setParameters(pars);
             return func;
         } catch (JSONException ex) {
@@ -386,18 +395,15 @@ public class Converter {
             try {
                 result.put("encapClass", func.getEncapClass());
                 result.put("methodName", func.getName());
-                LinkedHashMap<String,String> parameters = func.getParameters();
+                result.put("sqlId", func.getSql_id());
+                ArrayList<CMTParameter> parameters = func.getParameters();
                 JSONArray arrPars = new JSONArray();
-                Iterator<String> it = parameters.keySet().iterator();
-                int index = 0;
-                while(it.hasNext()){
+                for(CMTParameter p : parameters){
                     JSONObject parObj = new JSONObject();
-                    String key = it.next();
-                    String value = parameters.get(key);
-                    parObj.put("parName", key);
-                    parObj.put("parType", value);
-                    parObj.put("index", index);
-                    index += 1;
+                    parObj.put("parName", p.getParName());
+                    parObj.put("parType", p.getType());
+                    parObj.put("index", p.getPosition());
+                    parObj.put("sqlId", p.getSql_id());
                     arrPars.put(parObj);
                 }
                 result.put("pars", arrPars);
@@ -414,6 +420,7 @@ public class Converter {
             Rule rule = new Rule();
             rule.setName(object.getString("name"));
             rule.setDrlRule(object.getString("drlRule"));
+            rule.setSql_id(object.getInt("sqlId"));
             return rule;
         } catch (JSONException ex) {
             Logger.getLogger(Converter.class.getName()).log(Level.SEVERE, null, ex);
@@ -476,18 +483,27 @@ public class Converter {
     public static ActionClient fromActionObjectToActionClient(Action object){
         try{
         ArrayList<ActionField> actFields = new ArrayList();
+            System.out.println("int " + object.getClass().getDeclaredFields().length);
+            for(Field field : object.getClass().getDeclaredFields()){
+                System.out.println(" " + field.getName());
+                System.out.println(object.getClass().getDeclaredField("listStatus").get(object).getClass());
+            }
         for(Field field : object.getClass().getDeclaredFields()){
+            System.out.println(field.getName());
             if(field.getAnnotation(ActionFieldAnno.class) != null){
                 ActionFieldAnno anno = field.getAnnotation(ActionFieldAnno.class);
                 ArrayList<String> varList = new ArrayList<>();
                 String format = "";
                 if(!anno.list().equals("")){
-                    ArrayList<String> varL = (ArrayList<String>)object.getClass().getField(anno.list()).get(object);
+                    System.out.println(" anno list " + anno.list());
+                    ArrayList<String> varL = (ArrayList<String>)object.getClass().getDeclaredField(anno.list()).get(object);
                     varList = varL;
                 }
                 if(!anno.format().equals("")){
-                    format = (String) object.getClass().getField(anno.format()).get(object);
+                    format = (String) object.getClass().getDeclaredField(anno.format()).get(object);
                 }
+              
+                
                 ActionField actF = new ActionField(field.getName(), varList, format);
                 if(field.get(object) != null){
                     actF.setValue(field.get(object).toString());
@@ -555,6 +571,12 @@ public class Converter {
             JSONArray jsonIfBlocks = json.getJSONArray("ifblocks");
             JSONArray jsonOperators = json.getJSONArray("operators");
             temp.setName(json.getString("name"));
+            temp.setSql_id(json.getInt("sqlId"));
+            if(json.has("category")){
+            temp.setCategory(json.getString("category"));
+            }else{
+                temp.setCategory("");
+            }
             int stop = jsonIfBlocks.length();
             ArrayList<Operator> ops = new ArrayList<Operator>();
             for(int iii = 0; iii<jsonOperators.length(); iii ++){
@@ -671,6 +693,7 @@ public class Converter {
             CMTField field = new CMTField(json.getString("fieldName"), json.getString("fieldType"));
             field.setIsVar(json.getBoolean("input"));
             field.setFormat(json.getString("format"));
+            field.setSql_id(json.getInt("sqlId"));
             JSONArray opt = json.getJSONArray("options");
             for(int i =0; i<opt.length(); i++){
                 field.addOption(opt.getString(i));
@@ -723,6 +746,7 @@ public class Converter {
                     obj.put("typeBlock", "activity");
                 }
                 LinkedList<Binding> bindings = ifblock.getBindings();
+                System.out.println("------- in conv " + bindings.size());
                 JSONArray arrBindings = fromListBindingsToJSON(bindings);
                 obj.put("bindings", arrBindings);
                 
@@ -739,6 +763,8 @@ public class Converter {
             result.put("ifblocks", arrIfBlocks);
             result.put("operators", arrOperators);
             result.put("name", temp.getName());
+            result.put("category", temp.getCategory());
+            result.put("sqlId", temp.getSql_id());
             if(temp.getClass().isAssignableFrom(TemplateHA.class)){ // Determine subclass: TemplateHA or TemplateActions
                 result.put("tempType", "TemplateHA");
                 result.put("output", fromOutputHAToJSON(((TemplateHA)temp).getOutput())); // Cast to subclass and convert
@@ -764,13 +790,14 @@ public class Converter {
       private static JSONObject fromBindingParameterToJSON(BindingParameter par){
         JSONObject result = new JSONObject();
         try {
+            System.out.println("----------- par type " + par.getClass().getSimpleName());
             if(par instanceof BindingInputFact){
                 BindingInputFact bindFact = (BindingInputFact) par;
                 result.put("type", "BindingInputFact");
                 result.put("indexObj", bindFact.getIndexObj());
                 if(bindFact.getInputObject() instanceof Fact){
                     result.put("factId", bindFact.getFactId());
-                    result.put("inpobutObjectType", "fact");
+                    result.put("inputObjectType", "fact");
                     result.put("inputObject", fromFactToJSON((Fact)bindFact.getInputObject()) );
                 }else{
                     if(bindFact.getInputObject() instanceof FactType){
@@ -1107,6 +1134,8 @@ public class Converter {
         JSONArray arrBindings = new JSONArray();
         try{
                 for(int ii=0; ii<bindings.size();ii++){
+                    JSONObject objBind = new JSONObject();
+                    objBind.put("index", ii);
                     Binding binding = bindings.get(ii);
                     JSONObject objBind = fromBindingToJSON(binding, ii);  
                     arrBindings.put(objBind);
@@ -1124,10 +1153,12 @@ public class Converter {
         JSONObject objBind = new JSONObject();
         objBind.put("index", index);
 
-        BindingParameter startBind = binding.getStartBinding();
-        BindingParameter endBind = binding.getEndBinding();
-        objBind.put("startBinding", fromBindingParameterToJSON(startBind));
-        objBind.put("endBinding", fromBindingParameterToJSON(endBind));
+                    BindingParameter startBind = binding.getStartBinding();
+                    BindingParameter endBind = binding.getEndBinding();
+                    System.out.println("--- start " + startBind.getIndexObj());
+                    System.out.println("--- end " + endBind.getIndexObj());
+                    objBind.put("startBinding", fromBindingParameterToJSON(startBind));
+                    objBind.put("endBinding", fromBindingParameterToJSON(endBind));
 
         return objBind;
     }
@@ -1157,6 +1188,7 @@ public class Converter {
         try{
             result.put("className", fact.getClassName());
             result.put("uriField", fact.getUriField());
+            result.put("sqlId", fact.getId());
             ArrayList<CMTField> fields = fact.getFields();
             JSONArray arrFields = new JSONArray();
             for(CMTField field : fields){
@@ -1178,6 +1210,7 @@ public class Converter {
             result.put("isCustom", facttype.isIsCustom());
             result.put("uriField", facttype.getUriField());
             result.put("varFormat", facttype.getVarFormat());
+            result.put("category", facttype.getCategory());
             ArrayList<String> varList = facttype.getVarList();
             JSONArray varListjson = new JSONArray();
             for(String st : varList){
@@ -1206,6 +1239,7 @@ public class Converter {
             objField.put("fieldType", field.getType());
             objField.put("input", field.isIsVar());
             objField.put("format", field.getFormat());
+            objField.put("sqlId", field.getSql_id());
             JSONArray arrOptions = new JSONArray();
             for(String option : field.getOptions()){
                 arrOptions.put(option);
@@ -1352,6 +1386,7 @@ public class Converter {
         JSONObject ob = new JSONObject();
         ob.put("name", rule.getName());
         ob.put("drlRule",rule.getDrlRule());
+        ob.put("sqlId", rule.getSql_id());
         return ob;
     
     }

@@ -401,7 +401,7 @@ public class UserTab extends VBox implements CMTListener{
 		 
 		 HBox hbinputdrop = new HBox();
   		Label inputDrop = new Label();
-  		inputDrop.setText("Drag an activity \n or time instance");
+  		inputDrop.setText("Drag a situation");
   		inputDrop.getStyleClass().add("labFactNoId");
   		amountInput += 1;
   		// stukske 50 // 
@@ -890,12 +890,12 @@ public class UserTab extends VBox implements CMTListener{
 	paneL.getStyleClass().add("lbHeaderSides");
 	paneL.setStyle("-fx-alignment: center-left;");
 	Label paneR = new Label();
-	paneR.setText("THEN");
+	paneR.setText("SITUATION");
 	paneR.getStyleClass().add("lbHeaderSides");
 	paneR.setStyle("-fx-alignment: center-right;");
 	Label lb_header = new Label();
 	lb_header.getStyleClass().add("hbLabelTitle");
-	lb_header.setText("Complete Template: " + temp.getName());
+	lb_header.setText(temp.getName() + " Template");
 	hb.getChildren().add(paneL);
         Label paneM = new Label();
         paneM.getStyleClass().add("hbLabel");

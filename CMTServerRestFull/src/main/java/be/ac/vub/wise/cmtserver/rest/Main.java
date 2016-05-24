@@ -42,9 +42,7 @@ public class Main {
     		    }
     		   }); 
     	
-    	 for(Template temp: database.getAvailableContextForms()){
-    		 System.out.println(temp.getIfBlocks().size());
-    	 }
+    	   System.out.println("in main----------------------------------------------");
     	
        
     }

@@ -36,7 +36,7 @@ public class BindingInputField implements BindingInputBlock, Serializable {
         this.field = field;
     }
 	
-	public int indexObj;
+	public int indexObj = 0;
         
         @Override
 	public int getIndexObj() {

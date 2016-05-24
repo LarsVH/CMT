@@ -14,7 +14,7 @@ public class BindingIF implements BindingParameter,  Serializable{
 		this.ifParameter = ifParameter;
 	}
 	
-        public int indexObj;
+        public int indexObj = 0;
         
 	public int getIndexObj() {
 		return indexObj;

@@ -7,6 +7,7 @@ package be.ac.vub.wise.cmtserver.blocks;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Objects;
 
 /**
  *
@@ -25,6 +26,7 @@ public class FactType implements IFactType, Serializable{
     String varFormat;
     String uriField;
     ArrayList<CMTField> fields;
+    String category;
     
     public FactType(String className, String type, String uriField, ArrayList<CMTField> fields){
         this.className = className;
@@ -75,6 +77,49 @@ public class FactType implements IFactType, Serializable{
     public ArrayList<CMTField> getFields() {
         return fields;
     }
+    
+    public void addCMTField (CMTField field){
+        fields.add(field);
+    }
+    
+    public void setUrifield(String f){
+        this.uriField = f;
+    }
+
+   
+
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
+    }
+    
+    
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 29 * hash + Objects.hashCode(this.className);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final FactType other = (FactType) obj;
+        if (!Objects.equals(this.className, other.className)) {
+            return false;
+        }
+        return true;
+    }
+    
     
     
 }

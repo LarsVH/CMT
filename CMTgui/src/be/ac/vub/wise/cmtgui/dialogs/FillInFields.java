@@ -129,22 +129,10 @@ public class FillInFields extends Dialog<ResultFields>{
                 ComboBox<String> boxop = new ComboBox<>();
                 ObservableList<String> listop = FXCollections.observableArrayList();
                 
-                        
+                        System.out.println("--------- field format " + field.getFormat());
                 
                 if(!field.getFormat().equals("")){
-                    String text = "";
-                    TextField tf = new TextField();
-                    if(input.getFieldValueLimitation(field.getName()).getValue().equals("")){
-                        text = field.getFormat();
-                        tf.setPromptText(text);
-                    }else{
-                        text = input.getFieldValueLimitation(field.getName()).getValue();
-                        tf.setText(text);
-                    }
-                    
-                    
-                    tf.getStyleClass().add("tf_name");
-                    grid.add(tf, 2, i+1);
+                    System.out.println("---------- in op format");
                     listop.add("==");
                     listop.add("!=");
                     if(NumberUtils.isNumber(field.getFormat())){
@@ -152,31 +140,72 @@ public class FillInFields extends Dialog<ResultFields>{
                         listop.add("<");
                     }
                     boxop.setItems(listop);
-                    if(input.getFieldValueLimitation(field.getName()).getOperator().equals("")){
-                        boxop.getSelectionModel().selectFirst();
-                    }else{
+                    String text = "";
+                    TextField tf = new TextField();
+                    System.out.println("-- " + input.getLimitations().size());
+                    // new way add field value if data is set!
+                    if(input.getFieldValueLimitation(field.getName()) != null){
+                        
+                        text = input.getFieldValueLimitation(field.getName()).getValue();
+                        System.out.println("-- ok in lim format value = " + text);
+                        tf.setText(text);
                         boxop.getSelectionModel().select(input.getFieldValueLimitation(field.getName()).getOperator());
+                        
+                    }else{
+                        text = field.getFormat();
+                        tf.setPromptText(text);
+                         boxop.getSelectionModel().selectFirst();
                     }
+//                    if(input.getFieldValueLimitation(field.getName()).getValue().equals("")){
+//                        text = field.getFormat();
+//                        tf.setPromptText(text);
+//                    }else{
+//                        text = input.getFieldValueLimitation(field.getName()).getValue();
+//                        tf.setText(text);
+//                    }
+//                    
+                    
+                    tf.getStyleClass().add("tf_name");
+                    grid.add(tf, 2, i+1);
+                    
+//                    if(input.getFieldValueLimitation(field.getName()).getOperator().equals("")){
+//                        boxop.getSelectionModel().selectFirst();
+//                    }else{
+//                        boxop.getSelectionModel().select(input.getFieldValueLimitation(field.getName()).getOperator());
+//                    }
+//                    
+                    
                 }else{
                     if(!field.getOptions().isEmpty()){
                         ComboBox<String> box = new ComboBox<>();
                         ObservableList<String> list = FXCollections.observableArrayList();
                         list.addAll(field.getOptions());
                         box.setItems(list);
-                         if(input.getFieldValueLimitation(field.getName()).getValue().equals("")){
-                             box.getSelectionModel().selectFirst();
-                        }else{
-                            box.getSelectionModel().select(input.getFieldValueLimitation(field.getName()).getValue());
-                        }
-                        grid.add(box, 2, i+1);
-                        listop.add("==");
+                         listop.add("==");
                         listop.add("!=");
                         boxop.setItems(listop);
-                        if(input.getFieldValueLimitation(field.getName()).getOperator().equals("")){
-                        boxop.getSelectionModel().selectFirst();
-                    }else{
-                        boxop.getSelectionModel().select(input.getFieldValueLimitation(field.getName()).getOperator());
-                    }
+                        if(input.getFieldValueLimitation(field.getName())!=null){
+                            box.getSelectionModel().select(input.getFieldValueLimitation(field.getName()).getValue());
+                            boxop.getSelectionModel().select(input.getFieldValueLimitation(field.getName()).getOperator());
+                        }else{
+                            box.getSelectionModel().selectFirst();
+                            boxop.getSelectionModel().selectFirst();
+                        }
+                        
+//                        if(input.getFieldValueLimitation(field.getName()).getValue().equals("")){
+//                             box.getSelectionModel().selectFirst();
+//                        }else{
+//                            box.getSelectionModel().select(input.getFieldValueLimitation(field.getName()).getValue());
+//                        }
+                        grid.add(box, 2, i+1);
+//                        listop.add("==");
+//                        listop.add("!=");
+//                        boxop.setItems(listop);
+//                        if(input.getFieldValueLimitation(field.getName()).getOperator().equals("")){
+//                        boxop.getSelectionModel().selectFirst();
+//                    }else{
+//                        boxop.getSelectionModel().select(input.getFieldValueLimitation(field.getName()).getOperator());
+//                    }
                     }
                 }
                 

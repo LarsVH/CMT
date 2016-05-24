@@ -121,26 +121,6 @@ public class DbComponent implements IDbComponent{
 		return null;
 	}
         
-        public HashSet<Template> getAvailableTemplates(){
-            HashSet<Template> forms = new HashSet<Template>();
-		Collection<Object> result = database.read(Template.class, "").getResults();
-		if(result != null){
-			for(Object obj : result){
-				if(obj instanceof Template){
-					Template form = (Template) obj;
-					
-					forms.add(form);
-				}
-			}
-                         
-			return forms;
-		}
-		
-		return null;
-            
-        }
-        
-        
 	@Override
 	public boolean addContextForm(Template form) {
 	
@@ -263,10 +243,12 @@ public class DbComponent implements IDbComponent{
         
         @Override
         public FactType getFactTypeWithName(String name){
-            FactType type = (FactType)database.read(FactType.class, "className == \""+name+"\"").getFirst(); 
-            
+             FactType type = (FactType)database.read(FactType.class, "className == \""+name+"\"").getFirst(); 
+           // FactType type = (FactType) (database.readByExample(new FactType(name,null, null, null))).get(0); // returns list but since name is unique id facttype it can only be one
             return type;
         }
+        
+        
         
         @Override
         public HashSet<IFactType> getFactsWithType(String className){
@@ -296,6 +278,11 @@ public class DbComponent implements IDbComponent{
 		
 		database.commit();
 	}
+        
+        @Override
+        public void addFactinFactForm(Fact fact){
+        
+        }
 
 	@Override
 	public boolean removeFact(IFactType fact) {
@@ -447,4 +434,34 @@ public class DbComponent implements IDbComponent{
 	public void closeDb(){
 		database.closeDb();
 	}
+
+    @Override
+    public HashSet<Fact> getFactsInFactVersions() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Fact getFact(int sqlid) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public HashSet<Fact> getFactsInFactVersionWithType(String classNamed) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Fact getFactInFactForm(String className, String uriField, String value) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void addRule(Rule rule, Template temp) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Template getTemplateOfSituation(String situationName) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
 }

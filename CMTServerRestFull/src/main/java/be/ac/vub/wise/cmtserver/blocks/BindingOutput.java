@@ -29,7 +29,7 @@ public class BindingOutput implements BindingParameter,  Serializable{
 		this.parType = parType;
 	}
 	
-	public int indexObj;
+	public int indexObj = 0;
         
 	public int getIndexObj() {
 		return indexObj;

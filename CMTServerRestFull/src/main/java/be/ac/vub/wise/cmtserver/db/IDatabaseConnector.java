@@ -1,5 +1,6 @@
 package be.ac.vub.wise.cmtserver.db;
 
+import java.util.List;
 import java.util.Set;
 
 
@@ -27,6 +28,8 @@ public interface IDatabaseConnector {
 	public Result read(String selectQuery);
 	
 	public Result read(Class<?> classConstraint, String filter);
+        
+        public List<Object> readByExample(Object obj);
 	
 	public boolean update(Set<Object> elements);
 

@@ -5,6 +5,8 @@
  */
 package be.ac.vub.wise.cmtserver.util;
 
+import be.ac.vub.wise.cmtserver.blocks.FactType;
+import be.ac.vub.wise.cmtserver.core.CMTDelegator;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -165,5 +167,14 @@ public class HelperClass {
                     }
                     return simpleClassName;
   
+    }
+    
+    public static boolean isCMTFactType(String simpleClassName){
+        
+        FactType type = CMTDelegator.get().getFactTypeWithName(simpleClassName);
+        if(type!=null){
+            return true;
+        }
+        return false;
     }
 }

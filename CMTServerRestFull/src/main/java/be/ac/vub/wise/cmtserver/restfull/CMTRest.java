@@ -15,6 +15,7 @@ import be.ac.vub.wise.cmtserver.blocks.BindingInputFact;
 import be.ac.vub.wise.cmtserver.blocks.BindingParameter;
 import be.ac.vub.wise.cmtserver.blocks.EventVariables;
 import be.ac.vub.wise.cmtserver.blocks.FactType;
+import be.ac.vub.wise.cmtserver.blocks.Fact;
 import be.ac.vub.wise.cmtserver.blocks.Function;
 import be.ac.vub.wise.cmtserver.blocks.IFBlock;
 import be.ac.vub.wise.cmtserver.blocks.IFactType;
@@ -137,7 +138,7 @@ public class CMTRest {
         JSONArray arrMethods = in.getJSONArray("methods");
         for(int i=0; i<arrMethods.length(); i++){
             JSONObject met = arrMethods.getJSONObject(i);
-            notify("addFunction", met);
+         //   notify("addFunction", met);
         }
         JSONObject obj = new JSONObject();
         obj.put("status", "ok");
@@ -331,8 +332,11 @@ public class CMTRest {
     @Path("/getFactTypeEvent/{className}")
     @Produces("application/json")
     public Response getFactTypeEvent(@PathParam("className") String name) {
-        
-        FactType type = CMTDelegator.get().getFactTypeWithName(Constants.PACKAGEEVENTS +"."+name);
+        String className = name;
+         if(!CMTDelegator.get().getDbComponentVersion().equals("SQL")){
+                className = Constants.PACKAGEEVENTS +"."+name;
+            }
+        FactType type = CMTDelegator.get().getFactTypeWithName(className);
         JSONObject ob = Converter.fromFactTypeToJSON(type);
         
         return Response.status(201).entity(ob.toString()).build() ;
@@ -351,13 +355,31 @@ public class CMTRest {
         return Response.status(201).entity(ob.toString()).build() ;
     }
     
+    
+    
     @GET // {"className":<>, "type":< fact || time || activity> , "activityCustom": boolean (only if activity type), "varList": [{var:<>}, ..], "varFormat": <>, 
     // "uriField":<>, "fields":[{"fieldName":<>, "fieldType":<>}]}
     @Path("/getFact/{className}/{uriField}/{uriValue}")
     @Produces("application/json")
     public Response getFact(@PathParam("className") String className, @PathParam("uriField") String uriField, @PathParam("uriValue") String uriValue) {
-        IFactType fact = CMTDelegator.get().getFact(Constants.PACKAGEFACTS +"."+className, uriField, uriValue);
-        JSONObject ob = Converter.fromFactToJSON(Converter.fromObjectToFactInstance(fact));
+        Fact result = null;
+        if(!CMTDelegator.get().getDbComponentVersion().equals("SQL")){
+                IFactType fact = CMTDelegator.get().getFact(Constants.PACKAGEFACTS +"."+className, uriField, uriValue);
+                result = Converter.fromObjectToFactInstance(fact);
+            }else{
+                result = CMTDelegator.get().getFactInFactForm(className, uriField, uriValue);
+            }
+        JSONObject ob = Converter.fromFactToJSON(result);
+        return Response.status(201).entity(ob.toString()).build() ;
+    }
+    
+    @GET // {"className":<>, "type":< fact || time || activity> , "activityCustom": boolean (only if activity type), "varList": [{var:<>}, ..], "varFormat": <>, 
+    // "uriField":<>, "fields":[{"fieldName":<>, "fieldType":<>}]}
+    @Path("/getFactId/{id}")
+    @Produces("application/json")
+    public Response getFactId(@PathParam("id") int sqlid) {
+        Fact fact = CMTDelegator.get().getFact(sqlid);
+        JSONObject ob = Converter.fromFactToJSON(fact);
         return Response.status(201).entity(ob.toString()).build() ;
     }
     
@@ -366,27 +388,45 @@ public class CMTRest {
     @Produces("application/json")
     public Response getAllFactsWithType(@PathParam("className") String className) {
         JSONObject obj = new JSONObject();
-        HashSet<IFactType> facts = CMTDelegator.get().getFactsWithType(className);
+        HashSet<Fact> result = null;
+        if(!CMTDelegator.get().getDbComponentVersion().equals("SQL")){
+                HashSet<IFactType> facts = CMTDelegator.get().getFactsWithType(className);
+                result = new HashSet<>();
+                for(IFactType fact : facts){
+                    result.add(Converter.fromObjectToFactInstance(fact));
+                }
+            }else{
+                result = CMTDelegator.get().getFactsWithTypeInFactForm(className);
+            }
+        
+        
+        
         JSONArray arr = new JSONArray();
-        for(IFactType fact : facts){
-            JSONObject ob = Converter.fromFactToJSON(Converter.fromObjectToFactInstance(fact));
+        for(Fact fact : result){
+            JSONObject ob = Converter.fromFactToJSON(fact);
             arr.put(ob);
         }
         obj.put("facts", arr);
         return Response.status(201).entity(obj.toString()).build() ;
     }
-      
+    
     @GET // {"className" , "uriField" , "object"}
     @Path("/getAllFacts")
     @Produces("application/json")
     public Response getAllFacts() {
         JSONObject obj = new JSONObject();
-        HashSet<IFactType> facts = CMTDelegator.get().getAllFacts();
+        HashSet<Fact> facts = CMTDelegator.get().getAllFactsFact();
         JSONArray arr = new JSONArray();
-        for(IFactType fact : facts){
-            JSONObject ob = Converter.fromFactToJSON(Converter.fromObjectToFactInstance(fact));
+        for(Fact fact : facts){
+            JSONObject ob = Converter.fromFactToJSON(fact);
             arr.put(ob);
         }
+//        HashSet<IFactType> facts = CMTDelegator.get().getAllFacts();
+//        JSONArray arr = new JSONArray();
+//        for(IFactType fact : facts){
+//            JSONObject ob = Converter.fromFactToJSON(Converter.fromObjectToFactInstance(fact));
+//            arr.put(ob);
+//        }
         obj.put("facts", arr);
         return Response.status(201).entity(obj.toString()).build() ;
     }
@@ -405,6 +445,16 @@ public class CMTRest {
         }
 
         obj.put("functions", arrMets);
+        return Response.status(201).entity(obj.toString()).build() ;
+    }
+    
+     @GET
+    @Path("/getTemplateSituation/{situName}")
+    @Produces("application/json")
+    public Response getTemplateOPfSituation(@PathParam("situName") String className) {
+        
+        TemplateHA temp = (TemplateHA) CMTDelegator.get().getTemplateOfSituation(className);
+        JSONObject obj = Converter.fromTemplateToJSON(temp);
         return Response.status(201).entity(obj.toString()).build() ;
     }
     

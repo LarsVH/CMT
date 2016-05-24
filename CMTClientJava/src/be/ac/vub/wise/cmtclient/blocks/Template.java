@@ -10,7 +10,8 @@ public class Template implements Serializable{
 //	public LinkedHashMap<IFBlock, Operator> ifBlocks;
 	public LinkedList<IFBlock> ifBlocks;
 	public LinkedList<String> operators;
-	
+	public String category = "";
+        public int sql_id = 0;
 	
 	public Template(){
 		this.ifBlocks = new LinkedList<IFBlock>(); 
@@ -34,6 +35,22 @@ public class Template implements Serializable{
 	public LinkedList<String> getOperators() {
 		return operators;
 	}
+
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
+    }
+
+    public int getSql_id() {
+        return sql_id;
+    }
+
+    public void setSql_id(int sql_id) {
+        this.sql_id = sql_id;
+    }
        
 	
 

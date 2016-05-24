@@ -6,6 +6,7 @@ public class Rule implements Serializable{
 	
 	String name;
 	String drlRule;
+        int sql_id = 0;
 	
 	public Rule(){
 		
@@ -24,5 +25,14 @@ public class Rule implements Serializable{
 		this.drlRule = drlRule;
 	}
 
+    public int getSql_id() {
+        return sql_id;
+    }
+
+    public void setSql_id(int sql_id) {
+        this.sql_id = sql_id;
+    }
+
+        
 	
 }

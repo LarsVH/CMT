@@ -22,7 +22,7 @@ public class BindingInputFact implements BindingInputBlock, Serializable{
 	public void setFactId(String factId) {
 		this.factId = factId;
 	}
-	public int indexObj;
+	public int indexObj = 0;
         
 	public int getIndexObj() {
 		return indexObj;

@@ -16,6 +16,7 @@ public class Fact implements IFactType, Serializable{
     public String className;
     public String uriField;
     public ArrayList<CMTField> fields;
+    public int id = 0;
     
     public Fact(String className, String uriField){
         this.className = className;
@@ -54,6 +55,16 @@ public class Fact implements IFactType, Serializable{
         }
         return "";
     }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+    
+    
     
     
 }

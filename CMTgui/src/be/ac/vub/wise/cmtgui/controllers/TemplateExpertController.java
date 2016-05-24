@@ -9,6 +9,7 @@ import be.ac.vub.wise.cmtclient.blocks.BindingInputFact;
 import be.ac.vub.wise.cmtclient.blocks.BindingInputField;
 import be.ac.vub.wise.cmtclient.blocks.BindingOutput;
 import be.ac.vub.wise.cmtclient.blocks.CMTField;
+import be.ac.vub.wise.cmtclient.blocks.CMTParameter;
 import be.ac.vub.wise.cmtclient.blocks.Event;
 import be.ac.vub.wise.cmtclient.blocks.EventInput;
 import be.ac.vub.wise.cmtclient.blocks.Fact;
@@ -1129,15 +1130,16 @@ public class TemplateExpertController  {
 	hb_header.getStyleClass().add("headerBox");
 	vb_function.getChildren().add(hb_header);
 	// add parameters 
-	LinkedHashMap<String,String> pars = function.getParameters();
+	ArrayList<CMTParameter> pars = function.getParameters();
         VBox vb_par = new VBox();
-        Iterator<String> it = pars.keySet().iterator();
+       // Iterator<String> it = pars.keySet().iterator();
         int counter = 0;
-	while(it.hasNext()){
+	//while(it.hasNext()){
+        for(CMTParameter pa : pars){
             HBox parhb = new HBox();
             parhb.setStyle("-fx-alignment: center-left;");
-            String parName = it.next();
-            String parType = ConverterCoreBlocks.getSimpleName(pars.get(parName));
+            String parName = pa.getParName();
+            String parType =  ConverterCoreBlocks.getSimpleNameAll(pa.getType());//ConverterCoreBlocks.getSimpleName(pars.get(parName));
             HBox hb = getParameterAndTypeHBox(parName,parType);
             Pane pancr = new Pane();
             pancr.setMinWidth(55);

@@ -3,6 +3,7 @@ package be.ac.vub.wise.cmtserver.blocks;
 import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.Objects;
@@ -10,8 +11,9 @@ import java.util.Objects;
 public class Function implements IFunctionClass, Serializable{
 
     public String name;
-    public LinkedHashMap<String,String> parameters;
+    public ArrayList<CMTParameter> parameters;
     public String encapClass;
+    public int sql_id = 0;
     
     public Function(){}
 
@@ -31,14 +33,28 @@ public class Function implements IFunctionClass, Serializable{
 	this.name = name;
     }
 
-    public LinkedHashMap<String, String> getParameters() {
+    public ArrayList<CMTParameter> getParameters() {
         return parameters;
     }
 
-    public void setParameters(LinkedHashMap<String, String> parameters) {
+    public void setParameters(ArrayList<CMTParameter> parameters) {
         this.parameters = parameters;
     }
 
+    public void addParameter(CMTParameter par){
+        this.parameters.add(par);
+    }
+
+    public int getSql_id() {
+        return sql_id;
+    }
+
+    public void setSql_id(int sql_id) {
+        this.sql_id = sql_id;
+    }
+    
+    
+    
     @Override
     public int hashCode() {
         int hash = 3;

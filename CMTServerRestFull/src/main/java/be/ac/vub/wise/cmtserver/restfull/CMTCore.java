@@ -27,6 +27,7 @@ import be.ac.vub.wise.cmtserver.blocks.Template;
 import be.ac.vub.wise.cmtserver.blocks.TemplateActions;
 import be.ac.vub.wise.cmtserver.blocks.TemplateHA;
 import be.ac.vub.wise.cmtserver.core.Compilers;
+import be.ac.vub.wise.cmtserver.db.DatabaseSQL;
 import be.ac.vub.wise.cmtserver.db.DbComponent;
 import be.ac.vub.wise.cmtserver.drools.DroolsComponent;
 import be.ac.vub.wise.cmtserver.util.Constants;
@@ -73,7 +74,11 @@ public class CMTCore {
     public boolean resetCMT(){
         // remove rules
         DroolsComponent.getDroolsComponent().resetDrools();
-        DbComponent.getDbComponent().resetDb();
+        if(!CMTDelegator.get().getDbComponentVersion().equals("SQL")){
+                DbComponent.getDbComponent().resetDb();
+        }else{
+            DatabaseSQL.getDbComponent().resetDb();
+        }
         ArrayList<File> dicToDelete = new ArrayList<>();
         File dicEv = new File(Constants.JAVAFILEPATH + Constants.PACKAGEEVENTSSLASH);
         File dicFacts = new File(Constants.JAVAFILEPATH + Constants.PACKAGEFACTSSLASH);
@@ -108,6 +113,7 @@ public class CMTCore {
     // Creates *.java file to be inserted in Drools (LvH)
     // P.e. Person, Location
     public void registerFactClass(JSONObject json){
+        if(!json.getString("className").contains("java")){
         String className = HelperClass.toUppercaseFirstLetter(json.getString("className"));
         String uriField = json.getString("uriField");
         JSONArray arrFields = json.getJSONArray("fields");
@@ -142,9 +148,11 @@ public class CMTCore {
             String capClassName = StringUtils.capitalize(className);
             source += getStringEqualsEtc(uriField, capClassName) + "}";
             HelperClass.compile(source, className, Constants.PACKAGEFACTSSLASH);
+        }
+        }
             FactType type = Converter.fromJSONtoFactTypeFact(json);
             CMTDelegator.get().registerFactType(type);
-        }
+        
     }
     
     public JSONObject addFact(JSONObject json){
@@ -157,12 +165,17 @@ public class CMTCore {
     
     public JSONObject addFactInFactFormat(JSONObject json){ 
             Fact fact = Converter.fromJSONtoFact(json);
-            IFactType obj = Converter.fromFactToObject(fact);
-            if(obj!=null)
-                CMTDelegator.get().addFact(obj);
-        
+            if(!CMTDelegator.get().getDbComponentVersion().equals("SQL")){
+                IFactType obj = Converter.fromFactToObject(fact);
+                if(obj!=null)
+                    CMTDelegator.get().addFact(obj);
+            }else{
+                CMTDelegator.get().addFactInFactFrom(fact);
+            }
         return json;
     }
+    
+    
     
     // input JSON {"className":<name>, "extends":<time or activity>, "activityCustom": <boolean> (if time == false),
     //"uriField":<fieldname>, "varList":[<list of strings>{"var":<label>}], "varFormat":<format>, "fields":[{"fieldName":<name>, "type":<simpleClassName>}, ... ]}    
@@ -269,6 +282,8 @@ public class CMTCore {
         }
         }
     }
+    
+   
     //input JSON {"className":<name>, "object":{...}}
     public JSONObject addEvent(JSONObject json){
       IFactType event = Converter.fromJSONFactObjectToObject(json, true);
@@ -297,7 +312,7 @@ public class CMTCore {
     }
     
     public void registerFunctionClass(JSONObject json){
-
+      
         String className = json.getString("encapClass");
         JSONArray mets = json.getJSONArray("methods");
         ArrayList<Function> funclist = new ArrayList<Function>();
@@ -312,10 +327,13 @@ public class CMTCore {
             Function fu = Converter.fromJSONtoFunction(ob);
            // fu.setEncapClass(className);
             funclist.add(fu);
+            CMTDelegator.get().addFunction(fu);
+        
+            
             String methodName = ob.getString("methodName");
             String methodBody = ob.getString("methodBody");
             JSONArray arrPars = ob.getJSONArray("pars");
-            
+            fu.setName(methodName);
             source += "@Parameters(parameters = \"" ; 
             for(int b=0; b<arrPars.length();b++){
                 JSONObject objPar = getParIndex(b, arrPars);
@@ -343,7 +361,7 @@ public class CMTCore {
                         simpleClassName= splitLastPoint[z-1];
                     }
                     
-                    if(checkTypeClassPath(simpleClassName)){    // FIXME: bugging
+                    if(checkTypeClassPath(simpleClassName)){
                         if(isEvent(simpleClassName)){
                             finalBinaryTypeName = Constants.PACKAGEEVENTS + "." + simpleClassName;
                         }else{
@@ -457,11 +475,11 @@ public class CMTCore {
             }else{
                 source += "@ActionFieldAnno(list=\" list"+capName+"\", format=\"\")"
                             + " public String " + name + " = \"\";" // constructor
-                            + " public java.util.LinkedList<String> list"+capName+ " = null ; ";
+                            + " public java.util.ArrayList<String> list"+capName+ " = null ; ";
                             
                     source = addSetterGettersActions(source, name, "String");
                     
-                    bodyPopulateLists += " this.list"+capName+" = new LinkedList<String>(); ";
+                    bodyPopulateLists += " this.list"+capName+" = new java.util.ArrayList<String>(); ";
                     for(int a = 0; a<varList.length() ; a++){
                         JSONObject varO = varList.getJSONObject(a);
                         String var = varO.getString("var");
@@ -486,7 +504,7 @@ public class CMTCore {
               
     }
    
-   public Rule compileAndAddRule(JSONObject json){
+   public Rule compileAndAddRule(JSONObject json){ // filled in tremplate so also create new activity here!! 
        Template temp = null;
        String type = json.getString("tempType");
        switch (type){
@@ -498,9 +516,24 @@ public class CMTCore {
                break;
        }
        if(temp != null){
-           Rule rule = Compilers.compileDrlRuleActivity(temp);
-           CMTDelegator.get().addRule(rule.getName(), rule.getDrlRule());
-           return rule;
+           if(!CMTDelegator.get().getDbComponentVersion().equals("SQL")){
+               if(temp instanceof TemplateHA){
+                   Compilers.createNewActivity((TemplateHA)temp); 
+               }
+               Rule rule = Compilers.compileDrlRuleActivity(temp);
+                CMTDelegator.get().addRule(rule.getName(), rule.getDrlRule());
+                return rule;
+            }else{
+               // temp is ingevulde template
+               System.out.println("------------------------------------------------ " + temp.getClass().getSimpleName());
+               if(temp instanceof TemplateHA){
+                   Compilers.createNewActivity((TemplateHA)temp); 
+               }
+               Rule rule = Compilers.compileDrlRuleActivity(temp);
+               CMTDelegator.get().addRule(rule, temp);
+               return rule;
+           }
+           
        }
        return null;
    }

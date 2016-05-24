@@ -12,12 +12,15 @@ import be.ac.vub.wise.cmtserver.drools.IDroolsComponent;
 import be.ac.vub.wise.cmtserver.blocks.Action;
 import be.ac.vub.wise.cmtserver.blocks.FactType;
 import be.ac.vub.wise.cmtserver.blocks.Function;
+import be.ac.vub.wise.cmtserver.blocks.Fact;
 import be.ac.vub.wise.cmtserver.blocks.IFactType;
 import be.ac.vub.wise.cmtserver.blocks.IFunctionClass;
 import be.ac.vub.wise.cmtserver.blocks.Rule;
 import be.ac.vub.wise.cmtserver.blocks.Template;
 import be.ac.vub.wise.cmtserver.blocks.TemplateActions;
 import be.ac.vub.wise.cmtserver.blocks.TemplateHA;
+import be.ac.vub.wise.cmtserver.db.DatabaseSQL;
+import be.ac.vub.wise.cmtserver.util.Converter;
 import java.util.HashSet;
 
 /**
@@ -33,7 +36,9 @@ public class CMTDelegator {
     
     private CMTDelegator(){
         drools = DroolsComponent.getDroolsComponent();
-        dbComp = DbComponent.getDbComponent();
+        dbComp = DatabaseSQL.getDbComponent();
+        // init drools add facts??
+        
     }
     
     public static CMTDelegator get(){
@@ -43,7 +48,12 @@ public class CMTDelegator {
 		return delegator;
 	}
             
-          
+    public String getDbComponentVersion(){
+        if (dbComp instanceof DatabaseSQL){
+            return "SQL";
+        }
+        return "DB4O";
+    }
     public void registerFactType(FactType type){
         
         dbComp.registerFactType(type);
@@ -58,6 +68,13 @@ public class CMTDelegator {
         drools.addFact(fact);
        
     }
+    
+    public void addFactInFactFrom(Fact fact){
+        dbComp.addFactinFactForm(fact);
+       // IFactType factInObject = Converter.fromFactToObject(fact);
+       // drools.addFact(factInObject);
+    }
+
     public void addEvent(IFactType event){
       	
         drools.addFact(event);
@@ -78,6 +95,10 @@ public class CMTDelegator {
     
     public HashSet<IFactType> getAllFacts(){
         return dbComp.getFacts();
+    }
+    
+     public HashSet<Fact> getAllFactsFact(){
+        return dbComp.getFactsInFactVersions();
     }
     
     public HashSet<Function> getAllFunctions(){
@@ -107,7 +128,7 @@ public class CMTDelegator {
     public HashSet<TemplateHA> getAllTemplateHA(){
         return dbComp.getAvailableTemplateHA();
     }
-   
+    
     public void addAction(Action action){
         dbComp.addAction(action);
     }
@@ -119,7 +140,7 @@ public class CMTDelegator {
     public Action getAction(String className){
         return dbComp.getAction(className);
     }
-    // Returns the class of a specific facttype (pe. Location)
+    
     public FactType getFactTypeWithName(String name){
         return dbComp.getFactTypeWithName(name);
     }
@@ -127,8 +148,28 @@ public class CMTDelegator {
     public IFactType getFact(String className, String uriField, String value){
         return dbComp.getFact(className, uriField, value);
     }
-    // Returns all fact INSTANCES(pe. kitchen) of a specific type (pe Location)
+    
+    public Fact getFactInFactForm(String className, String uriField, String value){
+        return dbComp.getFactInFactForm(className, uriField, value);
+    }
+    
+    public Fact getFact(int sqlid){
+        return dbComp.getFact(sqlid);
+    }
     public HashSet<IFactType> getFactsWithType(String className){
         return dbComp.getFactsWithType(className);
+    }
+    
+    public HashSet<Fact> getFactsWithTypeInFactForm(String classname){
+        return dbComp.getFactsInFactVersionWithType(classname);
+    }
+    
+    public void addRule(Rule rule, Template temp){
+        dbComp.addRule(rule, temp);
+        drools.addRule(rule.getDrlRule());
+    }
+    
+    public Template getTemplateOfSituation(String situationName){
+        return  dbComp.getTemplateOfSituation(situationName);
     }
 }
