@@ -1,44 +1,76 @@
 package rules
-import be.ac.vub.wise.cmtserver.events.BeddyActivity
+import be.ac.vub.wise.cmtserver.facts.Person
+import function be.ac.vub.wise.cmtserver.functions.Func3.SamePerson
+import be.ac.vub.wise.cmtserver.events.SandraTwinInBedSit
+import function be.ac.vub.wise.cmtserver.functions.Func2.InBed
+rule "ruleSandraTwinInBedSit" 
+  when 
+ $0:Person(name== "Sandra" , $00:room) 
+ $2:Person(name== "Sandra" ) 
+ eval(SamePerson($0, $2)) 
+eval(InBed($00)) 
+eval(InBed($00)) 
+
+ then 
+SandraTwinInBedSit SandraTwinInBedSitSandraTwinInBedSit= new SandraTwinInBedSit(); 
+ SandraTwinInBedSitSandraTwinInBedSit.setPerson1pm1( $0); 
+SandraTwinInBedSitSandraTwinInBedSit.setPerson2pm2( $2); 
+insert(SandraTwinInBedSitSandraTwinInBedSit); 
+ end 
+
+import be.ac.vub.wise.cmtserver.facts.Person
+import function be.ac.vub.wise.cmtserver.functions.Func3.SamePerson
+import function be.ac.vub.wise.cmtserver.functions.Func2.InBed
+import be.ac.vub.wise.cmtserver.events.VinceSandraTwinInBedSit
+rule "ruleVinceSandraTwinInBedSit" 
+  when 
+ $0:Person(name== "Vince" , $00:room) 
+ $2:Person(name== "Sandra" ) 
+ eval(SamePerson($0, $2)) 
+eval(InBed($00)) 
+eval(InBed($00)) 
+
+ then 
+VinceSandraTwinInBedSit VinceSandraTwinInBedSitVinceSandraTwinInBedSit= new VinceSandraTwinInBedSit(); 
+ VinceSandraTwinInBedSitVinceSandraTwinInBedSit.setPerson1pm1( $0); 
+VinceSandraTwinInBedSitVinceSandraTwinInBedSit.setPerson2pm2( $2); 
+insert(VinceSandraTwinInBedSitVinceSandraTwinInBedSit); 
+ end 
+
+import be.ac.vub.wise.cmtserver.facts.Person
+import be.ac.vub.wise.cmtserver.facts.Phone
+import function be.ac.vub.wise.cmtserver.functions.Func3.SamePerson
+import function be.ac.vub.wise.cmtserver.functions.Func3.PersonInLocation
+import function be.ac.vub.wise.cmtserver.functions.Func2.InBed
+import be.ac.vub.wise.cmtserver.events.SandraPhoneInBedSit
+rule "ruleSandraPhoneInBedSit" 
+  when 
+ $0:Phone(id== "SandraPhone" , $00:location, $01:owner) 
+ $2:Person(name== "Sandra" ) 
+ eval(InBed($00)) 
+eval(PersonInLocation($00, $2)) 
+eval(SamePerson($01, $2)) 
+
+ then 
+SandraPhoneInBedSit SandraPhoneInBedSitSandraPhoneInBedSit= new SandraPhoneInBedSit(); 
+ SandraPhoneInBedSitSandraPhoneInBedSit.setPhoneOwn1( $2); 
+insert(SandraPhoneInBedSitSandraPhoneInBedSit); 
+ end 
+
+import be.ac.vub.wise.cmtserver.facts.Person
+import be.ac.vub.wise.cmtserver.events.SandraInBed
+import function be.ac.vub.wise.cmtserver.functions.Func3.PersonInLocation
 import be.ac.vub.wise.cmtserver.facts.Location
 import function be.ac.vub.wise.cmtserver.functions.Func2.InBed
-rule "ruleBeddyActivity" 
+rule "ruleSandraInBed" 
   when 
- $0:Location(room== "Living Room" ) 
+ $0:Location(room== "My Bedroom" ) 
+ $2:Person(name== "Sandra" ) 
  eval(InBed($0)) 
-eval(InBed($0)) 
+eval(PersonInLocation($0, $2)) 
 
  then 
-insert( new BeddyActivity()); 
+SandraInBed SandraInBedSandraInBed= new SandraInBed(); 
+ SandraInBedSandraInBed.setPersonpm1( $2); 
+insert(SandraInBedSandraInBed); 
  end 
- 
-import be.ac.vub.wise.cmtserver.facts.Location
-import function be.ac.vub.wise.cmtserver.functions.Func2.InBed
-import be.ac.vub.wise.cmtserver.events.BeddyActivityPM
-rule "ruleBeddyActivityPM" 
-  when 
- $0:Location(room== "Living Room" ) 
- eval(InBed($0)) 
-eval(InBed($0)) 
-
- then 
-BeddyActivityPM BeddyActivityPMBeddyActivityPM= new BeddyActivityPM(); 
- BeddyActivityPMBeddyActivityPM.setRoom1( $0.room); 
-insert(BeddyActivityPMBeddyActivityPM); 
- end 
-
-import be.ac.vub.wise.cmtserver.events.BeddyActivity
-import be.ac.vub.wise.cmtserver.events.BeddyAct2
-import be.ac.vub.wise.cmtserver.facts.Location
-import function be.ac.vub.wise.cmtserver.functions.Func2.InBed
-rule "ruleBeddyAct2" 
-  when 
- $0:BeddyActivity() 
-$2:Location(room== "My Bedroom" ) 
- eval(InBed($2)) 
-eval(InBed($2)) 
-
- then 
-insert( new BeddyAct2()); 
- end 
- 

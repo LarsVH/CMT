@@ -74,33 +74,49 @@ public class SharingImportExport implements Sharing {
     }
     
     // Check whether or not an event is custom and therefore needs further processing
-    public JSONArray processEvent(FactType event) throws Exception{            
-        //True:  Event is already written to JSON, we only need to write declarations if IFBlocks contain custom events
+    public JSONArray processEvent(IFactType event) throws Exception{            
+        //Event is already written to JSON, we only need to write declarations if IFBlocks contain custom events
         
-        if(event.isIsCustom()) // If event is custom, we have to check the IFBlocks on other custom events
-           return processCustomEvent(event);      
-        return new JSONArray(); // Event not custom? => return empty array
+        // If event is (a FactType and custom) or the event is of type "EventInput" (= event is custom anyway)
+        // => we have to check the IFBlocks on other custom events
+        if((event instanceof FactType && ((FactType)event).isIsCustom()) ||
+                event instanceof EventInput){
+            return processCustomEvent(event);  
+        }
+       return new JSONArray(); // Event not custom? => return empty array
     }
     
     // In case of a custom event
-        // 1. Convert the event using the built-in event converter
-    public JSONArray processCustomEvent(FactType event) throws Exception {
+    public JSONArray processCustomEvent(IFactType event) throws Exception {
         JSONArray jResultArray = new JSONArray();
-
+        
+        // Retrieve the class name (cast from IFactType to FactType/EventInput)
+        String eventClassName;
+        if (event instanceof FactType) {
+            eventClassName = ((FactType) event).getClassName();
+        } else if (event instanceof EventInput) {
+            eventClassName = ((EventInput) event).getClassName();
+        } else {
+            throw new Exception(SharingImportExport.class.getName()
+                    + "processCustomEvent -- event not of type 'FactType' nor 'EventInput'");
+        }
 
         // Retrieving the corrseponding template
         // >> SQL: Search template responsible for "event"
-        Template _t = eventToTemplate.get(event.getClassName());
+        Template _t = eventToTemplate.get(eventClassName); // FIXME: get Null all the time
+        
+        System.out.println("2>>>> Retrieved template: '" + _t.getName() + "' from eventToTemplate");
+        
         // >> SQL: check for custom event IFBlocks (! recursively!!!!)
         boolean hasCustomEvents_t = false;
 
         if (hasCustomEvents_t) {
-           jResultArray.put(prepareTemplateSkeletonJSON(_t));
-        } 
-        else // No custom events -> converter already converted everything
+            jResultArray.put(prepareTemplateSkeletonJSON(_t));
+        } else // No custom events -> converter already converted everything
+        {
             return jResultArray;    // !! We might still have to convert the template using the built-in converter
-        
-        return null; // FIXME
+        }
+        return jResultArray; // (Empty)
     }
     // Processes the IFBlocks: delegates depending on IFBlock = event/function
         // 1. Loop over the IFBlocks
@@ -115,18 +131,19 @@ public class SharingImportExport implements Sharing {
         LinkedList<IFBlock> ifBlocks = t.getIfBlocks();
 
         for (int i=0; i<ifBlocks.size(); i++) {
-            
+              
             IFBlock currBlock = ifBlocks.get(i);
             JSONObject jIFBlock = new JSONObject();
             JSONObject jFuncEvent;
-            JSONArray jRecArray = new JSONArray();
+            JSONArray jRecArray;
+            
+            System.out.println("0>>>>> CurrIFBLock type: " + currBlock.getType());
             
             jIFBlock.put("index", i);
             
             if (currBlock.getEvent() != null) {
-                jFuncEvent = Converter.fromFactTypeToJSON(currBlock.getEvent()); // <<<FIXME: dubbele conversie!
-                // ^^^^ >> processEvent convert al...
-                jRecArray = processEvent(currBlock.getEvent());
+                jFuncEvent = Converter.fromFactTypeToJSON(currBlock.getEvent());
+                //jRecArray = processEvent(currBlock.getEvent()); // FIXME: MAJOR BUG <<< JRecArray wordt op 145 overschreven
 
                 jIFBlock.put("event", jFuncEvent);
                 jIFBlock.put("typeBlock", "activity");
@@ -143,7 +160,7 @@ public class SharingImportExport implements Sharing {
                 throw new Exception("IFBlock does not contain an Event or Function");
             }     
             LinkedList<Binding> bindings = currBlock.getBindings();
-            jRecArray = processBindings(bindings);            
+            jRecArray = processBindings(bindings); 
             jIFBlock.put("bindings", jRecArray);
             
             resultBlocks.put(jIFBlock);
@@ -156,11 +173,11 @@ public class SharingImportExport implements Sharing {
         // 4. In case of a specific Fact, -> not needed **<<<<<<<< TO CHECK
     // Returns a JSONarray (incl. required declarations) for key "bindings:"
     public JSONArray processBindings(LinkedList<Binding> bindings) throws ClassNotFoundException, Exception {
-        JSONArray jResBindings = null;
-        for (int i=0; i < bindings.size(); i++) {
+        JSONArray jResBindings = new JSONArray();
+        for (int i=0; i < bindings.size(); i++) {            
             Binding currBinding = bindings.get(i);
-            JSONObject objBind;          
-
+            JSONObject objBind;   
+         
             objBind = Converter.fromBindingToJSON(currBinding, i);
             
             JSONArray declarations = new JSONArray();
@@ -169,11 +186,15 @@ public class SharingImportExport implements Sharing {
             BindingInputBlock bindingInputBlock = (BindingInputBlock) endBinding;
             IFactType inputObject = bindingInputBlock.getInputObject();
             
+             // DEBUG
+            System.out.println("1>>>>> processBindings, currBinding = " + bindingParameterType(endBinding));
+            
             // InputObject is ALWAYS an event (a function can never be in the endbindings)
-                // Check if 
              if(inputObject instanceof FactType){
                 FactType inputObjectEvent = (FactType) inputObject;
-
+                
+                System.out.println("1a>>>>>> Handling InputObjectFactType: " + inputObjectEvent.getClassName() +
+                        "\n -- isCustom: " + inputObjectEvent.isIsCustom());
                 boolean isCustom = inputObjectEvent.isIsCustom();
                 if(isCustom){                
                  declarations = processEvent(inputObjectEvent);
@@ -184,8 +205,17 @@ public class SharingImportExport implements Sharing {
                 }
              }
              else if(inputObject instanceof Fact){
+                Fact inputObjectFact = (Fact) inputObject;
+                System.out.println("1b>>>>>> Handling InputObjectFactType: " + inputObjectFact.getClassName());
+                          
                  continue;      //**<<<<<<<< TO CHECK
                  
+             }
+             // ASK SANDRA: wat is het verschil tussen een "custom FactType" en "EventInput"
+             // In case the inputObject is of type "EventInput"
+                // "EventInput" = corresponding 
+             else if(inputObject instanceof EventInput){
+                 declarations = processEvent(inputObject);
              }
              objBind.put("declarations", declarations);
              jResBindings.put(objBind);
@@ -194,34 +224,34 @@ public class SharingImportExport implements Sharing {
     }
 
     @Deprecated
-    public Class bindingParameterType(BindingParameter par) {
+    public String bindingParameterType(BindingParameter par) {
         if (par instanceof BindingInputFact) {
             BindingInputFact bindFact = (BindingInputFact) par;
             if (bindFact.getInputObject() instanceof Fact) {
-                return Fact.class;
+                return Fact.class.getName();
             } else if (bindFact.getInputObject() instanceof FactType) {
-                return FactType.class;
+                return FactType.class.getName();
             } else if (bindFact.getInputObject() instanceof EventInput) {
-                return EventInput.class;
+                return EventInput.class.getName();
             }
         } else if (par instanceof BindingInputField) {
             BindingInputField bindFact = (BindingInputField) par;
             if (bindFact.getInputObject() instanceof Fact) {
-                return Fact.class;
+                return Fact.class.getName();
             } else if(bindFact.getInputObject() instanceof FactType){
-                return FactType.class;
+                return FactType.class.getName();
             } else if(bindFact.getInputObject() instanceof EventInput){
-                return EventInput.class;                                
+                return EventInput.class.getName();                                
             }
         }
         else {
             if(par instanceof BindingIF){
-                return BindingIF.class;
+                return BindingIF.class.getName();
             } else if(par instanceof BindingOutput){
-                return BindingOutput.class;
+                return BindingOutput.class.getName();
             }
         }
-        return null; // Error: class unknown
+        return "Type Unknown"; // Error: class unknown
     }
 
     
@@ -354,9 +384,16 @@ public class SharingImportExport implements Sharing {
     public HashMap<String, TemplateHA> prepareOutputBlockIndex() {
         HashMap<String, TemplateHA> results = new HashMap<>();
 
+        // Loop over de templates en check de IFBlocks
+        // Map de ifBlock types dan op de template en steek ze in de HashMap
         HashSet<TemplateHA> tempsHA = CMTDelegator.get().getAllTemplateHA();
-        tempsHA.stream().forEach((tmplHA) -> {
+        tempsHA.stream().forEach((tmplHA) -> {       
+            
             String outputEvent = tmplHA.getOutput().getName();
+            
+            System.out.println("3>>>>>>>>> Outputname: " + outputEvent);
+            
+            
             results.put(outputEvent, tmplHA);
         });
 
@@ -376,54 +413,8 @@ public class SharingImportExport implements Sharing {
     // TODO --------------------------------------------------------------------
     @Override
     public void importTemplateRule(JSONObject json) {
-        String templatetype = (String) json.get("tempType");
-        switch (templatetype) {
-            case "TemplateHA":
-                OutputHA result = new OutputHA();
-                JSONObject output = json.getJSONObject("output");
-
-                // What fromJSONtoOutputHA does 
-                result.setName(output.getString("name"));
-                result.setBindings(fromJSONtoListBindings(output.getJSONArray("bindings"))); // Not necessary (initially) for the matching
-
-                // Getting IFBlocks and operators
-                JSONArray jsonIfBlocks = json.getJSONArray("ifblocks");
-                JSONArray jsonOperators = json.getJSONArray("operators"); // The operators between the blocks: AND/OR/(NOT)
-
-                // Iterating over IF blocks
-                for (int i = 0; i < jsonIfBlocks.length(); i++) {
-                    JSONObject currIfBlock = jsonIfBlocks.getJSONObject(i);
-                    String typeBlock = currIfBlock.getString("typeBlock");
-                    String searchKey;
-                    switch (typeBlock) {
-                        case "function":
-                            // In case of function -> retrieve function blocks from db/only compare with function blocks
-                            searchKey = currIfBlock.getJSONObject("function").getString("methodName");
-
-                            break;
-                        case "activity":
-                            //  // In case of activity -> retrieve activity blocks from db/only compare with activity blocks
-                            searchKey = currIfBlock.getJSONObject("event").getString("className");
-
-                            break;
-                    }
-
-                }
-
-                // TODO: check fillTemplateLS code --> deze werkt voor zowel HA als actiontemplates -> hou hier rekening mee (codeduplicatie)
-                // TODO: vraag databasecommando's aan Sandra
-                //TemplateHA tmplha = Converter.fromJSONtoTemplateHA(json);
-                break;
-            case "TemplateActions":
-                TemplateActions tmplactions = Converter.fromJSONtoTemplateAction(json);
-                break;
-            default:
-                Logger.getLogger(SharingImportExport.class.getClass()).log(Level.SEVERE, "importFilledTemplateRule -- TemplateSubclass unknown");
-                break;
-        }
-
-        // TODO: over template lopen: type template bepalen via key "tempType" -> moet equal zijn aan "TemplateHA" of "TemplateActions"
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
+        
+        
+}
 
 }
