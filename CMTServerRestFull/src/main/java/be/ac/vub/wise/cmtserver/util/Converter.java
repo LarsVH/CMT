@@ -1134,8 +1134,6 @@ public class Converter {
         JSONArray arrBindings = new JSONArray();
         try{
                 for(int ii=0; ii<bindings.size();ii++){
-                    JSONObject objBind = new JSONObject();
-                    objBind.put("index", ii);
                     Binding binding = bindings.get(ii);
                     JSONObject objBind = fromBindingToJSON(binding, ii);  
                     arrBindings.put(objBind);

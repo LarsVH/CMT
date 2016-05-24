@@ -7,6 +7,7 @@ import be.ac.vub.wise.cmtserver.blocks.BindingInputFact;
 import be.ac.vub.wise.cmtserver.blocks.BindingInputField;
 import be.ac.vub.wise.cmtserver.blocks.BindingOutput;
 import be.ac.vub.wise.cmtserver.blocks.BindingParameter;
+import be.ac.vub.wise.cmtserver.blocks.CMTParameter;
 import be.ac.vub.wise.cmtserver.blocks.EventInput;
 import be.ac.vub.wise.cmtserver.blocks.Fact;
 import be.ac.vub.wise.cmtserver.blocks.FactType;
@@ -23,6 +24,7 @@ import be.ac.vub.wise.cmtserver.util.Converter;
 import static be.ac.vub.wise.cmtserver.util.Converter.fromJSONtoListBindings;
 import be.ac.vub.wise.cmtserver.util.IndexableArraySet;
 import com.sun.istack.logging.Logger;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -334,11 +336,10 @@ public class SharingImportExport implements Sharing {
         // TODO: retrieve parameters and put in types; convert currfunc to JSON and mark as processed in functions
     }
     @Deprecated
-    public void processParameters(LinkedHashMap<String, String> parameters, IndexableArraySet<String> types) throws Exception {
-        Iterator<String> it = parameters.keySet().iterator();
-        for (Map.Entry<String, String> pm : parameters.entrySet()) {
-            //String pmName = pm.getKey();
-            String pmType = pm.getValue();
+    public void processParameters(ArrayList<CMTParameter> parameters, IndexableArraySet<String> types) throws Exception {
+        for (CMTParameter pm: parameters) {
+            //String pmName = pm.getKey();            
+            String pmType = pm.getType();
             if (!types.isProcessed(pmType)) {
                 types.add(pmType);  // TODO: include instance
             }
