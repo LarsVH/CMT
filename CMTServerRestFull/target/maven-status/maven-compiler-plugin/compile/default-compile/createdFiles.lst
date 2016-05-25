@@ -1,10 +1,7 @@
 be/ac/vub/wise/cmtserver/facts/Location.class
 be/ac/vub/wise/cmtserver/blocks/ActionFieldAnno.class
 be/ac/vub/wise/cmtserver/db/DatabaseManager.class
-be/ac/vub/wise/cmtserver/functions/Func2.class
-be/ac/vub/wise/cmtserver/events/SandraInBed.class
 be/ac/vub/wise/cmtserver/sharing/SharingImportExport.class
-be/ac/vub/wise/cmtserver/facts/Phone.class
 be/ac/vub/wise/cmtserver/blocks/Time.class
 be/ac/vub/wise/cmtserver/blocks/Event.class
 be/ac/vub/wise/cmtserver/sharing/Sharing.class
@@ -15,15 +12,13 @@ be/ac/vub/wise/cmtserver/db/AvailableFactClasses.class
 be/ac/vub/wise/cmtserver/db/Db4oDefaultProperties.class
 be/ac/vub/wise/cmtserver/blocks/Function.class
 be/ac/vub/wise/cmtserver/drools/DroolsComponent$2.class
-be/ac/vub/wise/cmtserver/events/SandraTwinInBedSit.class
+be/ac/vub/wise/cmtserver/db/DatabaseSQLConnector.class
 be/ac/vub/wise/cmtserver/util/Constants.class
 be/ac/vub/wise/cmtserver/db/AvailableEventClasses.class
-be/ac/vub/wise/cmtserver/facts/Person.class
 be/ac/vub/wise/cmtserver/blocks/EventVariables.class
 be/ac/vub/wise/cmtserver/db/Db4oConnector.class
 be/ac/vub/wise/cmtserver/blocks/ActionField.class
 be/ac/vub/wise/cmtserver/core/Compilers.class
-be/ac/vub/wise/cmtserver/functions/Func3.class
 be/ac/vub/wise/cmtserver/blocks/BindingOutput.class
 be/ac/vub/wise/cmtserver/blocks/Rule.class
 be/ac/vub/wise/cmtserver/blocks/CMTParameter.class
@@ -31,7 +26,6 @@ be/ac/vub/wise/cmtserver/blocks/EventInput.class
 be/ac/vub/wise/cmtserver/db/DatabaseManager$1.class
 be/ac/vub/wise/cmtserver/blocks/TemplateHA.class
 be/ac/vub/wise/cmtserver/db/DbComponent.class
-be/ac/vub/wise/cmtserver/events/VinceSandraTwinInBedSit.class
 be/ac/vub/wise/cmtserver/blocks/UriFactType.class
 be/ac/vub/wise/cmtserver/blocks/Binding.class
 be/ac/vub/wise/cmtserver/blocks/FactType.class
@@ -58,6 +52,7 @@ be/ac/vub/wise/cmtserver/blocks/IFBlock.class
 be/ac/vub/wise/cmtserver/util/IndexableArraySet.class
 be/ac/vub/wise/cmtserver/restfull/CMTCore.class
 be/ac/vub/wise/cmtserver/db/IDbComponent.class
+be/ac/vub/wise/cmtserver/db/DatabaseSQL.class
 be/ac/vub/wise/cmtserver/sharing/SharedRule.class
 be/ac/vub/wise/cmtserver/rest/Main$1.class
 be/ac/vub/wise/cmtserver/blocks/ClientRemote.class
@@ -66,7 +61,6 @@ be/ac/vub/wise/cmtserver/db/Result.class
 be/ac/vub/wise/cmtserver/restfull/CMTRest.class
 be/ac/vub/wise/cmtserver/blocks/Parameters.class
 be/ac/vub/wise/cmtserver/util/HelperClass.class
-be/ac/vub/wise/cmtserver/events/SandraPhoneInBedSit.class
 be/ac/vub/wise/cmtserver/blocks/OutputHA.class
 be/ac/vub/wise/cmtserver/blocks/Activity.class
 be/ac/vub/wise/cmtserver/blocks/RoleDrools.class
