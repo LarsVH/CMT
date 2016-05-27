@@ -80,9 +80,10 @@ public class CMTClient {
         }
     }
     
-    public static void shortcutRegisterFacttypeInCMT(Class<?> factClass, String uriField){
+    public static void shortcutRegisterFacttypeInCMT(Class<?> factClass, String uriField, String category){
         try {
             FactType type = ConverterCoreBlocks.fromFactClassToFactType(factClass, uriField);
+            type.setCategory(category);
             JSONObject json = ConverterCoreBlocks.fromFactTypeToJSON(type);
             String stjson = json.toString();
             String result = stjson.trim().trim();

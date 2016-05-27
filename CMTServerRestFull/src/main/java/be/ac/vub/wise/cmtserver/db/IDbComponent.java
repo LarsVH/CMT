@@ -11,6 +11,7 @@ import be.ac.vub.wise.cmtserver.blocks.Template;
 import be.ac.vub.wise.cmtserver.blocks.TemplateActions;
 import be.ac.vub.wise.cmtserver.blocks.TemplateHA;
 import java.rmi.RemoteException;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
@@ -55,4 +56,5 @@ public interface IDbComponent {
     public boolean restartDb();
     public void closeDb();
     public Template getTemplateOfSituation(String situationName);
+    public ArrayList<FactType> getCustomEventsUsedInTemplate(int templateId);
 }

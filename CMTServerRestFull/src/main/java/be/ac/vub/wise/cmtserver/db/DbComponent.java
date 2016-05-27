@@ -21,6 +21,7 @@ import com.db4o.activation.ActivationPurpose;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -462,6 +463,11 @@ public class DbComponent implements IDbComponent{
 
     @Override
     public Template getTemplateOfSituation(String situationName) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public ArrayList<FactType> getCustomEventsUsedInTemplate(int templateId) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

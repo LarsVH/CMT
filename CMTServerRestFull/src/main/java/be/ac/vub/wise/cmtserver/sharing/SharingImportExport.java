@@ -7,6 +7,7 @@ import be.ac.vub.wise.cmtserver.blocks.BindingInputFact;
 import be.ac.vub.wise.cmtserver.blocks.BindingInputField;
 import be.ac.vub.wise.cmtserver.blocks.BindingOutput;
 import be.ac.vub.wise.cmtserver.blocks.BindingParameter;
+import be.ac.vub.wise.cmtserver.blocks.CMTField;
 import be.ac.vub.wise.cmtserver.blocks.CMTParameter;
 import be.ac.vub.wise.cmtserver.blocks.EventInput;
 import be.ac.vub.wise.cmtserver.blocks.Fact;
@@ -89,7 +90,7 @@ public class SharingImportExport implements Sharing {
     }
     
     // In case of a custom event
-    public JSONArray processCustomEvent(IFactType event) throws Exception {
+    public JSONArray processCustomEvent(IFactType event) throws Exception {         // Waarom een array teruggeven als er maar 1 element in terecht komt?
         JSONArray jResultArray = new JSONArray();
         
         // Retrieve the class name (cast from IFactType to FactType/EventInput)
@@ -104,8 +105,8 @@ public class SharingImportExport implements Sharing {
         }
 
         // Retrieving the corrseponding template
-        // >> SQL: Search template responsible for "event"
-        Template _t = eventToTemplate.get(eventClassName); // FIXME: get Null all the time
+        // >> SQL: Search template responsible for "event"                      // <<< We moeten event zelf ook nog converten: mapping event->template nodig bij importeren
+        Template _t = eventToTemplate.get(eventClassName);
         
         System.out.println("2>>>> Retrieved template: '" + _t.getName() + "' from eventToTemplate");
         
@@ -412,10 +413,114 @@ public class SharingImportExport implements Sharing {
     }
 
     // TODO --------------------------------------------------------------------
+    private final HashMap<String, LinkedList<String>> resolvedTypes = new HashMap<>();
+    private final double levenshteinTreshold = 0.5;
     @Override
-    public void importTemplateRule(JSONObject json) {
+    public Template importTemplateRule(JSONObject jInput) {
         
+        Template resTmpl = new Template();
         
-}
+        String tmplType = jInput.getString("tempType");
+               switch (tmplType){       //TODO
+           case "TemplateActions":
+               //resTmpl = Converter.fromJSONtoTemplateAction(json); //TODO
+               break;
+           case "TemplateHA":
+               TemplateHA tHA = new TemplateHA();
+               //resTmpl=Converter.fromJSONtoTemplateHA(json);
+               tHA.setOutput(Converter.fromJSONtoOutputHA(jInput.getJSONObject("output")));
+               resTmpl = tHA;
+               break;
+        }
+        JSONArray jIFBlocks = jInput.getJSONArray("ifblocks");
+        JSONArray jOperators = jInput.getJSONArray("operators");    // Should normally not be neeeded
+                                  
+         // TODO: werk de template af met Converter.fillTemplateLS(resTmpls, jInput)
+         return resTmpl;
+    }
+    
+    private void importIFBlocks(JSONArray jIFBlocks, Template t){        
+        for(int i=0; i<jIFBlocks.length(); i++){
+            JSONObject jIFBlock = jIFBlocks.getJSONObject(i);
+            JSONArray jBindings = jIFBlock.getJSONArray("bindings");
+            //LinkedList<Binding> bindings = Converter.fromJSONtoListBindings(jBindings);
+            verifyAndImportBindings(jBindings);
+        
+        // (als IFBlock of type "acticity" is => de classe van het IFBlock zelf ook importeren!!) -> niet nodig: custom events hebben altijd
+        // een binding naar hun eigen type
+        }
+    }
 
+    private void verifyAndImportBindings(JSONArray jBindings){
+        for(int i=0; i<jBindings.length(); i++){
+            JSONObject jBinding = jBindings.getJSONObject(i);
+            JSONObject jEndBinding = jBinding.getJSONObject("endBinding");
+            JSONObject jInputObject = jEndBinding.getJSONObject("inputObject");
+            JSONArray jFields = jInputObject.getJSONArray("fields");
+            
+            JSONArray jDeclarations = jBinding.getJSONArray("declarations");
+            
+            for(int j=0; j<jFields.length(); j++){
+                JSONObject currField = jFields.getJSONObject(j);
+                String fieldType = currField.getString("fieldType");
+                String fieldName = currField.getString("fieldName");                
+                if(resolvedTypes.containsKey(fieldType) && (resolvedTypes.get(fieldType).contains(fieldName))){
+                    continue;   // FieldType and Fieldname already resolved
+                }
+                // SQL SQL SQL SQL SQL SQL SQL SQL SQL SQL SQL SQL SQL SQL SQL SQL SQL SQL <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+                   // Levenshtein op field TYPES:
+                    //> Levenshtein = 0 (= perfect match) -> check fields
+                    //> Levenshtein < treshold (for multiple classes) -> let user decide: choose right class (-> check fields) OR create new class
+                    //> Levenshtein > treshold -> create new class
+                double levenshtein = 0.5;
+                
+                if(levenshtein <= 0){
+                    // check field names (en create eventuele subclass)
+                    FactType levTypeMatch = new FactType(); //<< retrieve from SQL (can be "Event" too, so maybe change to IFactType
+                    mergeFieldFields(fieldType, fieldName, jDeclarations, levTypeMatch);
+                } else if(levenshtein < levenshteinTreshold){
+                    // suggestions (classA, classB,...,newClass) -> check fields OR createNewClass 
+                    boolean userDecisionNewClass = false;
+                    if(!userDecisionNewClass){
+                        createNewClass(fieldType, fieldName); //TODO
+                    }
+                    else {
+                        FactType userChoice = new FactType(); // << retrieve from SQL
+                        mergeFieldFields(fieldType, fieldName, jDeclarations, userChoice);
+                    }
+                }
+                else {
+                    // createNewClass 
+                    createNewClass(fieldType, fieldName);
+                }
+                    
+                // Check Fields (by name AND type)
+                    //> All fields matching? -> binding resolved
+                    //> Some/None fields matching? -> create subclass (extend), verifyAndImportFields (on type
+            }
+            // TODO <<< : SQL: levenshtein
+            
+        }
+    }
+    
+    private void mergeFieldFields(String fieldType, String fieldName, JSONArray declarations, FactType levTypeMatch){
+        ArrayList<CMTField> knownFields = levTypeMatch.getFields();
+        // Look in declarations for fieldtype
+        
+        
+    }
+    
+    private void createNewClass(String fieldType, String fieldName){
+        
+    }
+    
+    private JSONObject findInDeclarations(String type,JSONArray declarations){
+        
+        for(int i=0; i< declarations.length(); i++){
+         // XXX: momenteel niet mogelijk -> exporter aanpassen om events te mappen hun template...
+            
+        }       
+        
+        return new JSONObject();// TODO
+    }
 }

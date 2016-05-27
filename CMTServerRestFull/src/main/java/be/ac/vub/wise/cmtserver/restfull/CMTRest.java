@@ -36,6 +36,7 @@ import com.mashape.unirest.http.exceptions.UnirestException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -484,6 +485,31 @@ public class CMTRest {
         }
     
     }
+    
+    @GET
+
+    @Path("/getCustomEventsUsedInTemplate/{tempid}")
+
+    @Produces("application/json")
+
+    public Response getCustomEventsUsedInTemplate(@PathParam("tempid") int id) {
+
+        JSONObject obj = new JSONObject();
+        if(!CMTDelegator.get().getDbComponentVersion().equals("SQL")){
+            }else{
+                ArrayList<FactType> result = CMTDelegator.get().getCustomEventsUsedInTemplate(id);
+                 JSONArray arr = new JSONArray();
+                for(FactType type : result){
+                    JSONObject ob = Converter.fromFactTypeToJSON(type);
+                    arr.put(ob);
+                }
+                obj.put("facttypes", arr);
+                return Response.status(201).entity(obj.toString()).build() ;
+        } 
+        obj.put("facttypes", new JSONArray());
+        return Response.status(201).entity(obj.toString()).build() ;
+    }
+    
     
     @GET
     @Path("/shareTemplate/{tmplname}")

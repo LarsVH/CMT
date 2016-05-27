@@ -21,6 +21,7 @@ import be.ac.vub.wise.cmtserver.blocks.TemplateActions;
 import be.ac.vub.wise.cmtserver.blocks.TemplateHA;
 import be.ac.vub.wise.cmtserver.db.DatabaseSQL;
 import be.ac.vub.wise.cmtserver.util.Converter;
+import java.util.ArrayList;
 import java.util.HashSet;
 
 /**
@@ -171,5 +172,9 @@ public class CMTDelegator {
     
     public Template getTemplateOfSituation(String situationName){
         return  dbComp.getTemplateOfSituation(situationName);
+    }
+    
+     public ArrayList<FactType> getCustomEventsUsedInTemplate(int tempid){
+        return dbComp.getCustomEventsUsedInTemplate(tempid);
     }
 }

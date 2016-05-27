@@ -1732,5 +1732,65 @@ public class DatabaseSQL implements IDbComponent{
             Logger.getLogger(DatabaseSQL.class.getName()).log(Level.SEVERE, null, ex);
         }
    }
+   @Override
+   public ArrayList<FactType> getCustomEventsUsedInTemplate(int templateId){
+
+       ArrayList<FactType> result = new ArrayList<>();
+
+        try {
+
+            Connection conn = ds.getConnection();
+
+            // check ifblock for events
+
+            PreparedStatement ps = conn.prepareStatement("SELECT facttype.facttypeName FROM ifblock_event "
+
+                                                        + " INNER JOIN facttype ON ifblock_event.facttype_event = facttype.facttypeName "
+
+                                                        + " WHERE ifblock_event.template_id = ? AND facttype.isCustom = ?");
+
+            ps.setInt(1, templateId);
+
+            ps.setInt(2, 1);
+
+            ps.closeOnCompletion();
+
+            ResultSet rs = ps.executeQuery();
+
+            while(rs.next()){
+
+                result.add(getFactTypeWithName(rs.getString("facttypeName")));
+
+                Template temp = getTemplateOfSituation(rs.getString("facttypeName"));
+
+                ArrayList<FactType> types = getCustomEventsUsedInTemplate(temp.getSql_id());
+
+                result.addAll(types);
+
+            }
+
+            rs.close();
+
+           
+
+            // for functions no need -- if the event is used as a parameter then it is also as an ifblock event!
+
+           
+
+            conn.close();
+
+        } catch (SQLException ex) {
+
+            Logger.getLogger(DatabaseSQL.class.getName()).log(Level.SEVERE, null, ex);
+
+        }
+
+      
+
+       
+
+       return result;
+
+   }
     
 }
