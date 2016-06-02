@@ -34,17 +34,24 @@ public class TestPlugins {
        
    //    CMTClient.shortcutAddFunctionInCMT(Func.class);
       // CMTClient.shortcutAddFunctionInCMT(Func.class);
-   /*    ArrayList<CMTField> fieldsString = new ArrayList<>();
+      
+      //------------------------------------------------------------------------
+      
+       ArrayList<CMTField> fieldsString = new ArrayList<>();
        CMTField f = new CMTField("value", "java.lang.String");
        fieldsString.add(f);
        FactType string = new FactType("java.lang.String", "fact", "value", fieldsString);
        string.setCategory("Code");
-       CMTClient.registerFacttypeInCMT(string); */
-       
+       CMTClient.registerFacttypeInCMT(string);
+          
+       //-----------------------------------------------------------------------
+   
        //Loc2 loc2 = new Loc2("living");
        //CMTClient.shortcutRegisterFacttypeInCMT(loc2.getClass(), "room", "Code");
        
-     /*  Fact fact = new Fact("Loc2", "room");
+       //-----------------------------------------------------------------------
+     
+       /*  Fact fact = new Fact("Loc2", "room");
         FactType type = CMTClient.getFactTypeFactWithName("Loc2");
         ArrayList<CMTField> fields = new ArrayList<>();
         for(CMTField fi : type.getFields()){
@@ -57,11 +64,14 @@ public class TestPlugins {
         fact.setFields(fields);
        CMTClient.addFactInCMT(fact);
        */
-       CMTClient.shortcutRegisterFacttypeInCMT(Person.class, "name", "Code");
        
+       //-----------------------------------------------------------------------
        
+     //  CMTClient.shortcutRegisterFacttypeInCMT(Person.class, "name", "Code");
        
-        Fact fact2 = new Fact("Person", "name");
+       //-----------------------------------------------------------------------
+       
+      /*  Fact fact2 = new Fact("Person", "name");
         FactType type2 = CMTClient.getFactTypeFactWithName("Person");
         ArrayList<CMTField> fields2 = new ArrayList<>();
         for(CMTField fi : type2.getFields()){
@@ -76,8 +86,8 @@ public class TestPlugins {
             }
         }
         fact2.setFields(fields2);
-       CMTClient.addFactInCMT(fact2);
-       
+       CMTClient.addFactInCMT(fact2); */
+       //-----------------------------------------------------------------------
      
      /*
        Location loc2 = new Location("living");
@@ -205,6 +215,8 @@ CMTClient.shortcutRegisterEventInCMT(me, true, true, "day", days, "", "Code");
     CMTClient.shortcutAddFunctionInCMT(Func2.class);
     */
     
+  System.exit(0);
+  
     }
     
     
