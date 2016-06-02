@@ -33,7 +33,7 @@ import javax.tools.ToolProvider;
 public class HelperClass {
     
     public static synchronized void compile(String source, String className1, String var){
-        System.out.println("7>>>>> compile(" + source + ", " + className1 + ", " + var);
+
         String className = toUppercaseFirstLetter(className1);
         File root = new File(Constants.JAVAFILEPATH + var);
 	
@@ -45,8 +45,6 @@ public class HelperClass {
             System.setProperty("java.class.path", System.getProperty("java.class.path") + File.pathSeparator + Constants.COMMONSPATH);
             System.setProperty("java.class.path", System.getProperty("java.class.path") + File.pathSeparator + Constants.CLASSPATH);
             JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
-            System.out.println("9>>>>>>>>>>> compiler sourceFile path: " + sourceFile.getPath());
-            System.out.println("10>>>>>>>>>> current class path: " + System.getProperty("java.class.path"));
             int err = compiler.run(null, null, null, sourceFile.getPath());
             if(err == 0){
 		File roots = new File(Constants.JAVAFILEPATH +var);			
@@ -96,9 +94,6 @@ public class HelperClass {
                 File rootsWAR = new File(Constants.CLASSPATH + inputDic );			
                 File sFileWAR = new File(rootsWAR, "/"+className+".class");
                 
-                System.out.println("5>>>>>> \n" + 
-                        "rootsWAR: " + rootsWAR.getAbsolutePath() +
-                        "sFileWAR: " + sFileWAR.getAbsolutePath());
                 
 		InputStream inputStrWAR = new FileInputStream(sFileWAR);
                 File rootoutputClassWAR = new File(Constants.CLASSPATHDicFolder + "/" +war);

@@ -33,6 +33,7 @@ import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
@@ -331,7 +332,7 @@ public class DatabaseSQL implements IDbComponent{
         
         return false;
     }
-
+    
     @Override
     public boolean removeContextForm(Template form) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
@@ -1142,6 +1143,9 @@ public class DatabaseSQL implements IDbComponent{
             // check if category is ok
             PreparedStatement ps = conn.prepareStatement("SELECT categoryName FROM categories WHERE categoryName = ?"); 
             ps.setString(1, type.getCategory());
+            
+            System.out.println("1DB>>>>>>>>>>> Category = " + type.getCategory());
+            
             ResultSet rs = ps.executeQuery();
              ps.closeOnCompletion();
             if(rs.next()){ // then category exists!
@@ -1158,9 +1162,29 @@ public class DatabaseSQL implements IDbComponent{
                     
                     ps = conn.prepareStatement("SELECT facttypeName FROM facttype WHERE facttypeName = ?");
                     ps.setString(1, field.getType());
-                    ResultSet rs3 = ps.executeQuery();
-                     ps.closeOnCompletion();
+                    
+                    System.out.println("?PM>>>>> " + field.getType());
+                    
+                            ResultSet rs3 = ps.executeQuery();
+                    ps.closeOnCompletion();
                     rs3.next();
+                    //LVH
+                    ResultSetMetaData metadata = rs.getMetaData();
+                    int columnCount = metadata.getColumnCount();
+                    for (int i = 1; i <= columnCount; i++) {
+                        System.out.println("MCol>>>>" + metadata.getColumnName(i) + ", ");  
+                        System.out.println("Index: " + i + " -- Content: " + rs3.getString(i));
+                    }
+                    System.out.println("NOfColls>>>>" + metadata.getColumnCount());
+                    
+                    while (rs.next()) {
+                        String row = "";
+                        for (int i = 1; i <= columnCount; i++) {
+                            row += rs.getString(i) + ", ";
+                        }
+                        System.out.println("Row>>>>" + row);
+                    }
+
                     String typeName = rs3.getString("facttypeName");
                     rs3.close();
                     ps = conn.prepareStatement("INSERT INTO fields (fieldName, fieldType, isVar) VALUES (?,?,?)",Statement.RETURN_GENERATED_KEYS);
@@ -1453,6 +1477,32 @@ public class DatabaseSQL implements IDbComponent{
             Logger.getLogger(DatabaseSQL.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
+    
+    
+    public void addDefaultCategories(){
+        Connection conn;
+        try {
+            conn = ds.getConnection();
+            PreparedStatement ps1 = conn.prepareStatement(
+                    "INSERT INTO `cmt`.`categories` (`categoryName`) VALUES ('d');");
+            ps1.executeUpdate();
+            ps1.closeOnCompletion();
+            
+            PreparedStatement ps2 = conn.prepareStatement("INSERT INTO `cmt`.`categories` (`categoryName`) VALUES ('Default');");
+            ps2.executeUpdate();
+            ps2.closeOnCompletion();
+            
+            PreparedStatement ps3 = conn.prepareStatement("INSERT INTO `cmt`.`categories` (`categoryName`) VALUES ('Code');");
+            ps3.executeUpdate();
+            ps3.closeOnCompletion();
+            
+            conn.close();           
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseSQL.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+    }
+    
     @Override
    public Template getTemplateOfSituation(String situationName){
         try {

@@ -78,6 +78,9 @@ public class CMTCore {
                 DbComponent.getDbComponent().resetDb();
         }else{
             DatabaseSQL.getDbComponent().resetDb();
+            
+            // LVH
+            DatabaseSQL.getDbComponent().addDefaultCategories();
         }
         ArrayList<File> dicToDelete = new ArrayList<>();
         File dicEv = new File(Constants.JAVAFILEPATH + Constants.PACKAGEEVENTSSLASH);
@@ -348,12 +351,10 @@ public class CMTCore {
                
                 String parName = obPar.getString("parName");
                 String parType = obPar.getString("parType");
-                System.out.println(">>>>>>>>" + parType);
                
                 if(!parType.contains("java")){  // No default Java type parameter
                    
                     String[] splitLastPoint = parType.split("\\.");
-                    System.out.println("2>>>>>>> " + splitLastPoint[0]);
                     int z = splitLastPoint.length;
                     String simpleClassName = parType;
                     String finalBinaryTypeName = "";
@@ -374,7 +375,6 @@ public class CMTCore {
                         }
                     }
                 }else{
-                    System.out.println("5>>>>>>> ELSE " + parType);
                     source += " " +parType + " " + parName;
                     if(a != arrPars.length()-1){
                         source += ",";
@@ -386,7 +386,6 @@ public class CMTCore {
         
         source += "}";
         
-        System.out.println("4>>>>>>>>>>>> \n" + source);
         
         HelperClass.compile(source, className, Constants.PACKAGEFUNCTIONSSLASH);
          Class<?> cl;
@@ -601,7 +600,6 @@ public class CMTCore {
         String classUriEv = projectTargetPath +"/"+Constants.PACKAGEEVENTSSLASH+"/"+type + ".class";    // In case of an event
                
         if(Files.exists(new File(classUri).toPath()) || Files.exists(new File(classUriEv).toPath())  ){
-            System.out.println("3>>>>" + "TRUE");
             return true;
         } return false;
     }

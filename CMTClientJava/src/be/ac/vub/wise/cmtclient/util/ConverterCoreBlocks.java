@@ -1139,7 +1139,7 @@ public class ConverterCoreBlocks {
         ArrayList<CMTField> cmtfields = new ArrayList<CMTField>();
         Field[] fields = factClass.getDeclaredFields();
         for(Field field : fields){
-            CMTField cmtfield = new CMTField(field.getName(), field.getType().getName());
+            CMTField cmtfield = new CMTField(field.getName(), getSimpleName(field.getType().getName()));
             cmtfields.add(cmtfield);
         }
         FactType type = new FactType(factClass.getSimpleName(), "fact", uriField, cmtfields);
