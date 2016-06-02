@@ -9,11 +9,11 @@ package testplugins;
  *
  * @author Sandra
  */
-public class Location {
+public class Loc2 {
     
-    public String room;
+        public String room;
     
-    public Location(String room){
+    public Loc2(String room){
         this.room = room;
     }
     

@@ -64,31 +64,16 @@ public class EventInput implements IFactType{
     }
     
     public boolean isFilledIn(){
-        int counter = 0;
-        for(CMTField f : fields){
-            if(f.isIsVar()){counter += 1;}
+        int counter = limitations.size();
+     
+        for(FieldValueLimitation f : limitations){
+            if(!f.getValue().equals("")){
+                
+                
+                counter -=1;
+            }
         }
-        
-        
-        
-        
-//        int counter = limitations.size();
-//     
-//        for(FieldValueLimitation f : limitations){
-//            boolean isVar = false;
-//            for(CMTField cmtF: fields){
-//                if(cmtF.getName().equals(f.getFieldName())){
-//                    isVar = cmtF.isIsVar();
-//                    break;
-//                }
-//            }
-//            if(!isVar || (isVar && !f.getValue().equals(""))){
-//                
-//                
-//                counter -=1;
-//            }
-//        }
-        return limitations.size() == counter;
+        return counter <= 0;
     }
     
 }

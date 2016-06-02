@@ -13,7 +13,7 @@ public class Function implements IFunctionClass, Serializable{
     public String name;
     public ArrayList<CMTParameter> parameters;
     public String encapClass;
-    public int sql_id = 0;
+    public int sql_id =0;
     
     public Function(){}
 
@@ -45,16 +45,6 @@ public class Function implements IFunctionClass, Serializable{
         this.parameters.add(par);
     }
 
-    public int getSql_id() {
-        return sql_id;
-    }
-
-    public void setSql_id(int sql_id) {
-        this.sql_id = sql_id;
-    }
-    
-    
-    
     @Override
     public int hashCode() {
         int hash = 3;
@@ -62,6 +52,17 @@ public class Function implements IFunctionClass, Serializable{
         return hash;
     }
 
+    public int getSql_id() {
+        return sql_id;
+    }
+
+    public void setSql_id(int sql_id) {
+        this.sql_id = sql_id;
+    }
+
+    
+    
+    
     @Override
     public boolean equals(Object obj) {
         if (obj == null) {

@@ -11,17 +11,11 @@ import be.ac.vub.wise.cmtclient.blocks.Parameters;
  *
  * @author Sandra
  */
-public class Func2 {
-     @Parameters(parameters = "room")
-    public static boolean InBed(Location room){
-		return true;
-	}
+public class FunctionTests {
     
-    @Parameters(parameters = "room")
-    public static boolean noMovement(Location room){
-		return true;
+    @Parameters(parameters = "person1 person2")
+    public static boolean personsInLocation(Person person1, Person person2){
+		return person1.getName().equals(person2.getName());
 	}
-    
-
     
 }

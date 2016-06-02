@@ -9,12 +9,7 @@ package testplugins;
  *
  * @author Sandra
  */
-public class Location {
-    
-    public String room;
-    
-    public Location(String room){
-        this.room = room;
-    }
-    
+public class TestActivity{
+   
+	public TestActivity(){} 
 }

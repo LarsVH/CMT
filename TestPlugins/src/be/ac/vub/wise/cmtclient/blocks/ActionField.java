@@ -5,19 +5,18 @@
  */
 package be.ac.vub.wise.cmtclient.blocks;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 
 /**
  *
  * @author Sandra
  */
-public class ActionField implements Serializable{
+public class ActionField {
     
     public String name;
     public ArrayList<String> varList = null;
     public String format = "";
-    public String value ="";
+    public String value;
     
     public ActionField(String name, ArrayList<String> varList, String format){
         this.name = name;

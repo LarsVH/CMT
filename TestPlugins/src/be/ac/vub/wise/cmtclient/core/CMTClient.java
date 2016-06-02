@@ -6,9 +6,13 @@
 package be.ac.vub.wise.cmtclient.core;
 
 import be.ac.vub.wise.cmtclient.blocks.ActionClient;
+import be.ac.vub.wise.cmtclient.blocks.ActionField;
+import be.ac.vub.wise.cmtclient.blocks.CMTField;
 import be.ac.vub.wise.cmtclient.blocks.Fact;
 import be.ac.vub.wise.cmtclient.blocks.FactType;
 import be.ac.vub.wise.cmtclient.blocks.Function;
+import be.ac.vub.wise.cmtclient.blocks.IFactType;
+import be.ac.vub.wise.cmtclient.blocks.CMTParameter;
 import be.ac.vub.wise.cmtclient.blocks.Event;
 import be.ac.vub.wise.cmtclient.blocks.Rule;
 import be.ac.vub.wise.cmtclient.blocks.TemplateActions;
@@ -16,6 +20,7 @@ import be.ac.vub.wise.cmtclient.blocks.TemplateHA;
 import be.ac.vub.wise.cmtclient.util.Compilers;
 import be.ac.vub.wise.cmtclient.util.Constants;
 import be.ac.vub.wise.cmtclient.util.ConverterCoreBlocks;
+import com.google.gson.Gson;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
@@ -23,7 +28,11 @@ import com.mashape.unirest.http.exceptions.UnirestException;
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.websocket.ClientEndpoint;
@@ -82,8 +91,7 @@ public class CMTClient {
     
     public static void shortcutRegisterFacttypeInCMT(Class<?> factClass, String uriField, String category){
         try {
-            FactType type = ConverterCoreBlocks.fromFactClassToFactType(factClass, uriField);
-            type.setCategory(category);
+            FactType type = ConverterCoreBlocks.fromFactClassToFactType(factClass, uriField, category);
             JSONObject json = ConverterCoreBlocks.fromFactTypeToJSON(type);
             String stjson = json.toString();
             String result = stjson.trim().trim();
@@ -93,7 +101,7 @@ public class CMTClient {
         }
     }
 
-    public static void shortcutAddFactInCMT(Object object){
+    public static void shortcutAddFactInCMT(Object object){ // not using with sql db!
         Fact fact = ConverterCoreBlocks.fromObjectToFactInstance(object);
         addFactInCMT(fact);
 //        try {
@@ -111,15 +119,15 @@ public class CMTClient {
             JSONObject json = ConverterCoreBlocks.fromFactToJSON(object);
             String stjson = json.toString();
             String result = stjson.trim().trim();
+            System.out.println(" -- " + result);
             HttpResponse<String> request = Unirest.post(url+"/addFactInFactFormat").body(result).asString();
         } catch (UnirestException ex) {
             Logger.getLogger(CMTClient.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-    // Declare what events you (= sensor) are going to send (object.getClass -> sent class to CMT)
-    // Object = eventobject, isActivity = true, isCustom = made by usr/prgmr, uriField = label, varList = ignore -> '(),  varFormat (ignore) -> ""
-    public static void shortcutRegisterEventInCMT(Object object, boolean isActivity, boolean isCustom, String uriField, ArrayList<String> varList, String varFormat){
-        FactType event = ConverterCoreBlocks.fromEventClassToFactType(object.getClass(), isActivity, isCustom, uriField, varList, varFormat);
+    
+    public static void shortcutRegisterEventInCMT(Object object, boolean isActivity, boolean isCustom, String uriField, ArrayList<String> varList, String varFormat, String category){
+        FactType event = ConverterCoreBlocks.fromEventClassToFactType(object.getClass(), isActivity, isCustom, uriField, varList, varFormat, category);
         registerEventTypeInCMT(event);
     }
     
@@ -177,7 +185,6 @@ public class CMTClient {
     
     public static void addTemplateHAInCMT(TemplateHA temp){
         JSONObject json = ConverterCoreBlocks.fromTemplateToJSON(temp);
-        System.out.println("json " + json);
         String stjson = json.toString();
         String result = stjson.trim().trim();
         try {
@@ -186,7 +193,6 @@ public class CMTClient {
         } catch (UnirestException ex) {
             Logger.getLogger(CMTClient.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
     }
     
     public static void addActionInCMT(ActionClient action){
@@ -241,17 +247,28 @@ public class CMTClient {
         return null;
     }
     
+    public static Fact getFact(int id){ 
+        try {
+            
+            HttpResponse<JsonNode> request = Unirest.get(url+"/getFactId/"+id).asJson();
+            JSONObject urlRes = request.getBody().getObject();
+            Fact fact = ConverterCoreBlocks.fromJSONtoFact(urlRes);
+            return fact;
+        } catch (UnirestException ex) {
+            Logger.getLogger(CMTClient.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
+    }
+    
     public static HashSet<Fact> getFactsOfType(FactType factType){
         HashSet<Fact> result = new HashSet<Fact>();
         try {
-            System.out.println("-- in get facts of type ");
             HttpResponse<String> request = Unirest.get(url+"/getAllFactsWithType/"+factType.getClassName()).asString();
             JSONObject urlRes = new JSONObject(request.getBody().trim().trim());
             JSONArray facts = urlRes.getJSONArray("facts");
             for(int i = 0; i<facts.length();i++){
                 JSONObject factO = facts.getJSONObject(i);
                 Fact fact = ConverterCoreBlocks.fromJSONtoFact(factO);
-                System.out.println("-- in get facts of type fact = " + fact.getUriValue() );
                 result.add(fact);
             }
         } catch (UnirestException ex) {
@@ -415,7 +432,6 @@ public class CMTClient {
     public static void registerEventTypeInCMT(FactType eventType){
         try {
             JSONObject json = ConverterCoreBlocks.fromFactTypeToJSON(eventType);
-            
             String stjson = json.toString();
             String result = stjson.trim().trim();
             HttpResponse<String> request = Unirest.post(url+"/registerEventClass").body(result).asString();
@@ -423,7 +439,6 @@ public class CMTClient {
             Logger.getLogger(CMTClient.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-    
     public static void registerFacttypeInCMT(FactType type){
         try {
             
@@ -435,10 +450,9 @@ public class CMTClient {
             Logger.getLogger(CMTClient.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-    
     public static FactType getFactTypeFactWithName(String name){
         try{
-            HttpResponse<String> request = Unirest.get(url+"/getFactTypeFact/"+ConverterCoreBlocks.toUppercaseFirstLetter(name)).asString();
+            HttpResponse<String> request = Unirest.get(url+"/getFactTypeFact/"+name).asString();
             JSONObject urlRes = new JSONObject(request.getBody());
             System.out.println("-------- return facttype " + urlRes);
             FactType facttype = ConverterCoreBlocks.fromJSONtoFactTypeFact(urlRes);
@@ -452,23 +466,15 @@ public class CMTClient {
     }
     
     public static void createNewActivity(TemplateHA temp){
-   //     FactType newActType = Compilers.createNewActivity(temp);
-     //   registerEventTypeInCMT(newActType);
-        String result = ConverterCoreBlocks.fromTemplateToJSON(temp).toString();
-          try {
-              HttpResponse<String> request = Unirest.post(url+"/compileAndAddRule").body(result).asString();
-          } catch (UnirestException ex) {
-              Logger.getLogger(CMTClient.class.getName()).log(Level.SEVERE, null, ex);
-          }
+        FactType newActType = Compilers.createNewActivity(temp);
+        registerEventTypeInCMT(newActType);
+        Rule rule = Compilers.compileDrlRuleActivity(temp);
+        addRuleInCMT(rule.getName(), rule.getDrlRule());
     }
     
     public static void createNewRule(TemplateActions temp){
-        String result = ConverterCoreBlocks.fromTemplateToJSON(temp).toString();
-          try {
-              HttpResponse<String> request = Unirest.post(url+"/compileAndAddRule").body(result).asString();
-          } catch (UnirestException ex) {
-              Logger.getLogger(CMTClient.class.getName()).log(Level.SEVERE, null, ex);
-          }
+        Rule rule = Compilers.compileDrlRuleActivity(temp);
+        addRuleInCMT(rule.getName(), rule.getDrlRule());
     }
     
     public static String getSimpleTypeName(String name){
@@ -483,6 +489,7 @@ public class CMTClient {
         }
         return name;
     }
+    
     public static String getSimpleNameAll(String name){
                     String[] splitLastPoint = name.split("\\.");
                     int z = splitLastPoint.length;
@@ -493,7 +500,6 @@ public class CMTClient {
                     return simpleClassName;
   
     }
-    
     @OnOpen
     public void onOpen(Session session) {
     this.session = session;
@@ -568,12 +574,6 @@ public class CMTClient {
                         ActionClient act = ConverterCoreBlocks.fromJSONtoAction(input.getJSONObject("object"));
                         for(CMTListener lis : listeners){
                             lis.actionAdded(act);
-                        }
-                        break;
-                    case "addInvoked":
-                        ActionClient act1 = ConverterCoreBlocks.fromJSONtoAction(input.getJSONObject("object"));
-                        for(CMTListener lis : listeners){
-                            lis.actionInvoked(act1);
                         }
                         break;
                     case "currentContext":

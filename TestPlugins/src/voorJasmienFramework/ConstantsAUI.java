@@ -3,18 +3,14 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package testplugins;
+package voorJasmienFramework;
 
 /**
  *
  * @author Sandra
  */
-public class Location {
+public class ConstantsAUI {
     
-    public String room;
-    
-    public Location(String room){
-        this.room = room;
-    }
-    
+    public static final String URLREVITA = "http://localhost:8080/ReViTaFinal";
+    public static final String URLCMT = "http://192.168.0.21:18401/CMTServerRestFull";
 }

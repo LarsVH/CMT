@@ -5,13 +5,11 @@
  */
 package be.ac.vub.wise.cmtclient.blocks;
 
-import java.io.Serializable;
-
 /**
  *
  * @author Sandra
  */
-public class CMTParameter implements Serializable{
+public class CMTParameter {
     
     String parName;
     String type;

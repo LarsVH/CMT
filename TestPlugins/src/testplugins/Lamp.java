@@ -9,12 +9,19 @@ package testplugins;
  *
  * @author Sandra
  */
-public class Location {
+public class Lamp {
     
-    public String room;
+    public String id;
     
-    public Location(String room){
-        this.room = room;
+    public Lamp(){}
+
+    public String getId() {
+        return id;
     }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+    
     
 }

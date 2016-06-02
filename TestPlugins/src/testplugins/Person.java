@@ -7,19 +7,17 @@ package testplugins;
 
 /**
  *
- * @author lars
+ * @author Sandra
  */
 public class Person {
-    
     public String name;
-    public Location room;
-
-    public Person(String name, Location room) {
-        this.name = name;
-        this.room = room;
-        
-    }
+    public Loc2 loc;
     
+    public Person(String name, Loc2 loc){
+        this.name = name;
+        this.loc = loc;
+    }
+
     public String getName() {
         return name;
     }
@@ -28,15 +26,13 @@ public class Person {
         this.name = name;
     }
 
-    public Location getRoom() {
-        return room;
+    public Loc2 getLoc() {
+        return loc;
     }
 
-    public void setRoom(Location room) {
-        this.room = room;
+    public void setLoc(Loc2 loc) {
+        this.loc = loc;
     }
-   
-
     
     
 }

@@ -9,12 +9,14 @@ package testplugins;
  *
  * @author Sandra
  */
-public class Location {
+public class Day {
+    public String day;
     
-    public String room;
-    
-    public Location(String room){
-        this.room = room;
-    }
-    
+    public String getDay() {
+		return day;
+	}
+
+	public void setDay(String day) {
+		this.day = day;
+	}
 }
