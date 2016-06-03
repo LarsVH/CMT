@@ -22,7 +22,7 @@
               		</HBox>
                     <ListView fx:id="lv_templates"  minHeight="200" prefHeight="200.0" prefWidth="170.0" styleClass="listview"/>
                     <Pane minHeight="10" prefHeight="10.0" prefWidth="126.0" />
-                    <Label text="Input Blocks" minWidth="200" styleClass="labact"/>
+                    <Label text="Types" minWidth="200" styleClass="labact"/>
                     <TreeView fx:id="tv_inputs" minHeight="600" prefHeight="600.0" prefWidth="170.0" styleClass="listview" />                    
               </children>
             </VBox>

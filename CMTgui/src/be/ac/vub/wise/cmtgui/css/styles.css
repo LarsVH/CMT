@@ -21,6 +21,7 @@
 	-fx-padding: 2px;
 	-fx-font-size: 12;
 	-fx-font-weight: bold;
+        //-fx-font-style: italic;
 }
 .lbActionDrop{
 	-fx-min-width: 150;
@@ -107,7 +108,8 @@
 	-fx-min-width: 125;
 	-fx-pref-width: 125;	
 	-fx-max-width: 125;
-	
+	-fx-min-height: 25;
+	-fx-max-height: 25;
 	-fx-background-color: #3F51B5;	
 }
 
@@ -115,9 +117,9 @@
 	-fx-min-width: 125;
 	-fx-max-width: 125;
 	-fx-pref-width: 125;	
-	-fx-min-height: 85;
-	-fx-max-height: 85;
-	-fx-pref-height:85;
+	-fx-min-height: 115;
+	-fx-max-height: 115;
+	-fx-pref-height:115;
 	-fx-background-color: #3F51B5;
 }
 
@@ -149,8 +151,8 @@
 	-fx-min-width: 125;
 	-fx-max-width: 125;
 	-fx-pref-width: 125;	
-	-fx-min-height: 20;
-	-fx-max-height: 20;
+	-fx-min-height: 50;
+	-fx-max-height: 50;
 	-fx-background-color: #3F51B5;
 }
 

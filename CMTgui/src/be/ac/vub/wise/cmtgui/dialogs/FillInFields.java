@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
@@ -24,6 +25,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.scene.text.Text;
 import javafx.scene.Node;
+import javafx.scene.input.MouseEvent;
 import javafx.stage.StageStyle;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.math.NumberUtils;
@@ -127,6 +129,13 @@ public class FillInFields extends Dialog<ResultFields>{
                 grid.add(lb_fieldName, 0, i+1);
                 // operators
                 ComboBox<String> boxop = new ComboBox<>();
+                boxop.setOnMousePressed(new EventHandler<MouseEvent>(){
+                            @Override
+                            public void handle(MouseEvent event) {
+                                boxop.requestFocus();
+                                
+                            }
+                        });
                 ObservableList<String> listop = FXCollections.observableArrayList();
                 
                         System.out.println("--------- field format " + field.getFormat());
@@ -178,6 +187,13 @@ public class FillInFields extends Dialog<ResultFields>{
                 }else{
                     if(!field.getOptions().isEmpty()){
                         ComboBox<String> box = new ComboBox<>();
+                        box.setOnMousePressed(new EventHandler<MouseEvent>(){
+                            @Override
+                            public void handle(MouseEvent event) {
+                                box.requestFocus();
+                                
+                            }
+                        });
                         ObservableList<String> list = FXCollections.observableArrayList();
                         list.addAll(field.getOptions());
                         box.setItems(list);

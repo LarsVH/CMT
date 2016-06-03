@@ -83,7 +83,9 @@ import java.util.logging.Logger;
 import javafx.application.Platform;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
+import javafx.event.EventHandler;
 import javafx.scene.control.TreeItem;
+import javafx.scene.input.MouseEvent;
 
 public class TemplateExpertController  {
 
@@ -244,7 +246,7 @@ public class TemplateExpertController  {
             if(event.getDragboard().hasContent(ConstantsGUI.inputDataFormat)){
 		IFactType factType= (IFactType)event.getDragboard().getContent(ConstantsGUI.inputDataFormat);	
                 
-                System.out.println("--------------------- in drop");
+                System.out.println("--------------------- in drop facttype "  + ((FactType)factType).getFields().get(0).getSql_id());
 		VBox vb_input = createFactInputBox(factType);
                 System.out.println("--------------------- in drop" + vb_input);
 		int size = vb2_input.getChildren().size();
@@ -850,7 +852,7 @@ public class TemplateExpertController  {
             HBox hb_header = new HBox();
             hb_header.getStyleClass().add("headerBoxOutputHa");
             TextField tf_name = new TextField();
-            tf_name.setPromptText("Enter activity name");
+            tf_name.setPromptText("Enter situation name");
             tf_name.getStyleClass().add("tf_name_Activity");
             hb_header.getChildren().add(tf_name);
             vb_outputHa.getChildren().add(hb_header);	
@@ -1111,6 +1113,13 @@ public class TemplateExpertController  {
 	
 	private ComboBox<String> getNewComboBoxOperators(){
 		ComboBox<String> combo = new ComboBox<String>();
+                combo.setOnMousePressed(new EventHandler<MouseEvent>(){
+                            @Override
+                            public void handle(MouseEvent event) {
+                                combo.requestFocus();
+                                
+                            }
+                        });
 		ObservableList<String> list = FXCollections.observableArrayList();
 		list.addAll("AND","OR","NOT");
 		combo.setItems(list);
@@ -1847,6 +1856,13 @@ public class TemplateExpertController  {
 		ComboBox<String> box = new ComboBox<String>();
                 box.setItems(items);
                 box.getSelectionModel().select("==");
+                box.setOnMousePressed(new EventHandler<MouseEvent>(){
+                            @Override
+                            public void handle(MouseEvent event) {
+                                box.requestFocus();
+                                
+                            }
+                        });
 		
             box.getStyleClass().add("boxOps");
             hb.getChildren().add(box);
@@ -1869,6 +1885,13 @@ public class TemplateExpertController  {
                 ObservableList<String> items = FXCollections.observableArrayList();
 		items.addAll(ops);
                 ComboBox<String> boxop = new ComboBox<String>();
+                boxop.setOnMousePressed(new EventHandler<MouseEvent>(){
+                            @Override
+                            public void handle(MouseEvent event) {
+                                boxop.requestFocus();
+                                
+                            }
+                        });
                 boxop.setItems(items);
                 boxop.getStyleClass().add("boxOps");
                 boxop.getSelectionModel().select("==");
@@ -1962,6 +1985,13 @@ public class TemplateExpertController  {
 		items.addAll(list);
 		items.add("Any");
 		ComboBox<String> box = new ComboBox<String>();
+                box.setOnMousePressed(new EventHandler<MouseEvent>(){
+                            @Override
+                            public void handle(MouseEvent event) {
+                                box.requestFocus();
+                                
+                            }
+                        });
                 box.setItems(items);
 		box.getSelectionModel().select("Any");
 		

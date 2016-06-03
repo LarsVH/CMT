@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.control.ButtonBar;
@@ -24,6 +25,7 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 import javafx.stage.StageStyle;
 import org.apache.commons.lang3.math.NumberUtils;
@@ -133,8 +135,21 @@ public class FillInActionFields extends Dialog<ResultFieldsActions>{
                 }else{
                     if(!field.getVarList().isEmpty()){
                         ComboBox<String> box = new ComboBox<>();
+                        box.setOnMousePressed(new EventHandler<MouseEvent>(){	// Miserie met comboboxen -> doe dit weg (java <-> Win10) 
+                            @Override
+                            public void handle(MouseEvent event) {
+                                box.requestFocus();
+                                
+                            }
+                        });
                         ObservableList<String> list = FXCollections.observableArrayList();
-                        list.addAll(field.getVarList());
+                        System.out.println("------- vars " + field.getVarList().size());
+                        System.out.println("------- vars " + field.getValue());
+                        
+                        for(String st : field.getVarList()){
+                            System.out.println("------- vars " + st);
+                            list.add(st);
+                        }
                         box.setItems(list);
                          if(!field.getValue().equals("")){
                              box.getSelectionModel().selectFirst();

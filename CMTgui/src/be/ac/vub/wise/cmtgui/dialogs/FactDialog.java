@@ -45,6 +45,7 @@ import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.HashSet;
+import javafx.scene.input.MouseEvent;
 
 
 public class FactDialog  {
@@ -125,6 +126,13 @@ public class FactDialog  {
                                 list.add(fa);
                             }
                             ComboBox<Fact> combo = new ComboBox<Fact>(list);
+                            combo.setOnMousePressed(new EventHandler<MouseEvent>(){
+                            @Override
+                            public void handle(MouseEvent event) {
+                                combo.requestFocus();
+                                
+                            }
+                        });
 			    combo.setConverter(new StringConverter<Fact>() {
 					            @Override
 					            public String toString(Fact object) {
