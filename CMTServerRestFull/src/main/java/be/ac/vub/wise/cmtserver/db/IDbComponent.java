@@ -42,6 +42,7 @@ public interface IDbComponent {
     public boolean removeFact(IFactType fact);
     public void addFunction(Function function);
     public HashSet<Function> getFunctions();
+    public ArrayList<FactType> getCustomEventsUsedInTemplate(int templateId);
     
     public boolean addAction(Action action);
     public boolean removeAction(Action action);
@@ -56,5 +57,6 @@ public interface IDbComponent {
     public boolean restartDb();
     public void closeDb();
     public Template getTemplateOfSituation(String situationName);
-    public ArrayList<FactType> getCustomEventsUsedInTemplate(int templateId);
+    
+    public ArrayList<String> getLievensteinMatchesFactTypes(String strToMatch, int threshold);
 }

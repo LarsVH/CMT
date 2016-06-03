@@ -462,17 +462,49 @@ public class Converter {
             String className = object.getString("className");
             Action actionObject = CMTDelegator.get().getAction(className);
             if(actionObject != null){
-                ActionClient act = fromActionObjectToActionClient(actionObject);
+                ActionClient actCl = null;
+                if(!CMTDelegator.get().getDbComponentVersion().equals("SQL")){
+                    actCl = fromActionObjectToActionClient(actionObject);
+                }else{
+                    actCl = (ActionClient) actionObject;
+                }
+                
                 JSONArray arrFields = object.getJSONArray("fields");
+                System.out.println(" -------------------------------- fields arr json ");
                 for(int i=0;i<arrFields.length();i++){
                     JSONObject jsonField = arrFields.getJSONObject(i);
-                    for(ActionField f : act.getFields()){
+                    for(ActionField f : actCl.getFields()){
                         if(f.getName().equals(jsonField.getString("fieldName"))){
                             f.setValue(jsonField.getString("value"));
                         }
                     }
                 }
-                return act;
+                return actCl;
+            }else{
+                if(!CMTDelegator.get().getDbComponentVersion().equals("SQL")){
+                    // TODO
+                }else{
+                    
+                    ArrayList<ActionField> fi = new ArrayList<>();
+                    JSONArray arrFields = object.getJSONArray("fields");
+                    System.out.println(" -------------------------------- fields arr json " + arrFields.length());
+                    
+                    for(int i=0;i<arrFields.length();i++){
+                        JSONObject jsonF = arrFields.getJSONObject(i);
+                        ArrayList<String> ops = new ArrayList<>();
+                        JSONArray opsjson = jsonF.getJSONArray("varList");
+                        for(int ii = 0; ii<opsjson.length();ii++){
+                            JSONObject var = opsjson.getJSONObject(ii);
+                            ops.add(var.getString("var"));
+                        }
+                        ActionField field = new ActionField(jsonF.getString("fieldName"), ops, jsonF.getString("varFormat"));
+                        fi.add(field);
+                    }
+                    System.out.println(" -------------------------------- fields arr fi " + fi.size());
+                     ActionClient cl = new ActionClient(className, fi);
+                     return cl;
+                }
+            
             }
         } catch (JSONException ex) {
             Logger.getLogger(Converter.class.getName()).log(Level.SEVERE, null, ex);
@@ -487,6 +519,7 @@ public class Converter {
             for(Field field : object.getClass().getDeclaredFields()){
                 System.out.println(" " + field.getName());
                 System.out.println(object.getClass().getDeclaredField("listStatus").get(object).getClass());
+               
             }
         for(Field field : object.getClass().getDeclaredFields()){
             System.out.println(field.getName());
@@ -1130,12 +1163,19 @@ public class Converter {
         return result;
     }
     
-    public static JSONArray fromListBindingsToJSON(LinkedList<Binding> bindings){
+    private static JSONArray fromListBindingsToJSON(LinkedList<Binding> bindings){
         JSONArray arrBindings = new JSONArray();
         try{
                 for(int ii=0; ii<bindings.size();ii++){
+                    JSONObject objBind = new JSONObject();
+                    objBind.put("index", ii);
                     Binding binding = bindings.get(ii);
-                    JSONObject objBind = fromBindingToJSON(binding, ii);  
+                    BindingParameter startBind = binding.getStartBinding();
+                    BindingParameter endBind = binding.getEndBinding();
+                    System.out.println("--- start " + startBind.getIndexObj());
+                    System.out.println("--- end " + endBind.getIndexObj());
+                    objBind.put("startBinding", fromBindingParameterToJSON(startBind));
+                    objBind.put("endBinding", fromBindingParameterToJSON(endBind));
                     arrBindings.put(objBind);
                 }
         } catch (JSONException ex) {
@@ -1144,23 +1184,6 @@ public class Converter {
         return arrBindings;
     }
     
-    // (LvH)
-    // Per binding converter
-    // Needed for exporter
-    public static JSONObject fromBindingToJSON(Binding binding, int index) {
-        JSONObject objBind = new JSONObject();
-        objBind.put("index", index);
-
-                    BindingParameter startBind = binding.getStartBinding();
-                    BindingParameter endBind = binding.getEndBinding();
-                    System.out.println("--- start " + startBind.getIndexObj());
-                    System.out.println("--- end " + endBind.getIndexObj());
-                    objBind.put("startBinding", fromBindingParameterToJSON(startBind));
-                    objBind.put("endBinding", fromBindingParameterToJSON(endBind));
-
-        return objBind;
-    }
-
     public static LinkedList<Binding> fromJSONtoListBindings(JSONArray arrbindings){
         LinkedList<Binding> bindings = new LinkedList<Binding>();
         try{

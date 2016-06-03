@@ -6,6 +6,8 @@
 package be.ac.vub.wise.cmtserver.db;
 
 import be.ac.vub.wise.cmtserver.blocks.Action;
+import be.ac.vub.wise.cmtserver.blocks.ActionClient;
+import be.ac.vub.wise.cmtserver.blocks.ActionField;
 import be.ac.vub.wise.cmtserver.blocks.Binding;
 import be.ac.vub.wise.cmtserver.blocks.BindingInputFact;
 import be.ac.vub.wise.cmtserver.blocks.BindingInputField;
@@ -33,7 +35,6 @@ import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
@@ -136,6 +137,7 @@ public class DatabaseSQL implements IDbComponent{
                                         ifacttype =((BindingInputField) binding.getEndBinding()).getInputObject();
                                         indexInput = ((BindingInputField) binding.getEndBinding()).getIndexObj();
                                         fieldId = ((BindingInputField) binding.getEndBinding()).getField().getSql_id();
+                                        System.out.println("------------------------------- field id " + fieldId);
                                     }
                                 }
                                 int parameterId = -1;
@@ -166,6 +168,7 @@ public class DatabaseSQL implements IDbComponent{
                                             ps.executeUpdate();
                                             ps.close();
                                         }else{
+                                            System.out.println("--- field id " + fieldId);
                                             ps = conn.prepareStatement(query);
                                             ps.setInt(1, ifblId);
                                             ps.setInt(2, parameterId);
@@ -332,7 +335,7 @@ public class DatabaseSQL implements IDbComponent{
         
         return false;
     }
-    
+
     @Override
     public boolean removeContextForm(Template form) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
@@ -877,9 +880,18 @@ public class DatabaseSQL implements IDbComponent{
             ResultSet rs = ps.executeQuery();
              ps.closeOnCompletion();
              System.out.println(" cat " + type.getCategory() );
-            if(rs.next()){ // then category exists!
-                System.out.println(" in rs next ");
-                String category = rs.getString("categoryName");
+              String category = type.getCategory();
+            if(!rs.next()){
+               
+               ps = conn.prepareStatement("INSERT INTO categories VALUES(?)");
+               ps.setString(1, type.getCategory());
+               ps.closeOnCompletion();
+               ps.executeUpdate();
+            }
+            rs.close();
+             
+             
+                //String category = rs.getString("categoryName");
                 ps = conn.prepareStatement("INSERT INTO facttype (facttypeName, facttypeCategory, isCustom, facttypeType) VALUES(?,?,?,?)");
                 ps.setString(1, type.getClassName());
                 ps.setString(2, category);
@@ -948,11 +960,7 @@ public class DatabaseSQL implements IDbComponent{
                     }
                     
                 }
-            }else{
-                rs.close();
-          
-                throw new UnsupportedOperationException("Something went wrong"); 
-            }
+            
            
             conn.close();
             
@@ -1143,14 +1151,18 @@ public class DatabaseSQL implements IDbComponent{
             // check if category is ok
             PreparedStatement ps = conn.prepareStatement("SELECT categoryName FROM categories WHERE categoryName = ?"); 
             ps.setString(1, type.getCategory());
-            
-            System.out.println("1DB>>>>>>>>>>> Category = " + type.getCategory());
-            
             ResultSet rs = ps.executeQuery();
              ps.closeOnCompletion();
-            if(rs.next()){ // then category exists!
-                String category = rs.getString("categoryName");
-                ps = conn.prepareStatement("INSERT INTO facttype (facttypeName, facttypeCategory, isCustom, facttypeType) VALUES(?,?,?,?)");
+             String category = type.getCategory();
+            if(!rs.next()){
+               
+               ps = conn.prepareStatement("INSERT INTO categories VALUES(?)");
+               ps.setString(1, type.getCategory());
+               ps.closeOnCompletion();
+               ps.executeUpdate();
+            }
+            rs.close();
+            ps = conn.prepareStatement("INSERT INTO facttype (facttypeName, facttypeCategory, isCustom, facttypeType) VALUES(?,?,?,?)");
                 ps.setString(1, type.getClassName());
                 ps.setString(2, category);
                 ps.setInt(3, type.isIsCustom() ? 1 : 0);
@@ -1162,29 +1174,9 @@ public class DatabaseSQL implements IDbComponent{
                     
                     ps = conn.prepareStatement("SELECT facttypeName FROM facttype WHERE facttypeName = ?");
                     ps.setString(1, field.getType());
-                    
-                    System.out.println("?PM>>>>> " + field.getType());
-                    
-                            ResultSet rs3 = ps.executeQuery();
-                    ps.closeOnCompletion();
+                    ResultSet rs3 = ps.executeQuery();
+                     ps.closeOnCompletion();
                     rs3.next();
-                    //LVH
-                    ResultSetMetaData metadata = rs.getMetaData();
-                    int columnCount = metadata.getColumnCount();
-                    for (int i = 1; i <= columnCount; i++) {
-                        System.out.println("MCol>>>>" + metadata.getColumnName(i) + ", ");  
-                        System.out.println("Index: " + i + " -- Content: " + rs3.getString(i));
-                    }
-                    System.out.println("NOfColls>>>>" + metadata.getColumnCount());
-                    
-                    while (rs.next()) {
-                        String row = "";
-                        for (int i = 1; i <= columnCount; i++) {
-                            row += rs.getString(i) + ", ";
-                        }
-                        System.out.println("Row>>>>" + row);
-                    }
-
                     String typeName = rs3.getString("facttypeName");
                     rs3.close();
                     ps = conn.prepareStatement("INSERT INTO fields (fieldName, fieldType, isVar) VALUES (?,?,?)",Statement.RETURN_GENERATED_KEYS);
@@ -1211,11 +1203,6 @@ public class DatabaseSQL implements IDbComponent{
                     ps.executeUpdate();
                          ps.close();
                 }
-            }else{
-                rs.close();
-                throw new UnsupportedOperationException("Something went wrong"); 
-            }
-      
             conn.close();
             
         } catch (SQLException ex) {
@@ -1411,7 +1398,50 @@ public class DatabaseSQL implements IDbComponent{
 
     @Override
     public boolean addAction(Action action) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        try {
+            ActionClient act = (ActionClient) action;
+            Connection conn = ds.getConnection();
+            PreparedStatement ps = conn.prepareStatement("INSERT INTO action (action_name) VALUES(?)", Statement.RETURN_GENERATED_KEYS);
+            ps.setString(1, act.getName());
+            ps.closeOnCompletion();
+            ps.executeUpdate();
+            ResultSet rs = ps.getGeneratedKeys();
+            rs.next();
+            int actId = rs.getInt(1);
+            rs.close();
+            System.out.println(" fieldss asct " + act.getFields().size());
+            for(ActionField f : act.getFields()){
+                ps = conn.prepareStatement("INSERT INTO actionfield (actionfield_name, actionfield_format) VALUES(?,?)", Statement.RETURN_GENERATED_KEYS);
+                ps.setString(1, f.getName());
+                ps.setString(2, f.getFormat());
+                ps.executeUpdate();
+                ps.closeOnCompletion();
+                ResultSet rs1 = ps.getGeneratedKeys();
+                rs1.next();
+                int fiId = rs1.getInt(1);
+                rs1.close();
+                if(!f.getVarList().isEmpty()){
+                    for(String st : f.getVarList()){
+                        ps = conn.prepareStatement("INSERT INTO actionfield_options VALUES (?,?) ");
+                        ps.setInt(1, fiId);
+                        ps.setString(2,st );
+                        ps.closeOnCompletion();
+                        ps.executeUpdate();
+                    }
+                }
+                
+                ps = conn.prepareStatement("INSERT INTO action_actionfields VALUES(?,?)");
+                ps.setInt(1, actId);
+                ps.setInt(2, fiId);
+                ps.closeOnCompletion();
+                ps.executeUpdate();
+            }
+            conn.close();
+            return true;
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseSQL.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return false;
     }
 
     @Override
@@ -1422,12 +1452,67 @@ public class DatabaseSQL implements IDbComponent{
     @Override
     public HashSet<Action> getActions() {
         HashSet<Action> result = new HashSet<>();
+        try {
+            Connection conn = ds.getConnection();
+            PreparedStatement ps = conn.prepareStatement("SELECT * FROM action ");
+            ps.closeOnCompletion();
+            ResultSet rs = ps.executeQuery();
+            while(rs.next()){
+                System.out.println(" --------- action name " + rs.getString("action_name"));
+                result.add(getAction(rs.getString("action_name")));
+            }
+            
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseSQL.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        
         return result;
     }
+    
+    
 
     @Override
     public Action getAction(String className) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        ActionClient result = null;
+        try {
+            Connection conn = ds.getConnection();
+            
+         ArrayList<ActionField> fields = new ArrayList<>();
+             PreparedStatement   ps = conn.prepareStatement("SELECT * FROM action "
+                                                            + " INNER JOIN action_actionfields ON action.idaction = action_actionfields.idaction "
+                                                            + " INNER JOIN actionfield ON action_actionfields.idaction = actionfield.idactionfield WHERE action.action_name = ? ");
+             ps.setString(1, className);
+                ps.closeOnCompletion();
+                ResultSet rs2 = ps.executeQuery();
+                while(rs2.next()){
+                    System.out.println("------- in rs 2");
+                   ActionField f = new ActionField(rs2.getString("actionfield_name"), new ArrayList<String>(), rs2.getString("actionfield_format"));
+                   if(f.getFormat().isEmpty()){
+                       ps = conn.prepareStatement("SELECT option_act FROM actionfield_options WHERE idactionfield = ?");
+                       ps.setInt(1, rs2.getInt("actionfield.idactionfield"));
+                       ps.closeOnCompletion();
+                       ResultSet rs3 = ps.executeQuery();
+                       ArrayList<String> ops = new ArrayList<>();
+                       while(rs3.next()){
+                           ops.add(rs3.getString("option_act"));
+                       }
+                       rs3.close();
+                       f.setVarList(ops);
+                   }
+                   fields.add(f);
+                     ActionClient act = new ActionClient(className, fields);   
+                result = act;
+                }
+                rs2.close();
+              
+                conn.close();
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseSQL.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        
+        return result;
     }
 
     @Override
@@ -1464,7 +1549,9 @@ public class DatabaseSQL implements IDbComponent{
             ps.setString(1, "cmt");
             ResultSet rs = ps.executeQuery();
             ps.closeOnCompletion();
+            System.out.println("----------- reset db ");
             while(rs.next()){
+                System.out.println("----------- reset db " + rs.getString("table_name"));
                 String query = "DELETE FROM  " + rs.getString("table_name");
                 ps = conn.prepareStatement(query);
                
@@ -1477,35 +1564,11 @@ public class DatabaseSQL implements IDbComponent{
             Logger.getLogger(DatabaseSQL.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-    
-    
-    public void addDefaultCategories(){
-        Connection conn;
-        try {
-            conn = ds.getConnection();
-            PreparedStatement ps1 = conn.prepareStatement(
-                    "INSERT INTO `cmt`.`categories` (`categoryName`) VALUES ('d');");
-            ps1.executeUpdate();
-            ps1.closeOnCompletion();
-            
-            PreparedStatement ps2 = conn.prepareStatement("INSERT INTO `cmt`.`categories` (`categoryName`) VALUES ('Default');");
-            ps2.executeUpdate();
-            ps2.closeOnCompletion();
-            
-            PreparedStatement ps3 = conn.prepareStatement("INSERT INTO `cmt`.`categories` (`categoryName`) VALUES ('Code');");
-            ps3.executeUpdate();
-            ps3.closeOnCompletion();
-            
-            conn.close();           
-        } catch (SQLException ex) {
-            Logger.getLogger(DatabaseSQL.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        
-    }
-    
     @Override
    public Template getTemplateOfSituation(String situationName){
         try {
+            
+            System.out.println("---------------------------------------- situ name " + situationName);
             // get Rule
             // get template of rule
             Connection conn = ds.getConnection();
@@ -1782,65 +1845,46 @@ public class DatabaseSQL implements IDbComponent{
             Logger.getLogger(DatabaseSQL.class.getName()).log(Level.SEVERE, null, ex);
         }
    }
+   
+   // template events
    @Override
    public ArrayList<FactType> getCustomEventsUsedInTemplate(int templateId){
-
        ArrayList<FactType> result = new ArrayList<>();
-
         try {
-
             Connection conn = ds.getConnection();
-
             // check ifblock for events
-
             PreparedStatement ps = conn.prepareStatement("SELECT facttype.facttypeName FROM ifblock_event "
-
                                                         + " INNER JOIN facttype ON ifblock_event.facttype_event = facttype.facttypeName "
-
                                                         + " WHERE ifblock_event.template_id = ? AND facttype.isCustom = ?");
-
             ps.setInt(1, templateId);
-
             ps.setInt(2, 1);
-
             ps.closeOnCompletion();
-
             ResultSet rs = ps.executeQuery();
-
             while(rs.next()){
-
                 result.add(getFactTypeWithName(rs.getString("facttypeName")));
-
                 Template temp = getTemplateOfSituation(rs.getString("facttypeName"));
-
                 ArrayList<FactType> types = getCustomEventsUsedInTemplate(temp.getSql_id());
-
                 result.addAll(types);
-
             }
-
             rs.close();
-
-           
-
+            
             // for functions no need -- if the event is used as a parameter then it is also as an ifblock event!
-
-           
-
+            
             conn.close();
-
         } catch (SQLException ex) {
-
             Logger.getLogger(DatabaseSQL.class.getName()).log(Level.SEVERE, null, ex);
-
         }
-
-      
-
        
-
+       
        return result;
-
    }
+
+    @Override
+    public ArrayList<String> getLievensteinMatchesFactTypes(String strToMatch, int threshold) {
+       ArrayList<String> result = new ArrayList<>();
+       
+       return result;
+        
+    }
     
 }

@@ -43,6 +43,12 @@ public class ActionField {
     public void setValue(String value) {
         this.value = value;
     }
+
+    public void setVarList(ArrayList<String> varList) {
+        this.varList = varList;
+    }
+    
+    
     
     
 }

@@ -33,7 +33,6 @@ import javax.tools.ToolProvider;
 public class HelperClass {
     
     public static synchronized void compile(String source, String className1, String var){
-
         String className = toUppercaseFirstLetter(className1);
         File root = new File(Constants.JAVAFILEPATH + var);
 	
@@ -93,8 +92,6 @@ public class HelperClass {
                 
                 File rootsWAR = new File(Constants.CLASSPATH + inputDic );			
                 File sFileWAR = new File(rootsWAR, "/"+className+".class");
-                
-                
 		InputStream inputStrWAR = new FileInputStream(sFileWAR);
                 File rootoutputClassWAR = new File(Constants.CLASSPATHDicFolder + "/" +war);
 		File targetFileClassWAR = new File(rootoutputClassWAR, "/"+className+".class"); 

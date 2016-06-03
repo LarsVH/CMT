@@ -7,26 +7,42 @@ package be.ac.vub.wise.cmtserver.restfull;
 import be.ac.vub.wise.cmtserver.core.CMTDelegator;
 import be.ac.vub.wise.cmtserver.blocks.Action;
 import be.ac.vub.wise.cmtserver.blocks.ActionClient;
+import be.ac.vub.wise.cmtserver.blocks.ActionField;
+import be.ac.vub.wise.cmtserver.blocks.ActionFieldAnno;
+import be.ac.vub.wise.cmtserver.blocks.Activity;
+import be.ac.vub.wise.cmtserver.blocks.Binding;
+import be.ac.vub.wise.cmtserver.blocks.BindingInputFact;
+import be.ac.vub.wise.cmtserver.blocks.BindingParameter;
+import be.ac.vub.wise.cmtserver.blocks.EventVariables;
 import be.ac.vub.wise.cmtserver.blocks.FactType;
 import be.ac.vub.wise.cmtserver.blocks.Fact;
 import be.ac.vub.wise.cmtserver.blocks.Function;
+import be.ac.vub.wise.cmtserver.blocks.IFBlock;
 import be.ac.vub.wise.cmtserver.blocks.IFactType;
+import be.ac.vub.wise.cmtserver.blocks.IFunctionClass;
+import be.ac.vub.wise.cmtserver.blocks.Parameters;
 import be.ac.vub.wise.cmtserver.blocks.Rule;
 import be.ac.vub.wise.cmtserver.blocks.TemplateActions;
 import be.ac.vub.wise.cmtserver.blocks.TemplateHA;
-import be.ac.vub.wise.cmtserver.sharing.SharingImportExport;
+import be.ac.vub.wise.cmtserver.blocks.UriFactType;
 import be.ac.vub.wise.cmtserver.util.Constants;
 import be.ac.vub.wise.cmtserver.util.Converter;
+import com.google.gson.Gson;
 import com.mashape.unirest.http.HttpResponse;
+import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
+import javax.ws.rs.PUT;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -267,10 +283,17 @@ public class CMTRest {
         HashSet<Action> actions = CMTDelegator.get().getAllActions();
         JSONArray arr = new JSONArray();
         for(Action action : actions){
+           if(!CMTDelegator.get().getDbComponentVersion().equals("SQL")){
             ActionClient actCl = Converter.fromActionObjectToActionClient(action);
             System.out.println(" actCl size fields " + actCl.getFields().size());
             JSONObject jsonAct = Converter.fromActionToJSON(actCl);
             arr.put(jsonAct);
+           }else{
+               ActionClient act = (ActionClient) action;
+            JSONObject jsonAct = Converter.fromActionToJSON(act);
+             arr.put(jsonAct);    
+           
+           }
 
         }
         obj.put("actions",arr );
@@ -393,6 +416,32 @@ public class CMTRest {
         return Response.status(201).entity(obj.toString()).build() ;
     }
     
+    @GET 
+    @Path("/getCustomEventsUsedInTemplate/{tempid}")
+    @Produces("application/json")
+    public Response getCustomEventsUsedInTemplate(@PathParam("tempid") int id) {
+        JSONObject obj = new JSONObject();
+        
+        if(!CMTDelegator.get().getDbComponentVersion().equals("SQL")){
+                
+            }else{
+                ArrayList<FactType> result = CMTDelegator.get().getCustomEventsUsedInTemplate(id);
+                 JSONArray arr = new JSONArray();
+                for(FactType type : result){
+                    JSONObject ob = Converter.fromFactTypeToJSON(type);
+                    arr.put(ob);
+                }
+                obj.put("facttypes", arr);
+                return Response.status(201).entity(obj.toString()).build() ;
+            }
+        
+        
+        
+        
+        obj.put("facttypes", new JSONArray());
+        return Response.status(201).entity(obj.toString()).build() ;
+    }
+    
     @GET // {"className" , "uriField" , "object"}
     @Path("/getAllFacts")
     @Produces("application/json")
@@ -466,54 +515,6 @@ public class CMTRest {
             Logger.getLogger(CMTRest.class.getName()).log(Level.SEVERE, null, ex);
         }
     
-    }
-    
-    @GET
-
-    @Path("/getCustomEventsUsedInTemplate/{tempid}")
-
-    @Produces("application/json")
-
-    public Response getCustomEventsUsedInTemplate(@PathParam("tempid") int id) {
-
-        JSONObject obj = new JSONObject();
-        if(!CMTDelegator.get().getDbComponentVersion().equals("SQL")){
-            }else{
-                ArrayList<FactType> result = CMTDelegator.get().getCustomEventsUsedInTemplate(id);
-                 JSONArray arr = new JSONArray();
-                for(FactType type : result){
-                    JSONObject ob = Converter.fromFactTypeToJSON(type);
-                    arr.put(ob);
-                }
-                obj.put("facttypes", arr);
-                return Response.status(201).entity(obj.toString()).build() ;
-        } 
-        obj.put("facttypes", new JSONArray());
-        return Response.status(201).entity(obj.toString()).build() ;
-    }
-    
-    
-    @GET
-    @Path("/shareTemplate/{tmplname}")
-    @Produces("application/json")
-    public Response shareTemplate(@PathParam("tmplname") String tmplName){
-        SharingImportExport sharing = new SharingImportExport();
-        
-        HashSet<TemplateHA> temps = CMTDelegator.get().getAllTemplateHA(); // -> gets all HA templates| maybe narrow down to a specific one
-        Iterator i = temps.iterator();
-        TemplateHA retTmpl = new TemplateHA();
-        retTmpl.name = "not found";
-        while(i.hasNext()){
-            TemplateHA currTmpl = (TemplateHA) i.next();
-            if(currTmpl.name.equals(tmplName)){
-                retTmpl = currTmpl;
-                break;
-            }
-        }
-    
-        JSONObject out = sharing.exportActivity(retTmpl);
-                
-        return Response.status(201).entity(out.toString()).build();
     }
     
 }

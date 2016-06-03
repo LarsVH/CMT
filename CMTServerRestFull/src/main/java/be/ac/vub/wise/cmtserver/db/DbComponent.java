@@ -470,4 +470,9 @@ public class DbComponent implements IDbComponent{
     public ArrayList<FactType> getCustomEventsUsedInTemplate(int templateId) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
+
+    @Override
+    public ArrayList<String> getLievensteinMatchesFactTypes(String strToMatch, int threshold) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
 }

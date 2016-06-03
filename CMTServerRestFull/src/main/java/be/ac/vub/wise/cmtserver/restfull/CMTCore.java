@@ -78,9 +78,6 @@ public class CMTCore {
                 DbComponent.getDbComponent().resetDb();
         }else{
             DatabaseSQL.getDbComponent().resetDb();
-            
-            // LVH
-            DatabaseSQL.getDbComponent().addDefaultCategories();
         }
         ArrayList<File> dicToDelete = new ArrayList<>();
         File dicEv = new File(Constants.JAVAFILEPATH + Constants.PACKAGEEVENTSSLASH);
@@ -385,8 +382,6 @@ public class CMTCore {
         }
         
         source += "}";
-        
-        
         HelperClass.compile(source, className, Constants.PACKAGEFUNCTIONSSLASH);
          Class<?> cl;
         try {
@@ -491,7 +486,8 @@ public class CMTCore {
         try {
             Class<?> cl = Class.forName(Constants.PACKAGEACTIONS + "."+ className);
             Object object = cl.newInstance();
-            Action action = (Action) object;
+            Action action = Converter.fromJSONtoAction(json);
+            System.out.println(" ----- " + CMTDelegator.get().getAction(className));
             CMTDelegator.get().addAction(action);
         } catch (ClassNotFoundException ex) {
             Logger.getLogger(CMTCore.class.getName()).log(Level.SEVERE, null, ex);
@@ -598,7 +594,6 @@ public class CMTCore {
         String classUri = projectTargetPath +"/"+Constants.PACKAGEFACTSSLASH+"/"+type + ".class";   // In case of a fact
         
         String classUriEv = projectTargetPath +"/"+Constants.PACKAGEEVENTSSLASH+"/"+type + ".class";    // In case of an event
-               
         if(Files.exists(new File(classUri).toPath()) || Files.exists(new File(classUriEv).toPath())  ){
             return true;
         } return false;

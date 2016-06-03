@@ -37,9 +37,6 @@ public class FactType implements IFactType, Serializable{
         this.varFormat = "";
     
     }
-    
-    // Dummy constructor
-    public FactType(){}    
 
     public boolean isIsCustom() {
         return isCustom;

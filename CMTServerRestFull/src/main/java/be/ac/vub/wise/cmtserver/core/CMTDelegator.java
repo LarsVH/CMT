@@ -174,7 +174,7 @@ public class CMTDelegator {
         return  dbComp.getTemplateOfSituation(situationName);
     }
     
-     public ArrayList<FactType> getCustomEventsUsedInTemplate(int tempid){
+    public ArrayList<FactType> getCustomEventsUsedInTemplate(int tempid){
         return dbComp.getCustomEventsUsedInTemplate(tempid);
     }
 }
