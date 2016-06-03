@@ -16,7 +16,6 @@ public class Template implements Serializable{
 	public Template(){
 		this.ifBlocks = new LinkedList<IFBlock>(); 
 		this.operators = new LinkedList<String>();
-                this.category = "d";
 	}
 	
 	public String getName() {
