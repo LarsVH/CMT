@@ -32,7 +32,7 @@ public class FactType implements IFactType, Serializable{
         this.fields = fields;
         this.varList = new ArrayList<String>();
         this.varFormat = "";
-        
+    
     }
 
     public boolean isIsCustom() {

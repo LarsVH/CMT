@@ -391,7 +391,9 @@ public class ConverterCoreBlocks {
                 JSONObject fieldO = arrFields.getJSONObject(a);
                 String fieldName = fieldO.getString("fieldName");
                 String fieldType = fieldO.getString("fieldType");
-                fields.add(new CMTField(fieldName, fieldType));
+                CMTField cMTField = new CMTField(fieldName, fieldType);
+                cMTField.setSql_id(fieldO.getInt("sqlId"));
+                fields.add(cMTField);
             }
             FactType facttype = new FactType(name, "fact", uriField, fields);
             facttype.setVarFormat(varFormat);
@@ -1139,7 +1141,7 @@ public class ConverterCoreBlocks {
         ArrayList<CMTField> cmtfields = new ArrayList<CMTField>();
         Field[] fields = factClass.getDeclaredFields();
         for(Field field : fields){
-            CMTField cmtfield = new CMTField(field.getName(), getSimpleName(field.getType().getName()));
+            CMTField cmtfield = new CMTField(field.getName(), field.getType().getName());
             cmtfields.add(cmtfield);
         }
         FactType type = new FactType(factClass.getSimpleName(), "fact", uriField, cmtfields);
