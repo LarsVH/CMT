@@ -39,7 +39,7 @@
   	<Pane prefWidth="50" minWidth="50"/>
   	<Label text="IF" minWidth="295" prefWidth="295" minHeight="20" prefHeight="20" styleClass="labHeader"/>
   	<Pane prefWidth="50" minWidth="50" />
-  	<Label text="Input Blocks" minWidth="295" prefWidth="295" minHeight="20" prefHeight="20" styleClass="labHeader"/>
+  	<Label text="To Fill In" minWidth="295" prefWidth="295" minHeight="20" prefHeight="20" styleClass="labHeader"/>
   	<Pane prefWidth="50" minWidth="50" />
   	<Label text="THEN" minWidth="295" prefWidth="295" minHeight="20" prefHeight="20" styleClass="labHeader"/>
   	<Pane prefWidth="50" minWidth="50"/>
@@ -48,11 +48,11 @@
   	<HBox>
   		<Pane prefWidth="50" minWidth="50"/>
   		<VBox fx:id="vb1_functions" minWidth="295" prefWidth="295" minHeight="800">
-  		<Label fx:id="lb1_addFunction" text="Drag function or input block" minWidth="295" prefWidth="295" minHeight="60" prefHeight="60" styleClass="labInBox"/>
+  		<Label fx:id="lb1_addFunction" text="Drag a function or situation" minWidth="295" prefWidth="295" minHeight="60" prefHeight="60" styleClass="labInBox"/>
   		</VBox> 
   		<Pane prefWidth="50" minWidth="50" />
   		<VBox fx:id="vb2_input" minWidth="295" prefWidth="295"  minHeight="800" >
-  		<Label fx:id="lb2_addInput" text="Drag input block" minWidth="295" prefWidth="295" minHeight="60" prefHeight="60" styleClass="labInBox"/>
+  		<Label fx:id="lb2_addInput" text="Drag a type" minWidth="295" prefWidth="295" minHeight="60" prefHeight="60" styleClass="labInBox"/>
   		</VBox>   	
   		<Pane prefWidth="50" minWidth="50" />
   		<VBox fx:id="vb3_output" minWidth="295" prefWidth="295"  minHeight="800">

@@ -128,11 +128,12 @@ public class ExpertTab extends VBox implements CMTListener{
         tp.setExpanded(true);
         ti_root_objects.getChildren().add(tp);
         indexTime = ti_root_objects.getChildren().indexOf(tp);
-        TreeItem<IFactType> tpa = new TreeItem<IFactType>(new FactType("Activity","activity","Activity", null));
+        TreeItem<IFactType> tpa = new TreeItem<IFactType>(new FactType("Situations","activity","Situations", null));
         tpa.setExpanded(true);
         ti_root_objects.getChildren().add(tpa);
         indexAct = ti_root_objects.getChildren().indexOf(tpa);
         for(FactType type : factTypes){
+            System.out.println("----------- field id " + type.getFields().get(0).getSql_id());
 	    TreeItem<IFactType> tpf = new TreeItem<IFactType>(type);
             tpf.setExpanded(true);
             ti_root_objects.getChildren().add(tpf);

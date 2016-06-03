@@ -830,7 +830,7 @@ public class UserTab extends VBox implements CMTListener{
         label.setObj(input);
 	vbox.getChildren().add(label);
         System.out.println(" is filled in " + input.isFilledIn());
-        if(input.isFilledIn()){
+        if(input.isFilledIn() || currentTemp instanceof TemplateActions){
             label.isFilled = true;
         }else{
             label.isFilled = false;
@@ -1016,7 +1016,7 @@ public class UserTab extends VBox implements CMTListener{
 			 HBox hbOutput = new HBox();
 			 hbOutput.getStyleClass().add("labOutputTemp");
 			 String outputName = tempHA.getOutput().getName();
-			 if(outputName.equals("Enter activity name")){
+			 if(outputName.equals("Enter situation name")){
 				 // add textField
 				 tf_output = new TextField();
 				 tf_output.setPromptText("Enter Situation Name");
@@ -1299,7 +1299,7 @@ public class UserTab extends VBox implements CMTListener{
 	        for(Fact fact : facts){
 	        	Iterator<TreeItem<IFactType>> it = ti_root_objects.getChildren().iterator();
     			
-                        if(!(fact.getClassName().equals("Person")) && !(fact.getClassName().equals("Location"))){
+                        if(!(fact.getClassName().equals("Person")) && !(fact.getClassName().equals("Location")) &&!(fact.getClassName().contains("java"))){
                             while(it.hasNext()){
                                     TreeItem<IFactType> node = it.next();
                                     IFactType typeInTree = (IFactType) node.getValue();
