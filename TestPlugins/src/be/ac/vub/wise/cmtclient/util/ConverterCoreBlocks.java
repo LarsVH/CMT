@@ -180,7 +180,17 @@ public class ConverterCoreBlocks {
                         // check if fact then convert to fact
                       //  FactType typeFact = CMTClient.getFactTypeFactWithName(val.getClass().getSimpleName());
                        
-                            Fact valFact = fromObjectToFactInstance(val);
+                           // Fact valFact = fromObjectToFactInstance(val); // call CMT for fact
+                            FactType typeObj = CMTClient.getFactType(cmtField.getType());
+                            
+                            Fact valFact = null;
+                            try {
+                                valFact = CMTClient.getFact(typeObj.getClassName(), typeObj.getUriField(), val.getClass().getDeclaredField(typeObj.getUriField()).get(val).toString());
+                            } catch (NoSuchFieldException ex) {
+                                Logger.getLogger(ConverterCoreBlocks.class.getName()).log(Level.SEVERE, null, ex);
+                            } catch (SecurityException ex) {
+                                Logger.getLogger(ConverterCoreBlocks.class.getName()).log(Level.SEVERE, null, ex);
+                            }
                             cmtField.setValue(valFact);
                         }else{
                             cmtField.setValue(val);

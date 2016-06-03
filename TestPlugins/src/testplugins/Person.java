@@ -11,9 +11,9 @@ package testplugins;
  */
 public class Person {
     public String name;
-    public Loc2 loc;
+    public Location loc;
     
-    public Person(String name, Loc2 loc){
+    public Person(String name, Location loc){
         this.name = name;
         this.loc = loc;
     }
@@ -26,11 +26,11 @@ public class Person {
         this.name = name;
     }
 
-    public Loc2 getLoc() {
+    public Location getLoc() {
         return loc;
     }
 
-    public void setLoc(Loc2 loc) {
+    public void setLoc(Location loc) {
         this.loc = loc;
     }
     
