@@ -21,7 +21,6 @@
 	-fx-padding: 2px;
 	-fx-font-size: 12;
 	-fx-font-weight: bold;
-        //-fx-font-style: italic;
 }
 .lbActionDrop{
 	-fx-min-width: 150;
