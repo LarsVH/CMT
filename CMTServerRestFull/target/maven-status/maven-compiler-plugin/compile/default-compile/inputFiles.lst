@@ -29,7 +29,6 @@
 /home/lars/Copy/2e_ma/Thesis/CMT_GIT/CMT_code/CMTServerRestFull/src/main/java/be/ac/vub/wise/cmtserver/db/DatabaseManager.java
 /home/lars/Copy/2e_ma/Thesis/CMT_GIT/CMT_code/CMTServerRestFull/src/main/java/be/ac/vub/wise/cmtserver/blocks/OutputHA.java
 /home/lars/Copy/2e_ma/Thesis/CMT_GIT/CMT_code/CMTServerRestFull/src/main/java/be/ac/vub/wise/cmtserver/blocks/ClientRemote.java
-/home/lars/Copy/2e_ma/Thesis/CMT_GIT/CMT_code/CMTServerRestFull/src/main/java/be/ac/vub/wise/cmtserver/facts/Location.java
 /home/lars/Copy/2e_ma/Thesis/CMT_GIT/CMT_code/CMTServerRestFull/src/main/java/be/ac/vub/wise/cmtserver/util/Converter.java
 /home/lars/Copy/2e_ma/Thesis/CMT_GIT/CMT_code/CMTServerRestFull/src/main/java/be/ac/vub/wise/cmtserver/db/Db4oConnector.java
 /home/lars/Copy/2e_ma/Thesis/CMT_GIT/CMT_code/CMTServerRestFull/src/main/java/be/ac/vub/wise/cmtserver/blocks/TemplateActions.java
