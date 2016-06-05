@@ -585,7 +585,7 @@ public class DatabaseSQL implements IDbComponent{
                         start.setIndexObj(rs2.getInt("template_position"));
                         // endbinding is factype of fact
                         binding.setStartBinding(start);
-                        ps = conn.prepareStatement("SELECT * FROM ifblock_function_filledIn_fact WHERE ifblock_id = ? AND parameter_id = ?");
+                        ps = conn.prepareStatement("SELECT * FROM ifblock_function_filledin_fact WHERE ifblock_id = ? AND parameter_id = ?");
                         ps.setInt(1, rs2.getInt("idifblock_function"));
                         ps.setInt(2, par.getSql_id());
                         ResultSet rs4 = ps.executeQuery();
@@ -616,8 +616,8 @@ public class DatabaseSQL implements IDbComponent{
                       
                         if(binding.getEndBinding() == null){
                             System.out.println("------------- in goede");
-                            ps = conn.prepareStatement("SELECT ifblock_function_filledIn_facttype.* , facttype.facttypeType FROM ifblock_function_filledIn_facttype "
-                                    + "INNER JOIN facttype ON ifblock_function_filledIn_facttype.facttype_id = facttype.facttypeName "
+                            ps = conn.prepareStatement("SELECT ifblock_function_filledin_facttype.* , facttype.facttypeType FROM ifblock_function_filledin_facttype "
+                                    + "INNER JOIN facttype ON ifblock_function_filledin_facttype.facttype_id = facttype.facttypeName "
                                     + "WHERE ifblock_id = ? AND parameter_id = ? ");
                             ps.setInt(1, rs2.getInt("idifblock_function"));
                             ps.setInt(2, par.getSql_id());
@@ -1174,8 +1174,9 @@ public class DatabaseSQL implements IDbComponent{
                     
                     ps = conn.prepareStatement("SELECT facttypeName FROM facttype WHERE facttypeName = ?");
                     ps.setString(1, field.getType());
+                    System.out.println("DB1 >>>> " + field.getType());
                     ResultSet rs3 = ps.executeQuery();
-                     ps.closeOnCompletion();
+                    ps.closeOnCompletion();
                     rs3.next();
                     String typeName = rs3.getString("facttypeName");
                     rs3.close();
@@ -1557,8 +1558,15 @@ public class DatabaseSQL implements IDbComponent{
                
                 ps.executeUpdate();
             }
-           
+            
             rs.close();
+            
+              // DEBUG: fix template categories
+            PreparedStatement ps2 = conn.prepareStatement("INSERT INTO `cmt`.`template_categories` (`idtemplate_categories`) VALUES ('Default')");
+            ps2.executeUpdate();
+            ps2.closeOnCompletion();    
+            
+            
             conn.close();
         } catch (SQLException ex) {
             Logger.getLogger(DatabaseSQL.class.getName()).log(Level.SEVERE, null, ex);
