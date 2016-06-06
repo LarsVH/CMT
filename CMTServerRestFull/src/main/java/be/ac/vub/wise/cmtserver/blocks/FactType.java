@@ -37,6 +37,9 @@ public class FactType implements IFactType, Serializable{
         this.varFormat = "";
     
     }
+    
+    // TEMP (LVH)
+    public FactType(){};
 
     public boolean isIsCustom() {
         return isCustom;
