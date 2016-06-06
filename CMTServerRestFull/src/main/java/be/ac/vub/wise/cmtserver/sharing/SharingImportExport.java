@@ -43,7 +43,7 @@ import org.kie.api.definition.type.Role.Type;
  * @author lars
  */
 public class SharingImportExport implements Sharing {
-    
+    @Deprecated
     HashMap<String,TemplateHA> eventToTemplate = new HashMap<>();
 
     @Override
@@ -105,21 +105,21 @@ public class SharingImportExport implements Sharing {
         }
 
         // Retrieving the corrseponding template
-        // >> SQL: Search template responsible for "event"                      // <<< We moeten event zelf ook nog converten: mapping event->template nodig bij importeren
-        Template _t = new Template(); // temp fix
+        // >> SQL: Search template responsible for "event"
+        CMTDelegator delegator = CMTDelegator.get();
+        Template parentTemplate = delegator.getTemplateOfSituation(eventClassName);        
         
-        //System.out.println("2>>>> Retrieved template: '" + _t.getName() + "' from eventToTemplate");
+        System.out.println("2>>>> Retrieved template: '" + parentTemplate.getName() + "' from eventToTemplate");
         
         // >> SQL: check for custom event IFBlocks (! recursively!!!!)
-        boolean hasCustomEvents_t = false;
+        ArrayList<FactType> customEvents = delegator.getCustomEventsUsedInTemplate(parentTemplate.getSql_id());
 
-        if (hasCustomEvents_t) {
-            jResultArray.put(prepareTemplateSkeletonJSON(_t));
-        } else // No custom events -> converter already converted everything
-        {
-            return jResultArray;    // !! We might still have to convert the template using the built-in converter
-        }
-        return jResultArray; // (Empty)
+        // There exist custom events
+        if (customEvents != null) {
+            jResultArray.put(prepareTemplateSkeletonJSON(parentTemplate));
+        } else{} // No custom events -> converter already converted everything
+        
+        return jResultArray;
     }
     // Processes the IFBlocks: delegates depending on IFBlock = event/function
         // 1. Loop over the IFBlocks
