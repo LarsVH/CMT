@@ -11,6 +11,7 @@ import be.ac.vub.wise.cmtclient.blocks.CMTField;
 import be.ac.vub.wise.cmtclient.blocks.Fact;
 import be.ac.vub.wise.cmtclient.blocks.FactType;
 import be.ac.vub.wise.cmtclient.core.CMTClient;
+import be.ac.vub.wise.cmtclient.util.Constants;
 import java.util.ArrayList;
 import javax.swing.JFrame;
 
@@ -28,13 +29,16 @@ public class TestPlugins {
         frame.setSize(200, 200);
         frame.setVisible(true);
 ////       String json = "{\"type\": \"Person\", \"object\":";
-        Lis lis = new Lis();
+       /* Lis lis = new Lis();
         CMTClient.addListener(lis);
-       CMTClient.startWS();
+      CMTClient.startWS();/**/
        
-   //    CMTClient.shortcutAddFunctionInCMT(Func.class);
-      // CMTClient.shortcutAddFunctionInCMT(Func.class);
-      
+        Constants.setURLCMT("http://localhost:8080/CMTServerRestFull/cmt");
+        Constants.setWSCMT("ws://localhost:8080/CMTServerRestFull/pubsub");
+          
+       
+        
+        
       //------------------------------------------------------------------------
       
        ArrayList<CMTField> fieldsString = new ArrayList<>();
@@ -43,16 +47,24 @@ public class TestPlugins {
        FactType string = new FactType("java.lang.String", "fact", "value", fieldsString);
        string.setCategory("Code");
        CMTClient.registerFacttypeInCMT(string);
+       /**/
           
-       //-----------------------------------------------------------------------
-   
-       //Loc2 loc2 = new Loc2("living");
-       //CMTClient.shortcutRegisterFacttypeInCMT(loc2.getClass(), "room", "Code");
+       //////////////////////
+        populateForTest();
+       //////////////////////
+       
+       
        
        //-----------------------------------------------------------------------
-     
-       /*  Fact fact = new Fact("Loc2", "room");
-        FactType type = CMTClient.getFactTypeFactWithName("Loc2");
+   /*
+        Location loc2 = new Location("living");
+       CMTClient.shortcutRegisterFacttypeInCMT(loc2.getClass(), "room", "Code");
+       /**/
+       
+       //-----------------------------------------------------------------------
+     /*
+         Fact fact = new Fact("Location", "room");
+        FactType type = CMTClient.getFactTypeFactWithName("Location");
         ArrayList<CMTField> fields = new ArrayList<>();
         for(CMTField fi : type.getFields()){
             System.out.println("--------- id " + fi.getSql_id());
@@ -63,15 +75,15 @@ public class TestPlugins {
         }
         fact.setFields(fields);
        CMTClient.addFactInCMT(fact);
-       */
        
+       /**/
        //-----------------------------------------------------------------------
-       
-     //  CMTClient.shortcutRegisterFacttypeInCMT(Person.class, "name", "Code");
-       
+       /*
+       CMTClient.shortcutRegisterFacttypeInCMT(Person.class, "name", "Code");
+       /**/
        //-----------------------------------------------------------------------
-       
-      /*  Fact fact2 = new Fact("Person", "name");
+       /*
+        Fact fact2 = new Fact("Person", "name");
         FactType type2 = CMTClient.getFactTypeFactWithName("Person");
         ArrayList<CMTField> fields2 = new ArrayList<>();
         for(CMTField fi : type2.getFields()){
@@ -81,14 +93,19 @@ public class TestPlugins {
                 fields2.add(fi);
             }
             if(fi.getName().equals("loc")){
-                fi.setValue(CMTClient.getFact("Loc2", "room", "Living")); // getFact!
+                fi.setValue(CMTClient.getFact("Location", "room", "Living")); // getFact!
                 fields2.add(fi);
             }
         }
         fact2.setFields(fields2);
-       CMTClient.addFactInCMT(fact2); */
+       CMTClient.addFactInCMT(fact2);
+       /**/
        //-----------------------------------------------------------------------
-     
+     /*
+              CMTClient.shortcutAddFunctionInCMT(Func.class);
+       /**/
+       //=======================================================================
+       
      /*
        Location loc2 = new Location("living");
        CMTClient.registerFactOnServer(loc2.getClass(), "room");
@@ -217,6 +234,75 @@ CMTClient.shortcutRegisterEventInCMT(me, true, true, "day", days, "", "Code");
     
   System.exit(0);
   
+    }
+    // TODO Test
+    public static void populateForTest(){
+        // FactType: Location, Person, Phone
+        CMTClient.shortcutRegisterFacttypeInCMT(Location.class, "room", "Code");       
+        CMTClient.shortcutRegisterFacttypeInCMT(Person.class, "name", "Code");
+        CMTClient.shortcutRegisterFacttypeInCMT(Phone.class, "id", "Code");        
+              
+        // Location: My Bedroom, Living Room, Kitchen, Hallway, Garage
+        Fact bedroom = generateLocationFact("My Bedroom");
+        CMTClient.addFactInCMT(bedroom);
+        Fact living = generateLocationFact("Living Room");
+        CMTClient.addFactInCMT(living);
+        Fact kitchen = generateLocationFact("Kitchen");
+        CMTClient.addFactInCMT(kitchen);
+        Fact hallway = generateLocationFact("Hallway");
+        CMTClient.addFactInCMT(hallway);
+        Fact garage = generateLocationFact("Garage");
+        CMTClient.addFactInCMT(garage);
+        
+        // Facts Person: Sandra, Vince, Lars
+        Fact sandra = generatePersonFact("Sandra", CMTClient.getFact("Location", "room", "Kitchen"));
+        CMTClient.addFactInCMT(sandra);
+        Fact vince = generatePersonFact("Vince", CMTClient.getFact("Location", "room", "Hallway"));
+        CMTClient.addFactInCMT(vince);
+        Fact lars = generatePersonFact("Lars", CMTClient.getFact("Location", "room", "Garage"));
+        CMTClient.addFactInCMT(lars);
+        
+        
+        
+        // Func2 (Location)
+        CMTClient.shortcutAddFunctionInCMT(Func2.class);
+        // Func (Person, Location)
+        CMTClient.shortcutAddFunctionInCMT(Func.class);
+     /**/
+    }
+
+    public static Fact generateLocationFact(String fieldValue) {
+        Fact fact = new Fact("Location", "room");
+        FactType type = CMTClient.getFactTypeFactWithName("Location");
+        ArrayList<CMTField> fields = new ArrayList<>();
+        for (CMTField fi : type.getFields()) {
+            if (fi.getName().equals("room")) {
+                fi.setValue(fieldValue); // getFact!
+                fields.add(fi);
+            }
+        }
+        fact.setFields(fields);
+        return fact;
+    }
+
+
+    public static Fact generatePersonFact(String fieldValue, Fact cmtclientExistingFact){
+        Fact fact = new Fact("Person", "name");
+        FactType type = CMTClient.getFactTypeFactWithName("Person");
+        
+        ArrayList<CMTField> fields = new ArrayList<>();
+        for(CMTField fi : type.getFields()){
+            if(fi.getName().equals("name")){
+                fi.setValue(fieldValue); // getFact!
+                fields.add(fi);
+            }
+            else if(fi.getName().equals("loc")){
+                fi.setValue(cmtclientExistingFact); // getFact!
+                fields.add(fi);
+            }
+        }
+        fact.setFields(fields);       
+        return fact;
     }
     
     
