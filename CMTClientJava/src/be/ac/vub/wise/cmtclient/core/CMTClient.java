@@ -68,6 +68,13 @@ public class CMTClient {
         CMTClient.url = url;
     }
     
+    public static void printJSON(String function, String json){
+        System.out.println(">>>Outbound JSON: \n" + 
+                "FUNCTION: " + function + "\n" +
+                "JSON: \n" +
+                json);
+    }
+    
     public static void shortcutAddFunctionInCMT(Class<?> classWithFunctions){
         try {
             JSONObject json = ConverterCoreBlocks.fromFunctionClassToJSON(classWithFunctions);
@@ -75,6 +82,7 @@ public class CMTClient {
             System.out.println(stjson);
             String result = stjson.trim().trim(); 
             HttpResponse<String> request = Unirest.post(url+"/addFunctions").body(result).asString();
+            printJSON("shortcutAddFunctionInCMT", result);
         } catch (UnirestException ex) {
             Logger.getLogger(CMTClient.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -87,6 +95,7 @@ public class CMTClient {
             String stjson = json.toString();
             String result = stjson.trim().trim();
             HttpResponse<String> request = Unirest.post(url+"/registerFactClass").body(result).asString();
+            printJSON("shortcutRegisterFacttypeInCMT", result);
         } catch (UnirestException ex) {
             Logger.getLogger(CMTClient.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -111,6 +120,7 @@ public class CMTClient {
             String stjson = json.toString();
             String result = stjson.trim().trim();
             HttpResponse<String> request = Unirest.post(url+"/addFactInFactFormat").body(result).asString();
+            printJSON("addFactInCMT", result);
         } catch (UnirestException ex) {
             Logger.getLogger(CMTClient.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -129,7 +139,8 @@ public class CMTClient {
             String stjson = json.toString();
             String result = stjson.trim().trim();
             HttpResponse<String> request = Unirest.post(url+"/registerEventClass").body(result).asString();
-            System.out.println(request.getCode());
+            System.out.println(request.getCode());            
+            printJSON("registerEventTypeInCMTbyExample", result);
         } catch (UnirestException ex) {
             Logger.getLogger(CMTClient.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -141,6 +152,7 @@ public class CMTClient {
             JSONObject json = ConverterCoreBlocks.fromFactObjectToJSON(object);
             String stjson = json.toString();
             String result = stjson.trim().trim();
+            printJSON("shortcutAddEventInCMT", result);
             HttpResponse<String> request = Unirest.post(url+"/addEvent").body(result).asString();
         } catch (UnirestException ex) {
             Logger.getLogger(CMTClient.class.getName()).log(Level.SEVERE, null, ex);
@@ -153,8 +165,9 @@ public class CMTClient {
             json.put("name", name);
             json.put("drlRule", drlRule);
             String stjson = json.toString();
-            String result = stjson.trim().trim();
+            String result = stjson.trim().trim();            
             HttpResponse<String> request = Unirest.post(url+"/addRule").body(result).asString();
+            printJSON("addRuleInCMT", result);
         } catch (JSONException ex) {
             Logger.getLogger(CMTClient.class.getName()).log(Level.SEVERE, null, ex);
         } catch (UnirestException ex) {
@@ -168,6 +181,7 @@ public class CMTClient {
         String result = stjson.trim().trim();
         try {
             HttpResponse<String> request = Unirest.post(url+"/addTemplateActions").body(result).asString();
+            printJSON("addTemplateActionsInCMT", result);
             System.out.println(request.getCode());
         } catch (UnirestException ex) {
             Logger.getLogger(CMTClient.class.getName()).log(Level.SEVERE, null, ex);
@@ -181,6 +195,7 @@ public class CMTClient {
         String result = stjson.trim().trim();
         try {
             HttpResponse<String> request = Unirest.post(url+"/addTemplateHA").body(result).asString();
+            printJSON("addTemplateHAInCMT", result);
             System.out.println(request.getCode());
         } catch (UnirestException ex) {
             Logger.getLogger(CMTClient.class.getName()).log(Level.SEVERE, null, ex);
@@ -194,6 +209,7 @@ public class CMTClient {
         String result = stjson.trim().trim();
         try {
             HttpResponse<String> request = Unirest.post(url+"/addAction").body(result).asString();
+            printJSON("addActionInCMT", result);
         } catch (UnirestException ex) {
             Logger.getLogger(CMTClient.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -418,6 +434,7 @@ public class CMTClient {
             String stjson = json.toString();
             String result = stjson.trim().trim();
             HttpResponse<String> request = Unirest.post(url+"/registerEventClass").body(result).asString();
+            printJSON("registerEventTypeInCMT", result);
         } catch (UnirestException ex) {
             Logger.getLogger(CMTClient.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -430,6 +447,7 @@ public class CMTClient {
             String stjson = json.toString();
             String result = stjson.trim().trim();
             HttpResponse<String> request = Unirest.post(url+"/registerFactClass").body(result).asString();
+            printJSON("registerFacttypeInCMT", result);
         } catch (UnirestException ex) {
             Logger.getLogger(CMTClient.class.getName()).log(Level.SEVERE, null, ex);
         }
