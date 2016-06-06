@@ -6,13 +6,9 @@
 package be.ac.vub.wise.cmtclient.core;
 
 import be.ac.vub.wise.cmtclient.blocks.ActionClient;
-import be.ac.vub.wise.cmtclient.blocks.ActionField;
-import be.ac.vub.wise.cmtclient.blocks.CMTField;
 import be.ac.vub.wise.cmtclient.blocks.Fact;
 import be.ac.vub.wise.cmtclient.blocks.FactType;
 import be.ac.vub.wise.cmtclient.blocks.Function;
-import be.ac.vub.wise.cmtclient.blocks.IFactType;
-import be.ac.vub.wise.cmtclient.blocks.CMTParameter;
 import be.ac.vub.wise.cmtclient.blocks.Event;
 import be.ac.vub.wise.cmtclient.blocks.Rule;
 import be.ac.vub.wise.cmtclient.blocks.TemplateActions;
@@ -20,7 +16,6 @@ import be.ac.vub.wise.cmtclient.blocks.TemplateHA;
 import be.ac.vub.wise.cmtclient.util.Compilers;
 import be.ac.vub.wise.cmtclient.util.Constants;
 import be.ac.vub.wise.cmtclient.util.ConverterCoreBlocks;
-import com.google.gson.Gson;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
@@ -28,11 +23,7 @@ import com.mashape.unirest.http.exceptions.UnirestException;
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.websocket.ClientEndpoint;
@@ -56,8 +47,8 @@ public class CMTClient {
     
       private static Session session;
     private static String url = Constants.URLCMT;
-    private static String wsUrl = Constants.WSCMT;
-    private static HashSet<CMTListener> listeners = new HashSet<CMTListener>();
+    private static final String wsUrl = Constants.WSCMT;
+    private static final HashSet<CMTListener> listeners = new HashSet<>();
     
     public static void addListener(CMTListener lis){
         listeners.add(lis);
@@ -95,6 +86,7 @@ public class CMTClient {
             JSONObject json = ConverterCoreBlocks.fromFactTypeToJSON(type);
             String stjson = json.toString();
             String result = stjson.trim().trim();
+            System.out.println("TP>>>> Outbound JSON: " + result);
             HttpResponse<String> request = Unirest.post(url+"/registerFactClass").body(result).asString();
         } catch (UnirestException ex) {
             Logger.getLogger(CMTClient.class.getName()).log(Level.SEVERE, null, ex);
