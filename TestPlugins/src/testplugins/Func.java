@@ -13,12 +13,12 @@ import be.ac.vub.wise.cmtclient.blocks.Parameters;
  */
 public class Func {
     
-    @Parameters(parameters = "person1 location")
-    public static boolean personsInLocation(Person person1, Location location){
+    @Parameters(parameters = "room person")
+    public static boolean PersonInLocation(Location room, Person person){
 		return true;
 	}
     @Parameters(parameters = "person1 person2")
-    public static boolean samePerson(Person person1, Person person2){
+    public static boolean SamePerson(Person person1, Person person2){
         return true;
     }
 }

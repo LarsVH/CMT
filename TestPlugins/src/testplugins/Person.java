@@ -11,11 +11,11 @@ package testplugins;
  */
 public class Person {
     public String name;
-    public Location loc;
+    public Location room;
     
-    public Person(String name, Location loc){
+    public Person(String name, Location room){
         this.name = name;
-        this.loc = loc;
+        this.room = room;
     }
 
     public String getName() {
@@ -26,13 +26,14 @@ public class Person {
         this.name = name;
     }
 
-    public Location getLoc() {
-        return loc;
+    public Location getRoom() {
+        return room;
     }
 
-    public void setLoc(Location loc) {
-        this.loc = loc;
+    public void setRoom(Location room) {
+        this.room = room;
     }
+
     
     
 }
