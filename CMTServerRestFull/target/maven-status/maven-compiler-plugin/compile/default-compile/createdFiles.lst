@@ -1,7 +1,9 @@
 be/ac/vub/wise/cmtserver/blocks/ActionFieldAnno.class
 be/ac/vub/wise/cmtserver/db/DatabaseManager.class
+be/ac/vub/wise/cmtserver/sharing/SharingImportExport.class
 be/ac/vub/wise/cmtserver/blocks/Time.class
 be/ac/vub/wise/cmtserver/blocks/Event.class
+be/ac/vub/wise/cmtserver/sharing/Sharing.class
 be/ac/vub/wise/cmtserver/db/IDatabaseConnector.class
 be/ac/vub/wise/cmtserver/blocks/BindingIF.class
 be/ac/vub/wise/cmtserver/blocks/IFactType.class
@@ -46,9 +48,11 @@ be/ac/vub/wise/cmtserver/blocks/BindingParameter.class
 be/ac/vub/wise/cmtserver/blocks/Fact.class
 be/ac/vub/wise/cmtserver/blocks/TemplateActions.class
 be/ac/vub/wise/cmtserver/blocks/IFBlock.class
+be/ac/vub/wise/cmtserver/util/IndexableArraySet.class
 be/ac/vub/wise/cmtserver/restfull/CMTCore.class
 be/ac/vub/wise/cmtserver/db/IDbComponent.class
 be/ac/vub/wise/cmtserver/db/DatabaseSQL.class
+be/ac/vub/wise/cmtserver/sharing/SharedRule.class
 be/ac/vub/wise/cmtserver/rest/Main$1.class
 be/ac/vub/wise/cmtserver/blocks/ClientRemote.class
 be/ac/vub/wise/cmtserver/drools/DroolsComponent$1.class

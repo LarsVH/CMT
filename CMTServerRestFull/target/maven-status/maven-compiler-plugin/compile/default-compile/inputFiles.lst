@@ -6,8 +6,10 @@
 /home/lars/Copy/2e_ma/Thesis/CMT_GIT/CMT_code/CMTServerRestFull/src/main/java/be/ac/vub/wise/cmtserver/blocks/Activity.java
 /home/lars/Copy/2e_ma/Thesis/CMT_GIT/CMT_code/CMTServerRestFull/src/main/java/be/ac/vub/wise/cmtserver/blocks/CMTParameter.java
 /home/lars/Copy/2e_ma/Thesis/CMT_GIT/CMT_code/CMTServerRestFull/src/main/java/be/ac/vub/wise/cmtserver/blocks/Template.java
+/home/lars/Copy/2e_ma/Thesis/CMT_GIT/CMT_code/CMTServerRestFull/src/main/java/be/ac/vub/wise/cmtserver/facts/Person.java
 /home/lars/Copy/2e_ma/Thesis/CMT_GIT/CMT_code/CMTServerRestFull/src/main/java/be/ac/vub/wise/cmtserver/blocks/BindingInputField.java
 /home/lars/Copy/2e_ma/Thesis/CMT_GIT/CMT_code/CMTServerRestFull/src/main/java/be/ac/vub/wise/cmtserver/blocks/Fact.java
+/home/lars/Copy/2e_ma/Thesis/CMT_GIT/CMT_code/CMTServerRestFull/src/main/java/be/ac/vub/wise/cmtserver/functions/Func2.java
 /home/lars/Copy/2e_ma/Thesis/CMT_GIT/CMT_code/CMTServerRestFull/src/main/java/be/ac/vub/wise/cmtserver/db/Result.java
 /home/lars/Copy/2e_ma/Thesis/CMT_GIT/CMT_code/CMTServerRestFull/src/main/java/be/ac/vub/wise/cmtserver/db/Settings.java
 /home/lars/Copy/2e_ma/Thesis/CMT_GIT/CMT_code/CMTServerRestFull/src/main/java/be/ac/vub/wise/cmtserver/blocks/Operator.java
@@ -26,8 +28,11 @@
 /home/lars/Copy/2e_ma/Thesis/CMT_GIT/CMT_code/CMTServerRestFull/src/main/java/be/ac/vub/wise/cmtserver/db/DatabaseManager.java
 /home/lars/Copy/2e_ma/Thesis/CMT_GIT/CMT_code/CMTServerRestFull/src/main/java/be/ac/vub/wise/cmtserver/blocks/OutputHA.java
 /home/lars/Copy/2e_ma/Thesis/CMT_GIT/CMT_code/CMTServerRestFull/src/main/java/be/ac/vub/wise/cmtserver/blocks/ClientRemote.java
+/home/lars/Copy/2e_ma/Thesis/CMT_GIT/CMT_code/CMTServerRestFull/src/main/java/be/ac/vub/wise/cmtserver/facts/Location.java
 /home/lars/Copy/2e_ma/Thesis/CMT_GIT/CMT_code/CMTServerRestFull/src/main/java/be/ac/vub/wise/cmtserver/util/Converter.java
 /home/lars/Copy/2e_ma/Thesis/CMT_GIT/CMT_code/CMTServerRestFull/src/main/java/be/ac/vub/wise/cmtserver/db/Db4oConnector.java
+/home/lars/Copy/2e_ma/Thesis/CMT_GIT/CMT_code/CMTServerRestFull/src/main/java/be/ac/vub/wise/cmtserver/facts/Phone.java
+/home/lars/Copy/2e_ma/Thesis/CMT_GIT/CMT_code/CMTServerRestFull/src/main/java/be/ac/vub/wise/cmtserver/functions/Func.java
 /home/lars/Copy/2e_ma/Thesis/CMT_GIT/CMT_code/CMTServerRestFull/src/main/java/be/ac/vub/wise/cmtserver/blocks/TemplateActions.java
 /home/lars/Copy/2e_ma/Thesis/CMT_GIT/CMT_code/CMTServerRestFull/src/main/java/be/ac/vub/wise/cmtserver/util/Constants.java
 /home/lars/Copy/2e_ma/Thesis/CMT_GIT/CMT_code/CMTServerRestFull/src/main/java/be/ac/vub/wise/cmtserver/blocks/Binding.java
@@ -42,6 +47,7 @@
 /home/lars/Copy/2e_ma/Thesis/CMT_GIT/CMT_code/CMTServerRestFull/src/main/java/be/ac/vub/wise/cmtserver/blocks/Function.java
 /home/lars/Copy/2e_ma/Thesis/CMT_GIT/CMT_code/CMTServerRestFull/src/main/java/be/ac/vub/wise/cmtserver/blocks/FactType.java
 /home/lars/Copy/2e_ma/Thesis/CMT_GIT/CMT_code/CMTServerRestFull/src/main/java/be/ac/vub/wise/cmtserver/blocks/IFBlock.java
+/home/lars/Copy/2e_ma/Thesis/CMT_GIT/CMT_code/CMTServerRestFull/src/main/java/be/ac/vub/wise/cmtserver/events/SandraInKitchen.java
 /home/lars/Copy/2e_ma/Thesis/CMT_GIT/CMT_code/CMTServerRestFull/src/main/java/be/ac/vub/wise/cmtserver/blocks/BindingIF.java
 /home/lars/Copy/2e_ma/Thesis/CMT_GIT/CMT_code/CMTServerRestFull/src/main/java/be/ac/vub/wise/cmtserver/db/AvailableFactClasses.java
 /home/lars/Copy/2e_ma/Thesis/CMT_GIT/CMT_code/CMTServerRestFull/src/main/java/be/ac/vub/wise/cmtserver/blocks/Time.java
