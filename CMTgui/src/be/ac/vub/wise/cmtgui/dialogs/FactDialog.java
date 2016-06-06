@@ -126,13 +126,13 @@ public class FactDialog  {
                                 list.add(fa);
                             }
                             ComboBox<Fact> combo = new ComboBox<Fact>(list);
-                            combo.setOnMousePressed(new EventHandler<MouseEvent>(){
+                            /*combo.setOnMousePressed(new EventHandler<MouseEvent>(){
                             @Override
                             public void handle(MouseEvent event) {
                                 combo.requestFocus();
                                 
                             }
-                        });
+                        });*///
 			    combo.setConverter(new StringConverter<Fact>() {
 					            @Override
 					            public String toString(Fact object) {

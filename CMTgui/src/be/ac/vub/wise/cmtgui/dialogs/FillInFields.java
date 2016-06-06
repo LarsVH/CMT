@@ -129,13 +129,13 @@ public class FillInFields extends Dialog<ResultFields>{
                 grid.add(lb_fieldName, 0, i+1);
                 // operators
                 ComboBox<String> boxop = new ComboBox<>();
-                boxop.setOnMousePressed(new EventHandler<MouseEvent>(){
+                /*boxop.setOnMousePressed(new EventHandler<MouseEvent>(){
                             @Override
                             public void handle(MouseEvent event) {
                                 boxop.requestFocus();
                                 
                             }
-                        });
+                        });*///
                 ObservableList<String> listop = FXCollections.observableArrayList();
                 
                         System.out.println("--------- field format " + field.getFormat());
@@ -187,13 +187,13 @@ public class FillInFields extends Dialog<ResultFields>{
                 }else{
                     if(!field.getOptions().isEmpty()){
                         ComboBox<String> box = new ComboBox<>();
-                        box.setOnMousePressed(new EventHandler<MouseEvent>(){
+                       /* box.setOnMousePressed(new EventHandler<MouseEvent>(){
                             @Override
                             public void handle(MouseEvent event) {
                                 box.requestFocus();
                                 
                             }
-                        });
+                        }); */
                         ObservableList<String> list = FXCollections.observableArrayList();
                         list.addAll(field.getOptions());
                         box.setItems(list);

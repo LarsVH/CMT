@@ -135,13 +135,13 @@ public class FillInActionFields extends Dialog<ResultFieldsActions>{
                 }else{
                     if(!field.getVarList().isEmpty()){
                         ComboBox<String> box = new ComboBox<>();
-                        box.setOnMousePressed(new EventHandler<MouseEvent>(){	// Miserie met comboboxen -> doe dit weg (java <-> Win10) 
+                        /*box.setOnMousePressed(new EventHandler<MouseEvent>(){	// Miserie met comboboxen -> doe dit weg (java <-> Win10) 
                             @Override
                             public void handle(MouseEvent event) {
                                 box.requestFocus();
                                 
                             }
-                        });
+                        }); */
                         ObservableList<String> list = FXCollections.observableArrayList();
                         System.out.println("------- vars " + field.getVarList().size());
                         System.out.println("------- vars " + field.getValue());
