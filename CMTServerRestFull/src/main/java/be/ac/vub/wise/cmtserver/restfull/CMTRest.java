@@ -538,5 +538,17 @@ public class CMTRest {
         }    
         JSONObject out = sharing.exportActivity(retTmpl);                
         return Response.status(201).entity(out.toString()).build();
-    }    
+    }
+    
+    // DEBUGGING/TESTING
+    @GET
+    @Path("/test")
+    @Produces("application/json")
+    public Response testdebug(){
+      JSONObject out = new JSONObject();
+      
+      
+      return Response.status(201).entity(out.toString()).build();
+    };
+    
 }

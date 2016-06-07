@@ -45,6 +45,11 @@ import org.kie.api.definition.type.Role.Type;
 public class SharingImportExport implements Sharing {
     @Deprecated
     HashMap<String,TemplateHA> eventToTemplate = new HashMap<>();
+    
+    // <FieldType, <FieldNames>>
+    private HashMap<String, LinkedList<String>> resolvedTypesInThisImport = new HashMap<>();
+    
+    public SharingImportExport(){}
 
     @Override
     public JSONObject exportActivity(Template templ) {
@@ -419,13 +424,16 @@ public class SharingImportExport implements Sharing {
     }
 
     // TODO --------------------------------------------------------------------
-    private final HashMap<String, LinkedList<String>> resolvedTypes = new HashMap<>();
-    private final double levenshteinTreshold = 0.5;
+   
+
+    
+    private final double scoreTreshold = 0.5;
     @Override
-    public Template importTemplateRule(JSONObject jInput) {
-        
+    public Template importTemplateRule(JSONObject jInput) {        
         Template resTmpl = new Template();
         
+               
+        // DEPRECATED
         String tmplType = jInput.getString("tempType");
                switch (tmplType){       //TODO
            case "TemplateActions":
@@ -451,6 +459,41 @@ public class SharingImportExport implements Sharing {
         
          return resTmpl;
     }
+    
+    // Bottom-up approach
+    public void loopDownDeclarations(JSONObject jInputTemplate) {
+        JSONArray jIFBlocks = jInputTemplate.getJSONArray("ifblocks");
+        for (int i = 0; i < jIFBlocks.length(); i++) {
+            JSONObject jIFBlock = jIFBlocks.getJSONObject(i);
+            JSONArray jBindings = jIFBlock.getJSONArray("bindings");
+            for (int j = 0; j < jBindings.length(); j++) {
+                JSONObject jBinding = jBindings.getJSONObject(j);
+                JSONArray jDeclarations = jBinding.getJSONArray("declarations");
+                if (jDeclarations.length() != 0) {
+                    for (int k = 0; k < jDeclarations.length(); k++) {
+                        JSONObject jDeclaration = jDeclarations.getJSONObject(k);
+                        // Recursion on current Declaration
+                        loopDownDeclarations(jDeclaration);
+                    }
+                }
+                // After recursion OR we are in a leaf (= no more declarations)
+                // -> start merging on endBinding: all fields already exist in the system
+                JSONObject jEndBinding = jBinding.getJSONObject("endBinding");
+                String className = jEndBinding.getString("className");
+                if(!isJavaType(className)){
+                    
+                
+                
+                
+                
+                }
+                
+            }
+        }
+
+    }
+    
+    
     // IFBlockLoop
     private void checkIFBlocks(JSONArray jIFBlocks){        
         for(int i=0; i<jIFBlocks.length(); i++){
@@ -471,55 +514,55 @@ public class SharingImportExport implements Sharing {
             JSONArray jFields = jInputObject.getJSONArray("fields");
             
             JSONArray jDeclarations = jBinding.getJSONArray("declarations");
-            
+                
             for(int j=0; j<jFields.length(); j++){
                 JSONObject currField = jFields.getJSONObject(j);
                 String fieldType = currField.getString("fieldType");
-                String fieldName = currField.getString("fieldName");                
-                if(resolvedTypes.containsKey(fieldType) && (resolvedTypes.get(fieldType).contains(fieldName))){
-                    continue;   // FieldType and Fieldname already resolved
+                String fieldName = currField.getString("fieldName");             
+                if((resolvedTypesInThisImport.containsKey(fieldType) && (resolvedTypesInThisImport.get(fieldType).contains(fieldName)))
+                        || isJavaType(fieldType)){
+                    continue;   // FieldType and Fieldname already resolved (or it's a Java type)
                 }
                 // SQL SQL SQL SQL SQL SQL SQL SQL SQL SQL SQL SQL SQL SQL SQL SQL SQL SQL <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-                   // Levenshtein op field TYPES:
-                    //> Levenshtein = 0 (= perfect match) -> check fields
-                    //> Levenshtein < treshold (for multiple classes) -> let user decide: choose right class (-> check fields) OR create new class
-                    //> Levenshtein > treshold -> create new class
-                double levenshtein = 0.5;
-                
-                if(levenshtein <= 0){
-                    // check field names (en create eventuele subclass)
-                    FactType levTypeMatch = new FactType(); //<< retrieve from SQL (can be "Event" too, so maybe change to IFactType
-                    mergeFieldFields(fieldType, fieldName, jDeclarations, levTypeMatch);
-                } else if(levenshtein < levenshteinTreshold){
-                    // suggestions (classA, classB,...,newClass) -> check fields OR createNewClass 
-                    boolean userDecisionNewClass = false;
-                    if(!userDecisionNewClass){
-                        createNewClass(fieldType, fieldName); //TODO
+                HashSet<FactType> eventTypes = CMTDelegator.get().getAvailableEventTypes();
+                for(FactType matchEventType : eventTypes){
+                    Double score = JaroWinklerDistance
+                            .apply(fieldType, matchEventType.getClassName());
+                    if(score == 1.0){
+                        // CASE1: Perfect match                  
+                        mergeFieldFields(fieldType, fieldName, jDeclarations, matchEventType);
+                    } else if (score >= scoreTreshold) {
+                        // CASE2: Partial Match: let user decide
+                        // suggestions (classA, classB,...,newClass) -> check fields OR createNewClass 
+                        boolean userDecisionNewClass = false;   //TODO
+                        if (!userDecisionNewClass) {
+                            createNewClass(fieldType, fieldName); //TODO
+                        } else {
+                            FactType userChoice = new FactType(); // << retrieve from SQL
+                            mergeFieldFields(fieldType, fieldName, jDeclarations, userChoice);
+                        }
+                    } else { // CASE3: No Match: score < treshold
+                        createNewClass(fieldType, fieldName);
                     }
-                    else {
-                        FactType userChoice = new FactType(); // << retrieve from SQL
-                        mergeFieldFields(fieldType, fieldName, jDeclarations, userChoice);
-                    }
-                }
-                else {
-                    // createNewClass 
-                    createNewClass(fieldType, fieldName);
-                }
-                    
+                }                   
                 // Check Fields (by name AND type)
                     //> All fields matching? -> binding resolved
                     //> Some/None fields matching? -> create subclass (extend), verifyAndImportFields (on type
             }
-            // TODO <<< : SQL: levenshtein
-            
+                   
         }
     }
-    
+    // Merge Fields: get union of all Fields => create new Fields if necessary
     private void mergeFieldFields(String fieldType, String fieldName, JSONArray declarations, FactType levTypeMatch){
         ArrayList<CMTField> knownFields = levTypeMatch.getFields();
         // Look in declarations for fieldtype
+        // Check if all FieldTypes are known!
         
         
+    }
+    
+    public boolean isJavaType(String type){
+        return type.toLowerCase().contains("java");
     }
     
     private void createNewClass(String fieldType, String fieldName){

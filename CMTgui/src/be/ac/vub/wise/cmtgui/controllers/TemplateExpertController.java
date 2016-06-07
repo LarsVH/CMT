@@ -829,7 +829,7 @@ public class TemplateExpertController  {
                             cmtLine.startXProperty().bind(propstartX);
                             cmtLine.startYProperty().bind(propstartY);
                             
-                           //line(start, endOriginal);
+                           //line(start, endOriginal);//
                         }
                         }else{
                             if(crS!=null && crT == null){
@@ -1862,7 +1862,7 @@ public class TemplateExpertController  {
                                 box.requestFocus();
                                 
                             }
-                        });*/
+                        });*///
 		
             box.getStyleClass().add("boxOps");
             hb.getChildren().add(box);

@@ -599,7 +599,7 @@ public class Converter {
         return publicPositions;
     }
   
-    private static Template fillTemplateLS(Template temp, JSONObject json){
+    public static Template fillTemplateLS(Template temp, JSONObject json){
         try {
             JSONArray jsonIfBlocks = json.getJSONArray("ifblocks");
             JSONArray jsonOperators = json.getJSONArray("operators");
