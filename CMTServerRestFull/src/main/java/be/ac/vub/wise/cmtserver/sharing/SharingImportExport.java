@@ -48,8 +48,9 @@ public class SharingImportExport implements Sharing {
 
     @Override
     public JSONObject exportActivity(Template templ) {
+        System.out.println("1>: exportActivityIn, sharing template: " + templ.getName());
         JSONObject resultjson = null;
-        eventToTemplate = this.prepareOutputBlockIndex();
+        //eventToTemplate = this.prepareOutputBlockIndex();
         
         try {
             resultjson = prepareTemplateSkeletonJSON(templ);
@@ -107,17 +108,23 @@ public class SharingImportExport implements Sharing {
         // Retrieving the corrseponding template
         // >> SQL: Search template responsible for "event"
         CMTDelegator delegator = CMTDelegator.get();
+        System.out.println("3>>> Retrieving template for situation: " + eventClassName);
         Template parentTemplate = delegator.getTemplateOfSituation(eventClassName);        
         
-        System.out.println("2>>>> Retrieved template: '" + parentTemplate.getName() + "' from eventToTemplate");
+        System.out.println("4>>> Retrieved template: '" + parentTemplate.getName() + "-- with SQLID = " + parentTemplate.getSql_id());
         
         // >> SQL: check for custom event IFBlocks (! recursively!!!!)
         ArrayList<FactType> customEvents = delegator.getCustomEventsUsedInTemplate(parentTemplate.getSql_id());
+        System.out.println("5>>> Retrieved " + customEvents.size() + " customEvents for Template " + parentTemplate.getName());
 
         // There exist custom events
-        if (customEvents != null) {
+        if (!customEvents.isEmpty()) {
             jResultArray.put(prepareTemplateSkeletonJSON(parentTemplate));
-        } else{} // No custom events -> converter already converted everything
+        } else{
+                // parentTemplate has no custom Events?
+                // Still have to convert the parentTemplate itself...
+               jResultArray.put(Converter.fromTemplateToJSON(parentTemplate));
+        }
         
         return jResultArray;
     }
@@ -140,7 +147,7 @@ public class SharingImportExport implements Sharing {
             JSONObject jFuncEvent;
             JSONArray jRecArray;
             
-            System.out.println("0>>>>> CurrIFBLock type: " + currBlock.getType());
+            System.out.print("2>> CurrIFBLock type: " + currBlock.getType());
             
             jIFBlock.put("index", i);
             
@@ -148,6 +155,7 @@ public class SharingImportExport implements Sharing {
                 jFuncEvent = Converter.fromFactTypeToJSON(currBlock.getEvent());
                 //jRecArray = processEvent(currBlock.getEvent()); // FIXME: MAJOR BUG <<< JRecArray wordt op 145 overschreven
 
+                System.out.print("; name " + currBlock.getEvent().getClassName());
                 jIFBlock.put("event", jFuncEvent);
                 jIFBlock.put("typeBlock", "activity");
 
@@ -155,6 +163,8 @@ public class SharingImportExport implements Sharing {
                 Function func = currBlock.getFunction();
                 jFuncEvent = Converter.fromFunctionToJSON(func);
             
+                
+                System.out.println(" name " + currBlock.getFunction().getName());
                 jIFBlock.put("function", jFuncEvent);
                 jIFBlock.put("typeBlock", "function");    
 
@@ -190,14 +200,14 @@ public class SharingImportExport implements Sharing {
             IFactType inputObject = bindingInputBlock.getInputObject();
             
              // DEBUG
-            System.out.println("1>>>>> processBindings, currBinding = " + bindingParameterType(endBinding));
+            System.out.println("3>>> processBindings, currBinding = " + bindingParameterType(endBinding));
             
             // InputObject is ALWAYS an event (a function can never be in the endbindings)
              if(inputObject instanceof FactType){
                 FactType inputObjectEvent = (FactType) inputObject;
                 
-                System.out.println("1a>>>>>> Handling InputObjectFactType: " + inputObjectEvent.getClassName() +
-                        "\n -- isCustom: " + inputObjectEvent.isIsCustom());
+                System.out.println("3>>> Handling InputObjectFactType: " + inputObjectEvent.getClassName() +
+                        " -- isCustom: " + inputObjectEvent.isIsCustom());
                 boolean isCustom = inputObjectEvent.isIsCustom();
                 if(isCustom){                
                  declarations = processEvent(inputObjectEvent);
@@ -209,7 +219,7 @@ public class SharingImportExport implements Sharing {
              }
              else if(inputObject instanceof Fact){
                 Fact inputObjectFact = (Fact) inputObject;
-                System.out.println("1b>>>>>> Handling InputObjectFactType: " + inputObjectFact.getClassName());
+                System.out.println("3>>> Handling InputObjectFactType: " + inputObjectFact.getClassName());
                           
                  continue;      //**<<<<<<<< TO CHECK
                  
@@ -392,10 +402,6 @@ public class SharingImportExport implements Sharing {
         tempsHA.stream().forEach((tmplHA) -> {       
             
             String outputEvent = tmplHA.getOutput().getName();
-            
-            System.out.println("3>>>>>>>>> Outputname: " + outputEvent);
-            
-            
             results.put(outputEvent, tmplHA);
         });
 
@@ -434,23 +440,29 @@ public class SharingImportExport implements Sharing {
         }
         JSONArray jIFBlocks = jInput.getJSONArray("ifblocks");
         JSONArray jOperators = jInput.getJSONArray("operators");    // Should normally not be neeeded
-                                  
-         // TODO: werk de template af met Converter.fillTemplateLS(resTmpls, jInput)
+         
+        //--------------------Fix de dependencies eerst-------------------------
+        checkIFBlocks(jIFBlocks);
+        //----------------------------------------------------------------------
+         
+        // Vul de template in (standaard converter), gebruikmakende van de
+        // gekregen JSON (zonder "declarations")
+        Converter.fillTemplateLS(resTmpl, jInput);
+        
          return resTmpl;
     }
-    
-    private void importIFBlocks(JSONArray jIFBlocks, Template t){        
+    // IFBlockLoop
+    private void checkIFBlocks(JSONArray jIFBlocks){        
         for(int i=0; i<jIFBlocks.length(); i++){
             JSONObject jIFBlock = jIFBlocks.getJSONObject(i);
             JSONArray jBindings = jIFBlock.getJSONArray("bindings");
-            //LinkedList<Binding> bindings = Converter.fromJSONtoListBindings(jBindings);
             verifyAndImportBindings(jBindings);
         
         // (als IFBlock of type "acticity" is => de classe van het IFBlock zelf ook importeren!!) -> niet nodig: custom events hebben altijd
-        // een binding naar hun eigen type
+        // een binding naar hun eigen type (wordt dus al door de TemplateConverter gedaan)
         }
     }
-
+    // BindingsLoop
     private void verifyAndImportBindings(JSONArray jBindings){
         for(int i=0; i<jBindings.length(); i++){
             JSONObject jBinding = jBindings.getJSONObject(i);
