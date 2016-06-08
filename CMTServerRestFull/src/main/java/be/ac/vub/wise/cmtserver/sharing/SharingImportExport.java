@@ -32,6 +32,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -432,7 +433,15 @@ public class SharingImportExport implements Sharing {
     public Template importTemplateRule(JSONObject jInput) {        
         Template resTmpl = new Template();
         
+        // Werk verder uit (bottom-up)
+        //**********************************************************************
+        // Make sure this is clear before looping (unique for every import 
+        //(pe SandraInKitchen kan meermaals voorkomen in template, doch slechts 1 keer importeren)
+        resolvedTypesInThisImport.clear();  
+        HashSet<FactType> dbEventTypes = CMTDelegator.get().getAvailableEventTypes();
+        loopDownDeclarations(jInput, dbEventTypes);
                
+        //**********************************************************************
         // DEPRECATED
         String tmplType = jInput.getString("tempType");
                switch (tmplType){       //TODO
@@ -461,7 +470,7 @@ public class SharingImportExport implements Sharing {
     }
     
     // Bottom-up approach
-    public void loopDownDeclarations(JSONObject jInputTemplate) {
+    private void loopDownDeclarations(JSONObject jInputTemplate, HashSet<FactType> dbEventTypes) {
         JSONArray jIFBlocks = jInputTemplate.getJSONArray("ifblocks");
         for (int i = 0; i < jIFBlocks.length(); i++) {
             JSONObject jIFBlock = jIFBlocks.getJSONObject(i);
@@ -473,15 +482,34 @@ public class SharingImportExport implements Sharing {
                     for (int k = 0; k < jDeclarations.length(); k++) {
                         JSONObject jDeclaration = jDeclarations.getJSONObject(k);
                         // Recursion on current Declaration
-                        loopDownDeclarations(jDeclaration);
+                        loopDownDeclarations(jDeclaration, dbEventTypes);
                     }
                 }
                 // After recursion OR we are in a leaf (= no more declarations)
                 // -> start merging on endBinding: all fields already exist in the system
                 JSONObject jEndBinding = jBinding.getJSONObject("endBinding");
                 String className = jEndBinding.getString("className");
-                if(!isJavaType(className)){
-                    
+                if(!isJavaType(className) && !isResolved(className)){
+                for(FactType matchEventType : dbEventTypes){
+                    Double score = JaroWinklerDistance
+                            .apply(className, matchEventType.getClassName());
+                    if(score == 1.0){
+                        // CASE1: Perfect match                  
+                        mergeFields(jEndBinding.getJSONObject("inputObject"), matchEventType);
+                    } else if (score >= scoreTreshold) {
+                        // CASE2: Partial Match: let user decide
+                        // suggestions (classA, classB,...,newClass) -> check fields OR createNewClass 
+                        boolean userDecisionNewClass = false;   //TODO
+                        if (!userDecisionNewClass) {
+                            createNewClass(className); //TODO
+                        } else {
+                            FactType userChoice = new FactType(); // << retrieve from SQL
+                            // MergeFields
+                        }
+                    } else { // CASE3: No Match: score < treshold
+                        //createNewClassDepr(fieldType, fieldName);
+                    }
+                }
                 
                 
                 
@@ -490,9 +518,37 @@ public class SharingImportExport implements Sharing {
                 
             }
         }
+        // TODO: alle IFBlocks afgewerkt, importeer nu de TEMPLATE ZELF!!!!!!!!!!!!!!!!!!!!!
 
     }
     
+    private void mergeFields(JSONObject jInputObject, FactType dbClass){
+        ArrayList<CMTField> dbFields = dbClass.getFields();
+        JSONArray jFields = jInputObject.getJSONArray("fields");
+        HashSet<CMTField> importFields = new HashSet<>();
+        for(int i=0; i<jFields.length(); i++){
+            JSONObject jField = jFields.getJSONObject(i);            
+            CMTField f = Converter.fromJSONtoCMTField(jField);
+            importFields.add(f);
+        }
+        // Subtracting dbFields from import fields (= fields we need to add)
+       importFields.removeAll(dbFields);
+       
+        // TODO: insert new FactType
+        // ---> CMTCore registerFactClass(JSONObject json) ( :( eerst terug naar JSON converten)
+    }
+
+   private boolean isResolved(String type){
+        return resolvedTypesInThisImport.containsKey(type);
+    }
+   private boolean isResolved(String fieldType, String fieldName){
+       if(resolvedTypesInThisImport.containsKey(fieldType)){
+          LinkedList<String> fieldNames = resolvedTypesInThisImport.get(fieldType);
+          if(fieldNames.contains(fieldName))
+              return true;          
+       }
+       return false;
+   }
     
     // IFBlockLoop
     private void checkIFBlocks(JSONArray jIFBlocks){        
@@ -506,6 +562,7 @@ public class SharingImportExport implements Sharing {
         }
     }
     // BindingsLoop
+    @Deprecated
     private void verifyAndImportBindings(JSONArray jBindings){
         for(int i=0; i<jBindings.length(); i++){
             JSONObject jBinding = jBindings.getJSONObject(i);
@@ -536,13 +593,13 @@ public class SharingImportExport implements Sharing {
                         // suggestions (classA, classB,...,newClass) -> check fields OR createNewClass 
                         boolean userDecisionNewClass = false;   //TODO
                         if (!userDecisionNewClass) {
-                            createNewClass(fieldType, fieldName); //TODO
+                            createNewClassDepr(fieldType, fieldName); //TODO
                         } else {
                             FactType userChoice = new FactType(); // << retrieve from SQL
                             mergeFieldFields(fieldType, fieldName, jDeclarations, userChoice);
                         }
                     } else { // CASE3: No Match: score < treshold
-                        createNewClass(fieldType, fieldName);
+                        createNewClassDepr(fieldType, fieldName);
                     }
                 }                   
                 // Check Fields (by name AND type)
@@ -552,6 +609,7 @@ public class SharingImportExport implements Sharing {
                    
         }
     }
+    @Deprecated
     // Merge Fields: get union of all Fields => create new Fields if necessary
     private void mergeFieldFields(String fieldType, String fieldName, JSONArray declarations, FactType levTypeMatch){
         ArrayList<CMTField> knownFields = levTypeMatch.getFields();
@@ -565,7 +623,12 @@ public class SharingImportExport implements Sharing {
         return type.toLowerCase().contains("java");
     }
     
-    private void createNewClass(String fieldType, String fieldName){
+    private void createNewClass(String className){
+        // TODO
+    }
+    
+    @Deprecated
+    private void createNewClassDepr(String fieldType, String fieldName){
         
     }
     

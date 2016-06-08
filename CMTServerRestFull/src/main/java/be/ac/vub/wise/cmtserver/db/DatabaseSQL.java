@@ -1148,7 +1148,9 @@ public class DatabaseSQL implements IDbComponent{
         
         try {
             Connection conn = ds.getConnection();
-            // check if category is ok
+            
+            // CATEGORY
+            //------------------------------------------------------------------
             PreparedStatement ps = conn.prepareStatement("SELECT categoryName FROM categories WHERE categoryName = ?"); 
             ps.setString(1, type.getCategory());
             ResultSet rs = ps.executeQuery();
@@ -1162,54 +1164,56 @@ public class DatabaseSQL implements IDbComponent{
                ps.executeUpdate();
             }
             rs.close();
+            
+            // FACTTYPE
+            //------------------------------------------------------------------
             ps = conn.prepareStatement("INSERT INTO facttype (facttypeName, facttypeCategory, isCustom, facttypeType) VALUES(?,?,?,?)");
+            ps.setString(1, type.getClassName());
+            ps.setString(2, category);
+            ps.setInt(3, type.isIsCustom() ? 1 : 0);
+            ps.setString(4, type.getType());
+            // urifield after fields insert!
+            ps.executeUpdate();
+            ps.close();
+            for (CMTField field : type.getFields()) {
+
+                ps = conn.prepareStatement("SELECT facttypeName FROM facttype WHERE facttypeName = ?");
+                ps.setString(1, field.getType());
+                ResultSet rs3 = ps.executeQuery();
+                ps.closeOnCompletion();
+                rs3.next();
+                String typeName = rs3.getString("facttypeName");
+                rs3.close();
+                ps = conn.prepareStatement("INSERT INTO fields (fieldName, fieldType, isVar) VALUES (?,?,?)", Statement.RETURN_GENERATED_KEYS);
+                ps.setString(1, field.getName());
+                ps.setString(2, typeName);
+                ps.setInt(3, field.isIsVar() ? 1 : 0);
+                ps.executeUpdate();
+
+                ResultSet rs2 = ps.getGeneratedKeys();
+                rs2.next();
+                int fieldid = rs2.getInt(1);
+                rs2.close();
+                ps.close();
+                if (field.getName().equals(type.getUriField())) {
+                    ps = conn.prepareStatement("UPDATE facttype SET urifield = ? WHERE facttypeName = ?");
+                    ps.setInt(1, fieldid);
+                    ps.setString(2, type.getClassName());
+                    ps.executeUpdate();
+                    ps.close();
+                }
+                ps = conn.prepareStatement("INSERT INTO facttype_fields VALUES(?,?)");
                 ps.setString(1, type.getClassName());
-                ps.setString(2, category);
-                ps.setInt(3, type.isIsCustom() ? 1 : 0);
-                ps.setString(4, type.getType());
-                // urifield after fields insert!
+                ps.setInt(2, fieldid);
                 ps.executeUpdate();
                 ps.close();
-                for(CMTField field : type.getFields()){
-                    
-                    ps = conn.prepareStatement("SELECT facttypeName FROM facttype WHERE facttypeName = ?");
-                    ps.setString(1, field.getType());
-                    System.out.println("DB1 >>>> " + field.getType());
-                    ResultSet rs3 = ps.executeQuery();
-                    ps.closeOnCompletion();
-                    rs3.next();
-                    String typeName = rs3.getString("facttypeName");
-                    rs3.close();
-                    ps = conn.prepareStatement("INSERT INTO fields (fieldName, fieldType, isVar) VALUES (?,?,?)",Statement.RETURN_GENERATED_KEYS);
-                    ps.setString(1, field.getName());
-                    ps.setString(2,typeName);
-                    ps.setInt(3, field.isIsVar() ? 1:0);
-                    ps.executeUpdate();
-               
-                    ResultSet rs2 = ps.getGeneratedKeys();
-                    rs2.next();
-                    int fieldid = rs2.getInt(1);
-                    rs2.close();
-                         ps.close();
-                    if(field.getName().equals(type.getUriField())){
-                        ps = conn.prepareStatement("UPDATE facttype SET urifield = ? WHERE facttypeName = ?" );
-                        ps.setInt(1, fieldid);
-                        ps.setString(2, type.getClassName());
-                        ps.executeUpdate();
-                             ps.close();
-                    }
-                    ps = conn.prepareStatement("INSERT INTO facttype_fields VALUES(?,?)");
-                    ps.setString(1, type.getClassName());
-                    ps.setInt(2, fieldid);
-                    ps.executeUpdate();
-                         ps.close();
-                }
+            }
             conn.close();
-            
+
         } catch (SQLException ex) {
             Logger.getLogger(DatabaseSQL.class.getName()).log(Level.SEVERE, null, ex);
         }
-       
+
     }
 
     @Override

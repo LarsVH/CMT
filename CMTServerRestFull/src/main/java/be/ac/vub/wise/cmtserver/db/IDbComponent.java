@@ -19,8 +19,8 @@ import java.util.List;
 
 public interface IDbComponent {
 	
-	public HashSet<Template> getAvailableContextForms();
-	public boolean addContextForm(Template form);
+    public HashSet<Template> getAvailableContextForms();
+    public boolean addContextForm(Template form);
     public boolean removeContextForm(Template form);
     public HashSet<TemplateHA> getAvailableTemplateHA();
     public HashSet<TemplateActions> getAvailableTemplateActions();

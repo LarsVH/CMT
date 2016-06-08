@@ -31,3 +31,21 @@ $2:Location(room== "Kitchen" )
 insert( new SVCookingAct()); 
  end 
  
+import be.ac.vub.wise.cmtserver.facts.Person
+import be.ac.vub.wise.cmtserver.events.SVCookingAct
+import function be.ac.vub.wise.cmtserver.functions.Func.PersonInLocation
+import be.ac.vub.wise.cmtserver.facts.Location
+import be.ac.vub.wise.cmtserver.events.EveryInKitchSit
+import be.ac.vub.wise.cmtserver.events.SandraInKitchen
+rule "ruleEveryInKitchSit" 
+  when 
+ $0:SandraInKitchen() 
+$2:SVCookingAct() 
+$4:Location(room== "Kitchen" ) 
+ $6:Person(name== "Lars" ) 
+ eval(PersonInLocation($4, $6)) 
+
+ then 
+insert( new EveryInKitchSit()); 
+ end 
+ 
