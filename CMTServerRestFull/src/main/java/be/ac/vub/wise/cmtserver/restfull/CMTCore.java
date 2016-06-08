@@ -41,12 +41,14 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
@@ -112,49 +114,47 @@ public class CMTCore {
     }
     // Creates *.java file to be inserted in Drools (LvH)
     // P.e. Person, Location
-    public void registerFactClass(JSONObject json){
-        if(!json.getString("className").contains("java")){
-        String className = HelperClass.toUppercaseFirstLetter(json.getString("className"));
-        String uriField = json.getString("uriField");
-        JSONArray arrFields = json.getJSONArray("fields");
-        if(checkUriField(uriField, arrFields)){
-            String source = "package "+ packageFacts+ "; "
-                                    + "import " + packageRmi +"UriFactType; import org.kie.api.definition.type.Role; import org.kie.api.definition.type.Role.Type; "
-                                    + "import java.io.Serializable; import " + packageRmi +"IFactType; "
-                                    + "import org.apache.commons.lang3.builder.EqualsBuilder; import org.apache.commons.lang3.builder.HashCodeBuilder; "
-                                    + "@Role(Type.FACT) @UriFactType(id = \""+ uriField+"\") "
+    public void registerFactClass(JSONObject json) {
+        if (!json.getString("className").contains("java")) {
+            String className = HelperClass.toUppercaseFirstLetter(json.getString("className"));
+            String uriField = json.getString("uriField");
+            JSONArray arrFields = json.getJSONArray("fields");
+            if (checkUriField(uriField, arrFields)) {
+                String source = "package " + packageFacts + "; "
+                        + "import " + packageRmi + "UriFactType; import org.kie.api.definition.type.Role; import org.kie.api.definition.type.Role.Type; "
+                        + "import java.io.Serializable; import " + packageRmi + "IFactType; "
+                        + "import org.apache.commons.lang3.builder.EqualsBuilder; import org.apache.commons.lang3.builder.HashCodeBuilder; "
+                        + "@Role(Type.FACT) @UriFactType(id = \"" + uriField + "\") "
+                        + "public class " + className + " implements IFactType, Serializable { ";
+                for (int i = 0; i < arrFields.length(); i++) {
+                    JSONObject ob = arrFields.getJSONObject(i);
+                    String type = ob.getString("fieldType");
+                    String fieldName = ob.getString("fieldName");
 
-                                    + "public class " +className + " implements IFactType, Serializable { ";
-            for(int i = 0; i< arrFields.length(); i++){
-                JSONObject ob = arrFields.getJSONObject(i);
-                String type = ob.getString("fieldType");
-                String fieldName = ob.getString("fieldName");
-                
-                if(!type.contains("java")){
-                    String[] splitLastPoint = type.split("\\.");
-                    int z = splitLastPoint.length;
-                    String simpleClassName = type;
-                    if(z>0){
-                        simpleClassName= splitLastPoint[z-1];
+                    if (!type.contains("java")) {
+                        String[] splitLastPoint = type.split("\\.");
+                        int z = splitLastPoint.length;
+                        String simpleClassName = type;
+                        if (z > 0) {
+                            simpleClassName = splitLastPoint[z - 1];
+                        }
+                        if (checkTypeClassPath(simpleClassName)) {
+                            //String okType = StringUtils.capitalize(type);
+                            source = addSetterGetters(source, fieldName, Constants.PACKAGEFACTS + "." + simpleClassName);
+                        }
+                    } else {
+                        source = addSetterGetters(source, fieldName, type);
                     }
-                    if(checkTypeClassPath(simpleClassName)){
-                        //String okType = StringUtils.capitalize(type);
-                        source = addSetterGetters(source, fieldName, Constants.PACKAGEFACTS+"."+simpleClassName);
-                    }
-                }else{
-                    source = addSetterGetters(source, fieldName, type);
                 }
+                String capClassName = StringUtils.capitalize(className);
+                source += getStringEqualsEtc(uriField, capClassName) + "}";
+                HelperClass.compile(source, className, Constants.PACKAGEFACTSSLASH);
             }
-            String capClassName = StringUtils.capitalize(className);
-            source += getStringEqualsEtc(uriField, capClassName) + "}";
-            HelperClass.compile(source, className, Constants.PACKAGEFACTSSLASH);
         }
-        }
-            FactType type = Converter.fromJSONtoFactTypeFact(json);
-            CMTDelegator.get().registerFactType(type);
-        
+        FactType type = Converter.fromJSONtoFactTypeFact(json);
+        CMTDelegator.get().registerFactType(type);  // = Put FactType in db
     }
-    
+   
     public JSONObject addFact(JSONObject json){
         IFactType fact = Converter.fromJSONFactObjectToObject(json, false);
         
@@ -180,106 +180,106 @@ public class CMTCore {
     // input JSON {"className":<name>, "extends":<time or activity>, "activityCustom": <boolean> (if time == false),
     //"uriField":<fieldname>, "varList":[<list of strings>{"var":<label>}], "varFormat":<format>, "fields":[{"fieldName":<name>, "type":<simpleClassName>}, ... ]}    
     
-    public void registerEventClass(JSONObject json){
-        System.out.println(" json re " + json);
+    public void registerEventClass(JSONObject json) {
+        System.out.println(" json registerevent -- " + json);
         String className = HelperClass.toUppercaseFirstLetter(json.getString("className"));
-        if(CMTDelegator.get().getFactTypeWithName(className) == null){
-        String typeEvent = json.getString("type");
-        String extendsClass = "";
-        boolean custom = false;
-        boolean isActivity = false;
-        switch(typeEvent){
-            case "activity":
-                 extendsClass = "be.ac.vub.wise.cmtserver.blocks.Activity";
-                 isActivity = true;
-                 custom = json.getBoolean("isCustom");
-                 break;
-            case "time":
-                extendsClass = "import be.ac.vub.wise.cmtserver.blocks.Time";
-                break;
-        }
-        
-        String uriField = json.getString("uriField");
-        JSONArray varList = json.getJSONArray("varList"); // populate linkedList in constructor  -- if empty then format is ok
-        String varFormat = json.getString("varFormat");
-        JSONArray arrFields = json.getJSONArray("fields");
-        if(checkUriField(uriField, arrFields) || uriField.isEmpty()){
-            String source = "package "+ Constants.PACKAGEEVENTS+ ";"
-                                    + "import " + Constants.PACKAGEBLOCKS +"UriFactType; import org.kie.api.definition.type.Role; import org.kie.api.definition.type.Role.Type; "
-                                    + "import java.io.Serializable; import " + Constants.PACKAGEBLOCKS +"IFactType; "
-                                    + "import org.apache.commons.lang3.builder.EqualsBuilder; import org.apache.commons.lang3.builder.HashCodeBuilder; "
-                                    + "import be.ac.vub.wise.cmtserver.blocks.EventVariables;  import be.ac.vub.wise.cmtserver.blocks.Time; import be.ac.vub.wise.cmtserver.blocks.Activity;"
-                                    + "@Role(Type.EVENT) @UriFactType(id = \""+ uriField+"\") ";
-            
-            if(varList.length() == 0 ){ // then format -- todo add exception if both are empty
-                if(varFormat.isEmpty()){
-                    source += "@EventVariables(list = \"\", format=\"\")";
-                }else{
-                    source += "@EventVariables(list = \"\", format=\"format\")";
-                }
-            }else{
-                source += "@EventVariables(list = \"list\", format=\"\")";
+        if (CMTDelegator.get().getFactTypeWithName(className) == null) {
+            String typeEvent = json.getString("type");
+            String extendsClass = "";
+            boolean custom = false;
+            boolean isActivity = false;
+            switch (typeEvent) {
+                case "activity":
+                    extendsClass = "be.ac.vub.wise.cmtserver.blocks.Activity";
+                    isActivity = true;
+                    custom = json.getBoolean("isCustom");
+                    break;
+                case "time":
+                    extendsClass = "import be.ac.vub.wise.cmtserver.blocks.Time";
+                    break;
             }
-            
-            source += " public class " +className + " extends "+extendsClass+" { ";
-            
-            if(varList.length() == 0){ 
-                if(varFormat.isEmpty()){
-                    source += " public "+ className+"(){"; // constructor
-                            
-                }else{
-                    source += " java.lang.String format = \"\"; "
-                            + " public "+ className+"(){" // constructor
-                            + " this.format = \""+varFormat+"\"; ";
-                }
-                if(isActivity){
-                    source += " super.setCustom("+custom+"); } ";
-                } else{
-                    source +="}";
-                }        
-            }else{
-                source += " public java.util.LinkedList<String> list = null; "
-                        + " public "+ className+"(){" // constructor
-                        + " this.list = new java.util.LinkedList<String>(); ";
-                if(isActivity){
-                    source += " super.setCustom("+custom+"); ";
-                }
-                for(int i = 0; i<varList.length(); i++){
-                    JSONObject ob = varList.getJSONObject(i);
-                    String var = ob.getString("var");
-                    source += " this.list.add(\""+var+"\"); "; //populate list
-                }
-                
-                source +="}";
-            }
-            
-            System.out.println(" arrFields length " + arrFields.length());
-            for(int i = 0; i< arrFields.length(); i++){
-                JSONObject ob = arrFields.getJSONObject(i);
-                String type = ob.getString("fieldType");
-                String fieldName = ob.getString("fieldName");
-                if(!type.contains("java")){
-                    String[] splitLastPoint = type.split("\\.");
-                    int z = splitLastPoint.length;
-                    String simpleClassName = type;
-                    if(z>0){
-                        simpleClassName= splitLastPoint[z-1];
+
+            String uriField = json.getString("uriField");
+            JSONArray varList = json.getJSONArray("varList"); // populate linkedList in constructor  -- if empty then format is ok
+            String varFormat = json.getString("varFormat");
+            JSONArray arrFields = json.getJSONArray("fields");
+            if (checkUriField(uriField, arrFields) || uriField.isEmpty()) {
+                String source = "package " + Constants.PACKAGEEVENTS + ";"
+                        + "import " + Constants.PACKAGEBLOCKS + "UriFactType; import org.kie.api.definition.type.Role; import org.kie.api.definition.type.Role.Type; "
+                        + "import java.io.Serializable; import " + Constants.PACKAGEBLOCKS + "IFactType; "
+                        + "import org.apache.commons.lang3.builder.EqualsBuilder; import org.apache.commons.lang3.builder.HashCodeBuilder; "
+                        + "import be.ac.vub.wise.cmtserver.blocks.EventVariables;  import be.ac.vub.wise.cmtserver.blocks.Time; import be.ac.vub.wise.cmtserver.blocks.Activity;"
+                        + "@Role(Type.EVENT) @UriFactType(id = \"" + uriField + "\") ";
+
+                if (varList.length() == 0) { // then format -- todo add exception if both are empty
+                    if (varFormat.isEmpty()) {
+                        source += "@EventVariables(list = \"\", format=\"\")";
+                    } else {
+                        source += "@EventVariables(list = \"\", format=\"format\")";
                     }
-                    if(checkTypeClassPath(simpleClassName)){
-                        //String okType = StringUtils.capitalize(type);
-                        source = addSetterGetters(source, fieldName, Constants.PACKAGEFACTS+"."+simpleClassName);
-                    }
-                }else{
-                    source = addSetterGetters(source, fieldName, type);
+                } else {
+                    source += "@EventVariables(list = \"list\", format=\"\")";
                 }
+
+                source += " public class " + className + " extends " + extendsClass + " { ";
+
+                if (varList.length() == 0) {
+                    if (varFormat.isEmpty()) {
+                        source += " public " + className + "(){"; // constructor
+
+                    } else {
+                        source += " java.lang.String format = \"\"; "
+                                + " public " + className + "(){" // constructor
+                                + " this.format = \"" + varFormat + "\"; ";
+                    }
+                    if (isActivity) {
+                        source += " super.setCustom(" + custom + "); } ";
+                    } else {
+                        source += "}";
+                    }
+                } else {
+                    source += " public java.util.LinkedList<String> list = null; "
+                            + " public " + className + "(){" // constructor
+                            + " this.list = new java.util.LinkedList<String>(); ";
+                    if (isActivity) {
+                        source += " super.setCustom(" + custom + "); ";
+                    }
+                    for (int i = 0; i < varList.length(); i++) {
+                        JSONObject ob = varList.getJSONObject(i);
+                        String var = ob.getString("var");
+                        source += " this.list.add(\"" + var + "\"); "; //populate list
+                    }
+
+                    source += "}";
+                }
+
+                System.out.println(" arrFields length " + arrFields.length());
+                for (int i = 0; i < arrFields.length(); i++) {
+                    JSONObject ob = arrFields.getJSONObject(i);
+                    String type = ob.getString("fieldType");
+                    String fieldName = ob.getString("fieldName");
+                    if (!type.contains("java")) {
+                        String[] splitLastPoint = type.split("\\.");
+                        int z = splitLastPoint.length;
+                        String simpleClassName = type;
+                        if (z > 0) {
+                            simpleClassName = splitLastPoint[z - 1];
+                        }
+                        if (checkTypeClassPath(simpleClassName)) {
+                            //String okType = StringUtils.capitalize(type);
+                            source = addSetterGetters(source, fieldName, Constants.PACKAGEFACTS + "." + simpleClassName);
+                        }
+                    } else {
+                        source = addSetterGetters(source, fieldName, type);
+                    }
+                }
+
+                source += "}";
+                HelperClass.compile(source, className, Constants.PACKAGEEVENTSSLASH);
+                FactType type = Converter.fromJSONtoFactTypeEvent(json);
+                CMTDelegator.get().registerEventType(type); // = put Event in database
+
             }
-            
-            source += "}";
-            HelperClass.compile(source, className, Constants.PACKAGEEVENTSSLASH);
-            FactType type = Converter.fromJSONtoFactTypeEvent(json);
-            CMTDelegator.get().registerEventType(type);
-                    
-        }
         }
     }
     
@@ -310,6 +310,61 @@ public class CMTCore {
       Event eventReturn = Converter.fromObjectToEvent(event, isActivity, eventType.isIsCustom(), eventType.getUriField(), eventType.getVarList(), eventType.getVarFormat());
       return Converter.fromEventToJSON(eventReturn);
     }
+    
+     /**
+     * Strategie: . 
+     * SQL: Voeg gewoon de extra fields to in SQL (FactType blijft bestaan) (zie caller)
+     * 1. Drools: verwijder alle FactTypes uit Drools ---> CHECK MET SANDRA OF DIT WEL NODIG IS
+     * 2. Verwijder facttypename.java/.class files 
+     * 3. Haal nieuw FactType uit de DB (zie 1) en hercompileer met de compiler
+     * 4. Voeg Facts terug toe aan Drools --> ---> CHECK MET SANDRA OF DIT WEL NODIG IS
+     * @param type
+     * @param fields
+     */
+    public void addFieldsToFactType(FactType type, ArrayList<CMTField> fields) {
+        CMTDelegator delegator = CMTDelegator.get();
+        String className = type.getClassName();
+
+        // 1. Remove all facts of a factType from Drools
+        //----------------------------------------------------------------------
+        HashSet<Fact> facts = delegator.getFactsInFactVersionWithType(className);
+        DroolsComponent drools = DroolsComponent.getDroolsComponent();
+        for (Fact fact : facts) {
+            drools.removeFact(fact);
+        }
+
+        // 2. Remove *.java and *.class file of FactType
+        //----------------------------------------------------------------------
+        File pathJavaSource = new File(Constants.JAVAFILEPATH
+                + Constants.PACKAGEEVENTSSLASH + File.separator + className + ".java");
+        File pathClassSource = new File(Constants.CLASSPATH
+                + Constants.PACKAGEEVENTSSLASH + File.separator + className + ".class");
+        boolean deleted = false;
+        if (pathJavaSource.exists()) {
+            deleted = pathJavaSource.delete();
+        }
+        if (pathClassSource.exists()) {
+            deleted = pathClassSource.delete() && deleted;
+        }
+        if (!deleted) {
+            System.out.println("CMTCORE>>>>: " + className + " -- NOT DELETED!!!");
+        }
+        
+        // 3. Retrieve FactType (with added fields from db) and compile
+        //----------------------------------------------------------------------
+        FactType updatedFactType = delegator.getFactTypeWithName(className);
+        JSONObject jUpdatedFactType = Converter.fromFactTypeToJSON(updatedFactType);  // (lowpriority) fix dat sourcegenerator werkt met FactType ipv JSON
+        //generateSourceAndCompileFactClass(jUpdatedFactType);
+        
+        // 4. Re-add Facts to Drools
+        //----------------------------------------------------------------------
+        for(Fact fact: facts){
+            drools.addFact(fact);
+        }
+    }
+    
+    
+    
     
     public void registerFunctionClass(JSONObject json){
       
