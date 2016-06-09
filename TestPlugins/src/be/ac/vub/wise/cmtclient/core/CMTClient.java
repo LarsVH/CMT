@@ -117,7 +117,7 @@ public class CMTClient {
             Logger.getLogger(CMTClient.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-    
+    // @param: format: vb. "00:00" in geval van tijd
     public static void shortcutRegisterEventInCMT(Object object, boolean isActivity, boolean isCustom, String uriField, ArrayList<String> varList, String varFormat, String category){
         FactType event = ConverterCoreBlocks.fromEventClassToFactType(object.getClass(), isActivity, isCustom, uriField, varList, varFormat, category);
         registerEventTypeInCMT(event);

@@ -12,6 +12,7 @@ import be.ac.vub.wise.cmtclient.blocks.Fact;
 import be.ac.vub.wise.cmtclient.blocks.FactType;
 import be.ac.vub.wise.cmtclient.core.CMTClient;
 import be.ac.vub.wise.cmtclient.util.Constants;
+import be.ac.vub.wise.cmtclient.util.ConverterCoreBlocks;
 import java.util.ArrayList;
 import javax.swing.JFrame;
 
@@ -40,7 +41,7 @@ public class TestPlugins {
         
         
       //------------------------------------------------------------------------
-      
+      /*
        ArrayList<CMTField> fieldsString = new ArrayList<>();
        CMTField f = new CMTField("value", "java.lang.String");
        fieldsString.add(f);
@@ -50,11 +51,18 @@ public class TestPlugins {
        /**/
           
        //////////////////////
-        populateForTest();
+        //populateForTest();
        //////////////////////
        
-       
-       
+       /***********RegisterFactTypeTest*******************/
+       ArrayList<String> vars = new ArrayList<>();
+       vars.add("on");
+       vars.add("off");
+       CMTClient.shortcutRegisterEventInCMT(new Lamp(), true, true, "id", vars, "", "Code");
+
+        //CMTClient.shortcutRegisterFacttypeInCMT(Lamp.class, "id", "Code");
+        
+       /*************************************************/
        //-----------------------------------------------------------------------
    /*
         Location loc2 = new Location("living");
