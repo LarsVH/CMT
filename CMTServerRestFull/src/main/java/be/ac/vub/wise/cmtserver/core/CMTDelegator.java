@@ -10,6 +10,7 @@ import be.ac.vub.wise.cmtserver.db.IDbComponent;
 import be.ac.vub.wise.cmtserver.drools.DroolsComponent;
 import be.ac.vub.wise.cmtserver.drools.IDroolsComponent;
 import be.ac.vub.wise.cmtserver.blocks.Action;
+import be.ac.vub.wise.cmtserver.blocks.CMTField;
 import be.ac.vub.wise.cmtserver.blocks.FactType;
 import be.ac.vub.wise.cmtserver.blocks.Function;
 import be.ac.vub.wise.cmtserver.blocks.Fact;
@@ -59,6 +60,10 @@ public class CMTDelegator {
         
         dbComp.registerFactType(type);
     }
+     public void addFields(FactType type, ArrayList<CMTField> fields){
+        
+        dbComp.addFields(type, fields);
+    }
     
     public void registerEventType(FactType type){
         dbComp.registerEventType(type);
@@ -76,8 +81,7 @@ public class CMTDelegator {
        // drools.addFact(factInObject);
     }
 
-    public void addEvent(IFactType event){
-      	
+    public void addEvent(IFactType event){      	
         drools.addFact(event);
        
     }
@@ -159,6 +163,10 @@ public class CMTDelegator {
     }
     public HashSet<IFactType> getFactsWithType(String className){
         return dbComp.getFactsWithType(className);
+    }
+    
+    public HashSet<Fact> getFactsInFactVersionWithType(String classNamed){
+        return dbComp.getFactsInFactVersionWithType(classNamed);
     }
     
     public HashSet<Fact> getFactsWithTypeInFactForm(String classname){

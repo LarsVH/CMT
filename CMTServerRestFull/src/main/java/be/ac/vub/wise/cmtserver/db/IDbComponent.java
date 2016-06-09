@@ -1,6 +1,7 @@
 package be.ac.vub.wise.cmtserver.db;
 
 import be.ac.vub.wise.cmtserver.blocks.Action;
+import be.ac.vub.wise.cmtserver.blocks.CMTField;
 import be.ac.vub.wise.cmtserver.blocks.FactType;
 import be.ac.vub.wise.cmtserver.blocks.Fact;
 import be.ac.vub.wise.cmtserver.blocks.Function;
@@ -35,8 +36,9 @@ public interface IDbComponent {
     public HashSet<FactType> getAvailableEventTypes();
     public FactType getFactTypeWithName(String name);
     public HashSet<IFactType> getFactsWithType(String classNamed);
-    public HashSet<Fact> getFactsInFactVersionWithType(String classNamed) ;
+    public HashSet<Fact> getFactsInFactVersionWithType(String classNamed);
     public void registerFactType(FactType type); // also for events -- just keeps the classname
+    public void addFields(FactType type, ArrayList<CMTField> fields);
     public void addFact(IFactType fact);
     public void addFactinFactForm(Fact fact);
     public boolean removeFact(IFactType fact);

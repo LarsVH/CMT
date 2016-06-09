@@ -534,8 +534,12 @@ public class SharingImportExport implements Sharing {
         // Subtracting dbFields from import fields (= fields we need to add)
        importFields.removeAll(dbFields);
        
+       CMTDelegator delegator = CMTDelegator.get();
+       delegator.addFields(dbClass, dbFields);
         // TODO: insert new FactType
         // ---> CMTCore registerFactClass(JSONObject json) ( :( eerst terug naar JSON converten)
+    
+
     }
 
    private boolean isResolved(String type){

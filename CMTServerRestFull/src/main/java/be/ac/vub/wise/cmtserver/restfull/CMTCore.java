@@ -179,11 +179,28 @@ public class CMTCore {
     
     // input JSON {"className":<name>, "extends":<time or activity>, "activityCustom": <boolean> (if time == false),
     //"uriField":<fieldname>, "varList":[<list of strings>{"var":<label>}], "varFormat":<format>, "fields":[{"fieldName":<name>, "type":<simpleClassName>}, ... ]}    
-    
     public void registerEventClass(JSONObject json) {
         System.out.println(" json registerevent -- " + json);
+        if (generateSourceAndCompileEventClass(json)) {
+            FactType type = Converter.fromJSONtoFactTypeEvent(json);
+            CMTDelegator.get().registerEventType(type); // = put Event in database
+        }
+    }
+    // Overload for "registerEventClass"
+    private boolean generateSourceAndCompileEventClass(JSONObject json){
+        return generateSourceAndCompileEventClass(json, false);
+    }    
+    /**
+     * @param json: Event in JSON format to generate source/compile for
+     * @param merging: true when using this function for merging (merged FactType is already in db),
+     * False otherwise (creating brand new EventClass)
+     * @return (for "registerEventClass": true if both IF-statements passed
+     * @throws JSONException 
+     */
+    private boolean generateSourceAndCompileEventClass(JSONObject json, boolean merging) throws JSONException {
+        System.out.println("CMTCore>>>> generateSourceAndCompileEventClass -- IN, merging=" + merging);
         String className = HelperClass.toUppercaseFirstLetter(json.getString("className"));
-        if (CMTDelegator.get().getFactTypeWithName(className) == null) {
+        if (CMTDelegator.get().getFactTypeWithName(className) == null || merging) { // In case of merging, factType is already in db (TO REFACTOR)
             String typeEvent = json.getString("type");
             String extendsClass = "";
             boolean custom = false;
@@ -275,14 +292,16 @@ public class CMTCore {
                 }
 
                 source += "}";
-                HelperClass.compile(source, className, Constants.PACKAGEEVENTSSLASH);
-                FactType type = Converter.fromJSONtoFactTypeEvent(json);
-                CMTDelegator.get().registerEventType(type); // = put Event in database
+                HelperClass.compile(source, className, Constants.PACKAGEEVENTSSLASH);             
 
+                // For "registerEventClass" -> "registerEventType" only allowed
+                //when this if clause is reached
+                return true;    
             }
         }
+        return false;
     }
-    
+
    
     //input JSON {"className":<name>, "object":{...}}
     public JSONObject addEvent(JSONObject json){
@@ -313,27 +332,33 @@ public class CMTCore {
     
      /**
      * Strategie: . 
-     * SQL: Voeg gewoon de extra fields to in SQL (FactType blijft bestaan) (zie caller)
-     * 1. Drools: verwijder alle FactTypes uit Drools ---> CHECK MET SANDRA OF DIT WEL NODIG IS
-     * 2. Verwijder facttypename.java/.class files 
-     * 3. Haal nieuw FactType uit de DB (zie 1) en hercompileer met de compiler
-     * 4. Voeg Facts terug toe aan Drools --> ---> CHECK MET SANDRA OF DIT WEL NODIG IS
+     * 1. SQL: Voeg gewoon de extra fields to in SQL (FactType blijft bestaan (in SQL))
+     * 2. Drools: verwijder alle FactTypes uit Drools ---> CHECK MET SANDRA OF DIT WEL NODIG IS
+     * 3. Verwijder facttypename.java/.class files 
+     * 4. Haal nieuw FactType uit de DB (zie 1) en hercompileer met de compiler
+     * 5. Voeg Facts terug toe aan Drools --> ---> CHECK MET SANDRA OF DIT WEL NODIG IS
      * @param type
      * @param fields
      */
-    public void addFieldsToFactType(FactType type, ArrayList<CMTField> fields) {
+    public void addFieldsToFactTypeEvent(FactType type, ArrayList<CMTField> fields) {
         CMTDelegator delegator = CMTDelegator.get();
         String className = type.getClassName();
+        
+        // 1. SQL: Add fields to the database (needed in step 4)
+        //----------------------------------------------------------------------
+        delegator.addFields(type, fields);        
 
-        // 1. Remove all facts of a factType from Drools
+        // 2. Remove all facts of a factType from Drools
         //----------------------------------------------------------------------
         HashSet<Fact> facts = delegator.getFactsInFactVersionWithType(className);
+        System.out.println("CMTCORE>>>> addFieldsToFactTypeEvent: 1. found " +
+                facts.size() + "facts");
         DroolsComponent drools = DroolsComponent.getDroolsComponent();
         for (Fact fact : facts) {
             drools.removeFact(fact);
         }
 
-        // 2. Remove *.java and *.class file of FactType
+        // 3. Remove *.java and *.class file of FactType
         //----------------------------------------------------------------------
         File pathJavaSource = new File(Constants.JAVAFILEPATH
                 + Constants.PACKAGEEVENTSSLASH + File.separator + className + ".java");
@@ -347,24 +372,23 @@ public class CMTCore {
             deleted = pathClassSource.delete() && deleted;
         }
         if (!deleted) {
-            System.out.println("CMTCORE>>>>: " + className + " -- NOT DELETED!!!");
+            System.out.println("CMTCORE>>>> addFieldsToFactTypeEvent: " + className + " -- NOT DELETED!!!");
         }
         
-        // 3. Retrieve FactType (with added fields from db) and compile
+        // 4. Retrieve FactType (with added fields from db) and compile
         //----------------------------------------------------------------------
         FactType updatedFactType = delegator.getFactTypeWithName(className);
+        System.out.println("CMTCORE>>>> addFieldsToFactTypeEvent: \n "
+                + "retrieved updated factType from db, #fields: " + updatedFactType.getFields().size());
         JSONObject jUpdatedFactType = Converter.fromFactTypeToJSON(updatedFactType);  // (lowpriority) fix dat sourcegenerator werkt met FactType ipv JSON
-        //generateSourceAndCompileFactClass(jUpdatedFactType);
+        generateSourceAndCompileEventClass(jUpdatedFactType, true);
         
-        // 4. Re-add Facts to Drools
+        // 5. Re-add Facts to Drools
         //----------------------------------------------------------------------
         for(Fact fact: facts){
             drools.addFact(fact);
         }
     }
-    
-    
-    
     
     public void registerFunctionClass(JSONObject json){
       

@@ -13,6 +13,7 @@ import be.ac.vub.wise.cmtserver.blocks.Activity;
 import be.ac.vub.wise.cmtserver.blocks.Binding;
 import be.ac.vub.wise.cmtserver.blocks.BindingInputFact;
 import be.ac.vub.wise.cmtserver.blocks.BindingParameter;
+import be.ac.vub.wise.cmtserver.blocks.CMTField;
 import be.ac.vub.wise.cmtserver.blocks.EventVariables;
 import be.ac.vub.wise.cmtserver.blocks.FactType;
 import be.ac.vub.wise.cmtserver.blocks.Fact;
@@ -25,6 +26,7 @@ import be.ac.vub.wise.cmtserver.blocks.Rule;
 import be.ac.vub.wise.cmtserver.blocks.TemplateActions;
 import be.ac.vub.wise.cmtserver.blocks.TemplateHA;
 import be.ac.vub.wise.cmtserver.blocks.UriFactType;
+import be.ac.vub.wise.cmtserver.drools.DroolsComponent;
 import be.ac.vub.wise.cmtserver.sharing.SharingImportExport;
 import be.ac.vub.wise.cmtserver.util.Constants;
 import be.ac.vub.wise.cmtserver.util.Converter;
@@ -546,9 +548,26 @@ public class CMTRest {
     @Produces("application/json")
     public Response testdebug(){
       JSONObject out = new JSONObject();
+      out.put("Status", "ok");
+      CMTDelegator delegator = CMTDelegator.get();
+      DroolsComponent drools = DroolsComponent.getDroolsComponent();
+          
+      FactType lamp = delegator.getFactTypeWithName("Lamp");
+        if (lamp != null)
+            System.out.println("Test>>>> getFactTypeWithName" + "Found: " + lamp.getClassName());
+         
+      CMTField field1 = new CMTField("veld1", "java.lang.String");
+      CMTField field2 = new CMTField("veld2", "java.lang.String");
+      ArrayList<CMTField> fields = new ArrayList<>();
+      fields.add(field1);
+      fields.add(field2);
       
+      System.out.println("Adding to Db complete");
+      
+      CMTCore core = CMTCore.get();
+      core.addFieldsToFactTypeEvent(lamp, fields);
       
       return Response.status(201).entity(out.toString()).build();
-    };
+    }
     
 }
