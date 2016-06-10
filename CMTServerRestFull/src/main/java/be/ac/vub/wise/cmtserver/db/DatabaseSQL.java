@@ -901,73 +901,103 @@ public class DatabaseSQL implements IDbComponent{
                 // urifield after fields insert!
                 ps.executeUpdate();
                 ps.close();
-                for(CMTField field : type.getFields()){
-                    
-                    ps = conn.prepareStatement("SELECT facttypeName FROM facttype WHERE facttypeName = ?");
-                    ps.setString(1, field.getType());
-                    ResultSet rs3 = ps.executeQuery();
-                     ps.closeOnCompletion();
-                    rs3.next();
-                    String typeName = rs3.getString("facttypeName");
-                    rs3.close();
-                    ps.close();
-                    ps = conn.prepareStatement("INSERT INTO fields (fieldName, fieldType, isVar) VALUES (?,?,?)",Statement.RETURN_GENERATED_KEYS);
-                    ps.setString(1, field.getName());
-                    ps.setString(2,typeName);
-                    ps.setInt(3, field.isIsVar() ? 1:0);
-                    ps.executeUpdate();
-                    
-                    ResultSet rs2 = ps.getGeneratedKeys();
-                    rs2.next();
-                    int fieldid = rs2.getInt(1);
-                    rs2.close();
-                    ps.close();
-                    ps = conn.prepareStatement("INSERT INTO facttype_fields VALUES(?,?)");
-                    ps.setString(1, type.getClassName());
-                    ps.setInt(2, fieldid);
-                    ps.executeUpdate();
-                    ps.close();
-                    // limits!
-                    if(field.isIsVar()){
-                        System.out.println("------------- in is var");
-                        if(!field.getFormat().isEmpty()){
-                            System.out.println("------------- in is var format");
-                            ps = conn.prepareStatement("INSERT INTO event_limits_format (facttype_name, field_id, format) VALUES(? , ? , ?)");
-                            ps.setString(1, type.getClassName());
-                            ps.setInt(2, fieldid);
-                            ps.setString(3, field.getFormat());
-                            ps.executeUpdate();
-                            ps.close();
-                        
-                        }else{
-                            if(field.getOptions()!=null && !field.getOptions().isEmpty()){
-                                ps = conn.prepareStatement("INSERT INTO event_limits_list (facttype_name, field_id) VALUES (?,?)", Statement.RETURN_GENERATED_KEYS);
-                                ps.setString(1, type.getClassName());
-                                ps.setInt(2, fieldid);
-                                ps.executeUpdate();
-                                ResultSet rs5 = ps.getGeneratedKeys();
-                                rs5.next();
-                                int listid = rs5.getInt(1);
-                                rs5.close();
-                                ps.close();
-                                for(String option : field.getOptions()){
-                                    ps = conn.prepareStatement("INSERT INTO event_limits_list_options VALUES(?,?)");
-                                    ps.setInt(1, listid);
-                                    ps.setString(2, option);
-                                    ps.executeUpdate();
-                                    ps.close();
-                                }
-                            }
-                        }
-                    }
-                    
-                }
+                addEventTypeFields(type, conn);
             
            
             conn.close();
             
         } catch (SQLException ex) {
             Logger.getLogger(DatabaseSQL.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
+    // Overloading for registerEventType
+    private void addEventTypeFields(FactType type, Connection conn) throws SQLException {
+        addEventTypeFields(type, type.getFields(), conn);
+    }
+
+    // Overloading for importer
+    /**
+     *
+     * @param type: FactType for which fields should be added
+     * @param fields: The fields that should be added (not those that are
+     * already in part of 'type'
+     */
+    @Override
+    public void addEventTypeFields(FactType type, ArrayList<CMTField> fields) {
+        try (Connection conn = ds.getConnection()) {
+            addEventTypeFields(type, fields, conn);
+            conn.close();
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseSQL.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    private void addEventTypeFields(FactType type, ArrayList<CMTField> fields, Connection conn) throws SQLException {
+        PreparedStatement ps;
+        for(CMTField field : fields){
+            
+            ps = conn.prepareStatement("SELECT facttypeName FROM facttype WHERE facttypeName = ?");
+            ps.setString(1, field.getType());
+            ResultSet rs3 = ps.executeQuery();
+            ps.closeOnCompletion();
+            rs3.next();
+            String typeName = rs3.getString("facttypeName");
+            rs3.close();
+            ps.close();
+            // FIELDS:
+            //--------
+            ps = conn.prepareStatement("INSERT INTO fields (fieldName, fieldType, isVar) VALUES (?,?,?)",Statement.RETURN_GENERATED_KEYS);
+            ps.setString(1, field.getName());
+            ps.setString(2,typeName);
+            ps.setInt(3, field.isIsVar() ? 1:0);
+            ps.executeUpdate();
+            
+            ResultSet rs2 = ps.getGeneratedKeys();
+            rs2.next();
+            int fieldid = rs2.getInt(1);
+            rs2.close();
+            ps.close();
+            ps = conn.prepareStatement("INSERT INTO facttype_fields VALUES(?,?)");
+            ps.setString(1, type.getClassName());
+            ps.setInt(2, fieldid);
+            ps.executeUpdate();
+            ps.close();
+            // limits!
+            // Gedeelte specifiek voor EVENTTYPES
+            if(field.isIsVar()){
+                System.out.println("------------- in is var");
+                if(!field.getFormat().isEmpty()){
+                    System.out.println("------------- in is var format");
+                    ps = conn.prepareStatement("INSERT INTO event_limits_format (facttype_name, field_id, format) VALUES(? , ? , ?)");
+                    ps.setString(1, type.getClassName());
+                    ps.setInt(2, fieldid);
+                    ps.setString(3, field.getFormat());
+                    ps.executeUpdate();
+                    ps.close();
+                    
+                }else{
+                    if(field.getOptions()!=null && !field.getOptions().isEmpty()){
+                        ps = conn.prepareStatement("INSERT INTO event_limits_list (facttype_name, field_id) VALUES (?,?)", Statement.RETURN_GENERATED_KEYS);
+                        ps.setString(1, type.getClassName());
+                        ps.setInt(2, fieldid);
+                        ps.executeUpdate();
+                        ResultSet rs5 = ps.getGeneratedKeys();
+                        rs5.next();
+                        int listid = rs5.getInt(1);
+                        rs5.close();
+                        ps.close();
+                        for(String option : field.getOptions()){
+                            ps = conn.prepareStatement("INSERT INTO event_limits_list_options VALUES(?,?)");
+                            ps.setInt(1, listid);
+                            ps.setString(2, option);
+                            ps.executeUpdate();
+                            ps.close();
+                        }
+                    }
+                }
+            }
+            
         }
     }
 
@@ -1200,6 +1230,7 @@ public class DatabaseSQL implements IDbComponent{
     public void addFactTypeFields(FactType type, ArrayList<CMTField> fields){
         try (Connection conn = ds.getConnection()) {
             addFactTypeFields(type, fields, conn);
+            conn.close();
         } catch (SQLException ex) {
             Logger.getLogger(DatabaseSQL.class.getName()).log(Level.SEVERE, null, ex);
         }

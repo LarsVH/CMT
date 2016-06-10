@@ -33,6 +33,7 @@ public interface IDbComponent {
     public IFactType getFact(String className, String uriField, String value);
     public HashSet<FactType> getAvailableFactTypes();
     public void registerEventType(FactType type);
+    public void addEventTypeFields(FactType type, ArrayList<CMTField> fields);
     public HashSet<FactType> getAvailableEventTypes();
     public FactType getFactTypeWithName(String name);
     public HashSet<IFactType> getFactsWithType(String classNamed);
