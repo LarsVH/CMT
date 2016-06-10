@@ -340,13 +340,13 @@ public class CMTCore {
      * @param type
      * @param fields
      */
-    public void addFieldsToFactTypeEvent(FactType type, ArrayList<CMTField> fields) {
+    public void addFieldsToEventType(FactType type, ArrayList<CMTField> fields) {
         CMTDelegator delegator = CMTDelegator.get();
         String className = type.getClassName();
         
         // 1. SQL: Add fields to the database (needed in step 4)
         //----------------------------------------------------------------------
-        delegator.addFactTypeFields(type, fields);        
+        delegator.addEventTypeFields(type, fields);        
 
         // 2. Remove all facts of a factType from Drools
         //----------------------------------------------------------------------

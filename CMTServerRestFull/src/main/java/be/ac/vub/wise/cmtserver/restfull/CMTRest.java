@@ -565,7 +565,7 @@ public class CMTRest {
       System.out.println("Adding to Db complete");
       
       CMTCore core = CMTCore.get();
-      core.addFieldsToFactTypeEvent(lamp, fields);
+      core.addFieldsToEventType(lamp, fields);
       
       return Response.status(201).entity(out.toString()).build();
     }

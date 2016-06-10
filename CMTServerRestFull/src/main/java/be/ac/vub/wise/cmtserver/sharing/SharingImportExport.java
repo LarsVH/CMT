@@ -604,7 +604,7 @@ public class SharingImportExport implements Sharing {
        
        // Adding the new fields
        CMTCore core = CMTCore.get();
-       core.addFieldsToFactTypeEvent(dbClass, fieldsToAdd);  
+       core.addFieldsToEventType(dbClass, fieldsToAdd);  
 
     }
     /**
