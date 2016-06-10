@@ -69,6 +69,11 @@ public class CMTDelegator {
         dbComp.registerEventType(type);
     }
     
+    public void addEventTypeFields(FactType type, ArrayList<CMTField> fields){
+        
+        dbComp.addEventTypeFields(type, fields);
+    }
+    
     public void addFact(IFactType fact){
         dbComp.addFact(fact);	
         drools.addFact(fact);
