@@ -38,7 +38,7 @@ public interface IDbComponent {
     public HashSet<IFactType> getFactsWithType(String classNamed);
     public HashSet<Fact> getFactsInFactVersionWithType(String classNamed);
     public void registerFactType(FactType type); // also for events -- just keeps the classname
-    public void addFields(FactType type, ArrayList<CMTField> fields);
+    public void addFactTypeFields(FactType type, ArrayList<CMTField> fields);
     public void addFact(IFactType fact);
     public void addFactinFactForm(Fact fact);
     public boolean removeFact(IFactType fact);

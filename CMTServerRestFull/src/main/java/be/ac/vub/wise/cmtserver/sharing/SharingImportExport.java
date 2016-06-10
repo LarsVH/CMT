@@ -21,19 +21,27 @@ import be.ac.vub.wise.cmtserver.blocks.Template;
 import be.ac.vub.wise.cmtserver.blocks.TemplateActions;
 import be.ac.vub.wise.cmtserver.blocks.TemplateHA;
 import be.ac.vub.wise.cmtserver.core.CMTDelegator;
+import be.ac.vub.wise.cmtserver.restfull.CMTCore;
 import be.ac.vub.wise.cmtserver.util.Converter;
 import static be.ac.vub.wise.cmtserver.util.Converter.fromJSONtoListBindings;
 import be.ac.vub.wise.cmtserver.util.IndexableArraySet;
 import com.sun.istack.logging.Logger;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.logging.Level;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import javafx.util.Pair;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.kie.api.definition.type.Role;
@@ -48,7 +56,7 @@ public class SharingImportExport implements Sharing {
     HashMap<String,TemplateHA> eventToTemplate = new HashMap<>();
     
     // <FieldType, <FieldNames>>
-    private HashMap<String, LinkedList<String>> resolvedTypesInThisImport = new HashMap<>();
+    private HashSet<String> resolvedTypesInThisImport = new HashSet<>();
     
     public SharingImportExport(){}
 
@@ -488,19 +496,33 @@ public class SharingImportExport implements Sharing {
                 // After recursion OR we are in a leaf (= no more declarations)
                 // -> start merging on endBinding: all fields already exist in the system
                 JSONObject jEndBinding = jBinding.getJSONObject("endBinding");
-                String className = jEndBinding.getString("className");
-                if(!isJavaType(className) && !isResolved(className)){
-                for(FactType matchEventType : dbEventTypes){
-                    Double score = JaroWinklerDistance
-                            .apply(className, matchEventType.getClassName());
+                JSONObject jInputObject = jEndBinding.getJSONObject("inputObject");
+                String className = jInputObject.getString("className");
+                if (!isJavaType(className) && !isResolved(className)) {
+                    ArrayList<Pair<Double, FactType>> scoreSortedFactTypes = new ArrayList<>();
+                    
+                    for (FactType matchEventType : dbEventTypes) {
+                        Double score = JaroWinklerDistance
+                                .apply(className, matchEventType.getClassName());
+                    
+                    if(score >= scoreTreshold){
+                        scoreSortedFactTypes.add(new Pair<>(score, matchEventType));
+                    }
+                    else {/*Score lower than treshold => ignore*/}
+                    
+                    
+                    
+                    //--------- hieronder: TO REMOVe (zie processScores())
+                    /*
                     if(score == 1.0){
                         // CASE1: Perfect match                  
                         mergeFields(jEndBinding.getJSONObject("inputObject"), matchEventType);
                     } else if (score >= scoreTreshold) {
                         // CASE2: Partial Match: let user decide
-                        // suggestions (classA, classB,...,newClass) -> check fields OR createNewClass 
-                        boolean userDecisionNewClass = false;   //TODO
-                        if (!userDecisionNewClass) {
+                        // suggestions (classA, classB,...,newClass) -> check fields OR createNewClass
+                        
+                        boolean userDecisionNewClass = false;   // -> True = user wil nieuwe classe; False = user wil mergen met een bepaalde classe
+                        if (userDecisionNewClass) {
                             createNewClass(className); //TODO
                         } else {
                             FactType userChoice = new FactType(); // << retrieve from SQL
@@ -508,12 +530,19 @@ public class SharingImportExport implements Sharing {
                         }
                     } else { // CASE3: No Match: score < treshold
                         //createNewClassDepr(fieldType, fieldName);
+                    }*/
+                        //------------------ Hierboven
                     }
-                }
-                
-                
-                
-                
+                    scoreSortedFactTypes.sort(new Comparator<Pair<Double,FactType>>() {
+                        @Override
+                        public int compare(Pair<Double, FactType> o1, Pair<Double, FactType> o2) {
+                            if(o2.getKey()> o1.getKey())
+                                return 1;
+                            else return -1;
+                        }
+                    });
+                    processScores(scoreSortedFactTypes, jInputObject);
+                    addResolvedTypeField(className);    // Types is resolved => add to bookkeeping     
                 }
                 
             }
@@ -521,8 +550,41 @@ public class SharingImportExport implements Sharing {
         // TODO: alle IFBlocks afgewerkt, importeer nu de TEMPLATE ZELF!!!!!!!!!!!!!!!!!!!!!
 
     }
+    /**
+     * Get ArrayList with pairs containing score and corresponding FactType
+     * Depending on those scores: mergeFields with class in db, ask user for
+     * suggestions, create a new class, etc.
+     * @param scoreSortedFactTypes 
+     */
     
-    private void mergeFields(JSONObject jInputObject, FactType dbClass){
+    // !!! Doubles altijd comparen met .equals()
+    private void processScores(ArrayList<Pair<Double, FactType>> scoreSortedFactTypes, JSONObject jInputObject){
+        ArrayList<FactType> perfectMatches;
+        perfectMatches = scoreSortedFactTypes.stream()
+                .filter(scorePair -> scorePair.getKey().equals(1.0))
+                .map(perfectMatch -> perfectMatch.getValue())
+                .collect(Collectors.toCollection(ArrayList::new));
+        
+        if(!perfectMatches.isEmpty()){
+            if(perfectMatches.size() == 1){ // DONE
+                // CASE 1:  1 perfect match => mergeFields (no user interaction)
+                mergeFields(jInputObject, perfectMatches.get(0));
+            }
+            else{ // TODO
+                // CASE 2: Multiple perfect matches -> ask client for suggestions between these matches
+            }
+        }
+        else if (!scoreSortedFactTypes.isEmpty()){ // TODO
+            // CASE 3: No perfect matches: take the ?5 first elements of the index and ask the user to choose the closest one
+            // OR let him decide to create a new class
+        }
+        else { // TODO
+            // CASE 4 : No matches within treshold -> create a new class
+        }
+    }
+    
+    // Add fields from "jInputObject" to FactType "dbClass" if not existing
+    private void mergeFields(JSONObject jInputObject, FactType dbClass){    // DONE
         ArrayList<CMTField> dbFields = dbClass.getFields();
         JSONArray jFields = jInputObject.getJSONArray("fields");
         HashSet<CMTField> importFields = new HashSet<>();
@@ -533,40 +595,78 @@ public class SharingImportExport implements Sharing {
         }
         // Subtracting dbFields from import fields (= fields we need to add)
        importFields.removeAll(dbFields);
+       ArrayList<CMTField> fieldsToAdd = new ArrayList<>(importFields);
        
-       CMTDelegator delegator = CMTDelegator.get();
-       delegator.addFields(dbClass, dbFields);
-        // TODO: insert new FactType
-        // ---> CMTCore registerFactClass(JSONObject json) ( :( eerst terug naar JSON converten)
-    
+       // Check same name/different type fields
+       // This is necessary, as it can be possible that two fields have the same 
+       // name but different type (in a Java scope, all names must be unique)
+       fieldsToAdd = checkSameNameDifferentType(dbFields, fieldsToAdd);
+       
+       // Adding the new fields
+       CMTCore core = CMTCore.get();
+       core.addFieldsToFactTypeEvent(dbClass, fieldsToAdd);  
 
     }
+    /**
+     * Checks if fields we want to merge have the same name, but a different type
+     * If so (for a field 'fld'), the name of 'fld' is changed to "typeoffld"+"nameoffld"
+     * @param fieldsToCompare: the fields to compare with (from db)
+     * @param fieldsToCorrect: fields to change name of (if necessary)
+     * @return List with the corrected version of "fields"
+     */
+    private ArrayList<CMTField> checkSameNameDifferentType(ArrayList<CMTField> fieldsToCompare, ArrayList<CMTField> fieldsToCorrect){
+        ArrayList<CMTField> result = new ArrayList<>();
+        
+        // Put fields to compare in hashmap to <name,field> to increase performance
+        HashMap<String, CMTField> hFieldsToCompare = new HashMap<>();
+        fieldsToCompare.stream().forEach(field -> {
+            hFieldsToCompare.put(field.getName(), field);
+        });
+        
+        // Do the comparison and change name if necessary
+        fieldsToCorrect.stream().forEach(field -> {
+            if(hFieldsToCompare.containsKey(field.getName()))
+                field.setName(field.getType()+field.getName());     // Solve the name issue by appending its type to the front of its name
+            result.add(field);
+        });
+        
+        return result;
+    }
 
+    // CASE 3 & 4: create a brand new class
+    private void createNewClass(JSONObject jInputObject){
+        JSONArray jFields = jInputObject.getJSONArray("fields");
+        
+    }
+    
+    
+   // Check if a particular type is already resolved in this import
    private boolean isResolved(String type){
-        return resolvedTypesInThisImport.containsKey(type);
+        return resolvedTypesInThisImport.contains(type);
     }
-   private boolean isResolved(String fieldType, String fieldName){
-       if(resolvedTypesInThisImport.containsKey(fieldType)){
-          LinkedList<String> fieldNames = resolvedTypesInThisImport.get(fieldType);
-          if(fieldNames.contains(fieldName))
-              return true;          
-       }
-       return false;
+
+   // Add a resolved fieldType && fieldName to the bookkeeping
+   private boolean addResolvedTypeField(String fieldType){
+       return resolvedTypesInThisImport.add(fieldType);
    }
-    
+  
+   
+   
+   //===========================================================================
+   
     // IFBlockLoop
     private void checkIFBlocks(JSONArray jIFBlocks){        
         for(int i=0; i<jIFBlocks.length(); i++){
             JSONObject jIFBlock = jIFBlocks.getJSONObject(i);
             JSONArray jBindings = jIFBlock.getJSONArray("bindings");
-            verifyAndImportBindings(jBindings);
+           /* verifyAndImportBindings(jBindings);*/
         
         // (als IFBlock of type "acticity" is => de classe van het IFBlock zelf ook importeren!!) -> niet nodig: custom events hebben altijd
         // een binding naar hun eigen type (wordt dus al door de TemplateConverter gedaan)
         }
     }
     // BindingsLoop
-    @Deprecated
+    /*@Deprecated
     private void verifyAndImportBindings(JSONArray jBindings){
         for(int i=0; i<jBindings.length(); i++){
             JSONObject jBinding = jBindings.getJSONObject(i);
@@ -612,7 +712,7 @@ public class SharingImportExport implements Sharing {
             }
                    
         }
-    }
+    }/**/
     @Deprecated
     // Merge Fields: get union of all Fields => create new Fields if necessary
     private void mergeFieldFields(String fieldType, String fieldName, JSONArray declarations, FactType levTypeMatch){

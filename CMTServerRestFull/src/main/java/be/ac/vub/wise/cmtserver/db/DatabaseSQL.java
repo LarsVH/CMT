@@ -872,6 +872,7 @@ public class DatabaseSQL implements IDbComponent{
 
     @Override
     public void registerEventType(FactType type) {
+        System.out.println("DBSQL>>> registerEventType -- " + type.getClassName());
          try {
             Connection conn = ds.getConnection();
             // check if category is ok
@@ -915,6 +916,7 @@ public class DatabaseSQL implements IDbComponent{
                     ps.setString(2,typeName);
                     ps.setInt(3, field.isIsVar() ? 1:0);
                     ps.executeUpdate();
+                    
                     ResultSet rs2 = ps.getGeneratedKeys();
                     rs2.next();
                     int fieldid = rs2.getInt(1);
@@ -1176,7 +1178,7 @@ public class DatabaseSQL implements IDbComponent{
             ps.executeUpdate();
             ps.close();      
             
-            addFields(type, conn);
+            DatabaseSQL.this.addFactTypeFields(type, conn);
             conn.close();
 
         } catch (SQLException ex) {
@@ -1185,26 +1187,25 @@ public class DatabaseSQL implements IDbComponent{
 
     }
     // Overloading for registerFactType
-    private void addFields(FactType type, Connection conn) throws SQLException{
-        addFields(type, type.getFields(), conn);
+    private void addFactTypeFields(FactType type, Connection conn) throws SQLException{
+        addFactTypeFields(type, type.getFields(), conn);
     }
     // Overloading for importer
-
     /**
      *
      * @param type: FactType for which fields should be added
      * @param fields: The fields that should be added (not those that are already in part of 'type'
      */
     @Override    
-    public void addFields(FactType type, ArrayList<CMTField> fields){
+    public void addFactTypeFields(FactType type, ArrayList<CMTField> fields){
         try (Connection conn = ds.getConnection()) {
-            addFields(type, fields, conn);
+            addFactTypeFields(type, fields, conn);
         } catch (SQLException ex) {
             Logger.getLogger(DatabaseSQL.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
     
-    private void addFields(FactType type, ArrayList<CMTField> fields, Connection conn) throws SQLException {
+    private void addFactTypeFields(FactType type, ArrayList<CMTField> fields, Connection conn) throws SQLException {
         System.out.println("DB2>>>> addFields -- type: " + type.getClassName() + " -- #fields: " + fields.size());
         PreparedStatement ps;
         for (CMTField field : fields) {            

@@ -346,7 +346,7 @@ public class CMTCore {
         
         // 1. SQL: Add fields to the database (needed in step 4)
         //----------------------------------------------------------------------
-        delegator.addFields(type, fields);        
+        delegator.addFactTypeFields(type, fields);        
 
         // 2. Remove all facts of a factType from Drools
         //----------------------------------------------------------------------

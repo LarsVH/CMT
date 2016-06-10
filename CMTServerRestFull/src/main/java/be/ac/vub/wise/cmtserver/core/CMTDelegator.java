@@ -60,9 +60,9 @@ public class CMTDelegator {
         
         dbComp.registerFactType(type);
     }
-     public void addFields(FactType type, ArrayList<CMTField> fields){
+     public void addFactTypeFields(FactType type, ArrayList<CMTField> fields){
         
-        dbComp.addFields(type, fields);
+        dbComp.addFactTypeFields(type, fields);
     }
     
     public void registerEventType(FactType type){

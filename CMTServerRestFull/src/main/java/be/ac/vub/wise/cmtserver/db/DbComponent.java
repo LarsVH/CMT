@@ -477,7 +477,7 @@ public class DbComponent implements IDbComponent{
     }
 
     @Override
-    public void addFields(FactType type, ArrayList<CMTField> fields) {
+    public void addFactTypeFields(FactType type, ArrayList<CMTField> fields) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }
