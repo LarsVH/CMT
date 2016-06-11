@@ -478,6 +478,23 @@ public class SharingImportExport implements Sharing {
     }
     
     // Bottom-up approach
+    /**
+     * 1. Loop over de IFBlocks
+     * 2. In elke IFBlock: loop over de bindings
+     * 3. In elke Binding: als er declarations zijn, loop erover, else: 5.
+     * 4. Voor elke declaration: recursive call naar 1.
+     * 5. Na recursieve call: start met solven: voor elke declaration (= na het afwerken van alle IFBlocks:
+     * (een declaration == een template verantwoordelijk voor een custom situatie)
+     * 6. Neem output:{} (dit is het event dat de template produceert), en neem uit output : "name" (= het type).
+     *  = de naam van het event dat we moeten importeren
+     * 7. Alle dependencies voor dit custom event ZIJN AL RESOLVED  (bottom-up) => enkel event zelf resolven
+     * => jaro-winkler op name
+     * 
+     * -- (nog een opl voor te vinden... (niet strikt noodzakelijk): Importeer de TEMPLATE
+     * = de declaration zelf met standaard converter (! let op dat deze het voorgaande niet overschrijft)
+     * @param jInputTemplate
+     * @param dbEventTypes: alle CUSTOM EventTypes in de database
+     */
     private void loopDownDeclarations(JSONObject jInputTemplate, HashSet<FactType> dbEventTypes) {
         JSONArray jIFBlocks = jInputTemplate.getJSONArray("ifblocks");
         for (int i = 0; i < jIFBlocks.length(); i++) {
@@ -485,25 +502,32 @@ public class SharingImportExport implements Sharing {
             JSONArray jBindings = jIFBlock.getJSONArray("bindings");
             for (int j = 0; j < jBindings.length(); j++) {
                 JSONObject jBinding = jBindings.getJSONObject(j);
-                JSONArray jDeclarations = jBinding.getJSONArray("declarations");
-                if (jDeclarations.length() != 0) {
-                    for (int k = 0; k < jDeclarations.length(); k++) {
-                        JSONObject jDeclaration = jDeclarations.getJSONObject(k);
-                        // Recursion on current Declaration
-                        loopDownDeclarations(jDeclaration, dbEventTypes);
-                    }
+                
+                // If "declarations" exists and is not empty, loop over declarations
+                if (jBinding.has("declarations") && (jBinding.getJSONArray("declarations").length() != 0)) {
+                    JSONArray jDeclarations = jBinding.getJSONArray("declarations");
+                        for (int k = 0; k < jDeclarations.length(); k++) {
+                            JSONObject jDeclaration = jDeclarations.getJSONObject(k);
+                            // Recursion on current Declaration
+                            loopDownDeclarations(jDeclaration, dbEventTypes);
+                        }
+                    
                 }
-                // After recursion OR we are in a leaf (= no more declarations)
-                // -> start merging on endBinding: all fields already exist in the system
-                JSONObject jEndBinding = jBinding.getJSONObject("endBinding");
-                JSONObject jInputObject = jEndBinding.getJSONObject("inputObject");
-                String className = jInputObject.getString("className");
-                if (!isJavaType(className) && !isResolved(className)) {
+            }
+            // Alle bindings afgewerkt, en declarations resolved
+        }
+            // Alle IFBlocks afgewerkt, en bindings resolved
+            // Resolve nu het huidige eventType
+            
+                JSONObject jOutput = jInputTemplate.getJSONObject("output");
+                OutputHA output = Converter.fromJSONtoOutputHA(jOutput);
+                String eventTypeName = output.getName();
+                if (!isJavaType(eventTypeName) && !isResolved(eventTypeName)) { // !!! CHECKEN OF HET WEL EEN CUSTOM EVENT IS!!
                     ArrayList<Pair<Double, FactType>> scoreSortedFactTypes = new ArrayList<>();
                     
                     for (FactType matchEventType : dbEventTypes) {
                         Double score = JaroWinklerDistance
-                                .apply(className, matchEventType.getClassName());
+                                .apply(eventTypeName, matchEventType.getClassName());
                     
                     if(score >= scoreTreshold){
                         scoreSortedFactTypes.add(new Pair<>(score, matchEventType));
@@ -512,7 +536,7 @@ public class SharingImportExport implements Sharing {
                     
                     
                     
-                    //--------- hieronder: TO REMOVe (zie processScores())
+                    //--------- hieronder: TO REMOVE (zie processScores())
                     /*
                     if(score == 1.0){
                         // CASE1: Perfect match                  
@@ -541,12 +565,12 @@ public class SharingImportExport implements Sharing {
                             else return -1;
                         }
                     });
-                    processScores(scoreSortedFactTypes, jInputObject);
-                    addResolvedTypeField(className);    // Types is resolved => add to bookkeeping     
+                    processScores(scoreSortedFactTypes, output);
+                    addResolvedTypeField(eventTypeName);    // Types is resolved => add to bookkeeping     
                 }
                 
-            }
-        }
+            
+        
         // TODO: alle IFBlocks afgewerkt, importeer nu de TEMPLATE ZELF!!!!!!!!!!!!!!!!!!!!!
 
     }
@@ -558,7 +582,7 @@ public class SharingImportExport implements Sharing {
      */
     
     // !!! Doubles altijd comparen met .equals()
-    private void processScores(ArrayList<Pair<Double, FactType>> scoreSortedFactTypes, JSONObject jInputObject){
+    private void processScores(ArrayList<Pair<Double, FactType>> scoreSortedFactTypes, OutputHA templateOutput){
         ArrayList<FactType> perfectMatches;
         perfectMatches = scoreSortedFactTypes.stream()
                 .filter(scorePair -> scorePair.getKey().equals(1.0))
@@ -568,7 +592,7 @@ public class SharingImportExport implements Sharing {
         if(!perfectMatches.isEmpty()){
             if(perfectMatches.size() == 1){ // DONE
                 // CASE 1:  1 perfect match => mergeFields (no user interaction)
-                mergeFields(jInputObject, perfectMatches.get(0));
+                mergeFields(templateOutput, perfectMatches.get(0));
             }
             else{ // TODO
                 // CASE 2: Multiple perfect matches -> ask client for suggestions between these matches
@@ -583,18 +607,32 @@ public class SharingImportExport implements Sharing {
         }
     }
     
+    // Merg fields van 2 custom eventTypes
     // Add fields from "jInputObject" to FactType "dbClass" if not existing
-    private void mergeFields(JSONObject jInputObject, FactType dbClass){    // DONE
+    private void mergeFields(OutputHA templateOutput, FactType dbClass){    
         ArrayList<CMTField> dbFields = dbClass.getFields();
-        JSONArray jFields = jInputObject.getJSONArray("fields");
+        LinkedList<Binding> bindings = templateOutput.getBindings();
+
+        // In each binding, the "endBinding" JSONObject represents the field
+        // Just create a new "CMTField" based on the fieldtype and name
         HashSet<CMTField> importFields = new HashSet<>();
-        for(int i=0; i<jFields.length(); i++){
-            JSONObject jField = jFields.getJSONObject(i);            
-            CMTField f = Converter.fromJSONtoCMTField(jField);
+        for(Binding binding: bindings){
+            BindingOutput endBinding = (BindingOutput) binding.getEndBinding();
+            CMTField f = new CMTField(endBinding.getParameter(), endBinding.getParType());         
             importFields.add(f);
         }
+        
         // Subtracting dbFields from import fields (= fields we need to add)
-       importFields.removeAll(dbFields);
+        // ! DO NOT USE Set subtraction (subtraction must only be based on nameXtype)
+        for(CMTField dbField : dbFields){
+            for(CMTField importField : importFields){
+                if(importField.getType().equals(dbField.getType()) &&
+                        importField.getName().equals(dbField.getName()))
+                    importFields.remove(importField);
+            }
+        }
+        
+       importFields.removeAll(dbFields); 
        ArrayList<CMTField> fieldsToAdd = new ArrayList<>(importFields);
        
        // Check same name/different type fields
@@ -634,8 +672,9 @@ public class SharingImportExport implements Sharing {
     }
 
     // CASE 3 & 4: create a brand new class
-    private void createNewClass(JSONObject jInputObject){
+    private void createNewEventClass(JSONObject jInputObject){
         JSONArray jFields = jInputObject.getJSONArray("fields");
+        
         
     }
     
