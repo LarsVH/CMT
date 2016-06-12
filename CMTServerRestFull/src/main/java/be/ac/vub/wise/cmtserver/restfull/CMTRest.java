@@ -21,6 +21,7 @@ import be.ac.vub.wise.cmtserver.blocks.Function;
 import be.ac.vub.wise.cmtserver.blocks.IFBlock;
 import be.ac.vub.wise.cmtserver.blocks.IFactType;
 import be.ac.vub.wise.cmtserver.blocks.IFunctionClass;
+import be.ac.vub.wise.cmtserver.blocks.OutputHA;
 import be.ac.vub.wise.cmtserver.blocks.Parameters;
 import be.ac.vub.wise.cmtserver.blocks.Rule;
 import be.ac.vub.wise.cmtserver.blocks.TemplateActions;
@@ -549,23 +550,91 @@ public class CMTRest {
     public Response testdebug(){
       JSONObject out = new JSONObject();
       out.put("Status", "ok");
-      CMTDelegator delegator = CMTDelegator.get();
-      DroolsComponent drools = DroolsComponent.getDroolsComponent();
-          
-      FactType lamp = delegator.getFactTypeWithName("Lamp");
-        if (lamp != null)
-            System.out.println("Test>>>> getFactTypeWithName" + "Found: " + lamp.getClassName());
-         
-      CMTField field1 = new CMTField("veld1", "java.lang.String");
-      CMTField field2 = new CMTField("veld2", "java.lang.String");
-      ArrayList<CMTField> fields = new ArrayList<>();
-      fields.add(field1);
-      fields.add(field2);
+      SharingImportExport sharing = new SharingImportExport();
+      JSONObject jOutput = new JSONObject("{\n"
+              + "    \"bindings\": [\n"
+              + "      {\n"
+              + "        \"endBinding\": {\n"
+              + "          \"parType\": \"Location\",\n"
+              + "          \"parName\": \"LocLabel1\",\n"
+              + "          \"type\": \"BindingOutput\"\n"
+              + "        },\n"
+              + "        \"index\": 0,\n"
+              + "        \"startBinding\": {\n"
+              + "          \"indexObj\": 0,\n"
+              + "          \"inputObject\": {\n"
+              + "            \"varList\": [],\n"
+              + "            \"uriField\": \"room\",\n"
+              + "            \"varFormat\": \"\",\n"
+              + "            \"isCustom\": false,\n"
+              + "            \"className\": \"Location\",\n"
+              + "            \"type\": \"fact\",\n"
+              + "            \"category\": \"Code\",\n"
+              + "            \"fields\": [\n"
+              + "              {\n"
+              + "                \"sqlId\": 135,\n"
+              + "                \"input\": false,\n"
+              + "                \"fieldName\": \"room\",\n"
+              + "                \"format\": \"\",\n"
+              + "                \"options\": [],\n"
+              + "                \"fieldType\": \"java.lang.String\",\n"
+              + "                \"fieldValue\": {}\n"
+              + "              }\n"
+              + "            ]\n"
+              + "          },\n"
+              + "          \"inputObjectType\": \"facttype\",\n"
+              + "          \"type\": \"BindingInputFact\"\n"
+              + "        }\n"
+              + "      },\n"
+              + "      {\n"
+              + "        \"endBinding\": {\n"
+              + "          \"parType\": \"Person\",\n"
+              + "          \"parName\": \"PersLabel2\",\n"
+              + "          \"type\": \"BindingOutput\"\n"
+              + "        },\n"
+              + "        \"index\": 1,\n"
+              + "        \"startBinding\": {\n"
+              + "          \"indexObj\": 2,\n"
+              + "          \"inputObject\": {\n"
+              + "            \"varList\": [],\n"
+              + "            \"uriField\": \"name\",\n"
+              + "            \"varFormat\": \"\",\n"
+              + "            \"isCustom\": false,\n"
+              + "            \"className\": \"Person\",\n"
+              + "            \"type\": \"fact\",\n"
+              + "            \"category\": \"Code\",\n"
+              + "            \"fields\": [\n"
+              + "              {\n"
+              + "                \"sqlId\": 136,\n"
+              + "                \"input\": false,\n"
+              + "                \"fieldName\": \"name\",\n"
+              + "                \"format\": \"\",\n"
+              + "                \"options\": [],\n"
+              + "                \"fieldType\": \"java.lang.String\",\n"
+              + "                \"fieldValue\": {}\n"
+              + "              },\n"
+              + "              {\n"
+              + "                \"sqlId\": 137,\n"
+              + "                \"input\": false,\n"
+              + "                \"fieldName\": \"room\",\n"
+              + "                \"format\": \"\",\n"
+              + "                \"options\": [],\n"
+              + "                \"fieldType\": \"Location\",\n"
+              + "                \"fieldValue\": {}\n"
+              + "              }\n"
+              + "            ]\n"
+              + "          },\n"
+              + "          \"inputObjectType\": \"facttype\",\n"
+              + "          \"type\": \"BindingInputFact\"\n"
+              + "        }\n"
+              + "      }\n"
+              + "    ],\n"
+              + "    \"name\": \"PersInLocSit\"\n"
+              + "  },");
       
-      System.out.println("Adding to Db complete");
-      
-      CMTCore core = CMTCore.get();
-      core.addFieldsToEventType(lamp, fields);
+      OutputHA output = Converter.fromJSONtoOutputHA(jOutput);
+      System.out.println(">>>>Test: Conversion to OutputHA complete");
+      sharing.createNewEventClass(output);
       
       return Response.status(201).entity(out.toString()).build();
     }

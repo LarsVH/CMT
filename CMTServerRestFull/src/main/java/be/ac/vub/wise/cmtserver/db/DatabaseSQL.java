@@ -79,7 +79,8 @@ public class DatabaseSQL implements IDbComponent{
     public HashSet<Template> getAvailableContextForms() { 
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
-
+    
+    // Add a TEMPLATE
     @Override
     public boolean addContextForm(Template form) {
         try {

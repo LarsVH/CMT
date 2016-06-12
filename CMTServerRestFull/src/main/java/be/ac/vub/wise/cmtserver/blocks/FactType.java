@@ -34,12 +34,10 @@ public class FactType implements IFactType, Serializable{
         this.uriField = uriField;
         this.fields = fields;
         this.varList = new ArrayList<String>();
-        this.varFormat = "";
-    
+        this.varFormat = "";    
+        
     }
-    
-    // TEMP (LVH)
-    public FactType(){};
+        
 
     public boolean isIsCustom() {
         return isCustom;

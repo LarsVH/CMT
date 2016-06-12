@@ -87,7 +87,7 @@ public class ExpertTab extends VBox implements CMTListener{
         lv_templates.setCellFactory(getCallbackTemplate());
 	lv_templates.setItems(listTemplates);
 			
-	// populate input
+	// populate input 
 	ti_root_objects = new TreeItem<IFactType>();
 	ti_root_objects.setExpanded(false);
 	tv_inputs.setRoot(ti_root_objects);
@@ -416,7 +416,7 @@ public class ExpertTab extends VBox implements CMTListener{
     }
 }
 //
-// Not yet in listener REST
+// Not yet in listener REST 
 //	@Override
 //	public void actionRemoved(Action action) {
 //		for(Action act : listActions){

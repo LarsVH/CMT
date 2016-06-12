@@ -602,14 +602,15 @@ public class SharingImportExport implements Sharing {
             // CASE 3: No perfect matches: take the ?5 first elements of the index and ask the user to choose the closest one
             // OR let him decide to create a new class
         }
-        else { // TODO
+        else { // DONE
             // CASE 4 : No matches within treshold -> create a new class
+            createNewEventClass(templateOutput);
         }
     }
     
     // Merg fields van 2 custom eventTypes
     // Add fields from "jInputObject" to FactType "dbClass" if not existing
-    private void mergeFields(OutputHA templateOutput, FactType dbClass){    
+    private void mergeFields(OutputHA templateOutput, FactType dbClass){    // DONE
         ArrayList<CMTField> dbFields = dbClass.getFields();
         LinkedList<Binding> bindings = templateOutput.getBindings();
 
@@ -631,8 +632,7 @@ public class SharingImportExport implements Sharing {
                     importFields.remove(importField);
             }
         }
-        
-       importFields.removeAll(dbFields); 
+        // Variable renaming -> kan REFACTORed worden
        ArrayList<CMTField> fieldsToAdd = new ArrayList<>(importFields);
        
        // Check same name/different type fields
@@ -672,9 +672,26 @@ public class SharingImportExport implements Sharing {
     }
 
     // CASE 3 & 4: create a brand new class
-    private void createNewEventClass(JSONObject jInputObject){
-        JSONArray jFields = jInputObject.getJSONArray("fields");
+    public void createNewEventClass(OutputHA templateOutput){
+        // gebruik standaard registratie mechanisme voor event van CMT
+
+        LinkedList<Binding> bindings = templateOutput.getBindings();
         
+        ArrayList<CMTField> fields = new ArrayList<>();
+        for(Binding b : bindings){
+            BindingOutput endB = (BindingOutput) b.getEndBinding();
+            CMTField f = new CMTField(endB.getParameter(), endB.getParType());
+            fields.add(f);
+        }
+        
+        FactType eventType = new FactType(templateOutput.getName(), "activity", "", fields);
+        eventType.setCategory("Code");
+        eventType.setIsCustom(true);
+        
+        // Registreren met core
+        CMTCore.get().registerEventClass(eventType);
+        
+        // TODO: check alles nog eens na, maar normaal gezien is dit KLAAR <<<<<<<<<<<<<<<<<<<<<<<<
         
     }
     

@@ -186,6 +186,18 @@ public class CMTCore {
             CMTDelegator.get().registerEventType(type); // = put Event in database
         }
     }
+    // Overload for importer
+    public void registerEventClass(FactType eventType){
+        System.out.println(">>> CMTCORE -- RegisterEventClass: " + eventType.getClassName());
+        JSONObject jEventType = Converter.fromFactTypeToJSON(eventType);
+        Boolean sourceCompiled =  generateSourceAndCompileEventClass(jEventType);
+        if(!sourceCompiled)
+            System.out.println(">>> CMTCORE -- RegisterEventClass  -- !! Source not generated/compiled!!");
+        else {
+            CMTDelegator.get().registerEventType(eventType);
+        }
+    }
+    
     // Overload for "registerEventClass"
     private boolean generateSourceAndCompileEventClass(JSONObject json){
         return generateSourceAndCompileEventClass(json, false);
