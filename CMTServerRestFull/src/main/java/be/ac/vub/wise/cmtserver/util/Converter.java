@@ -49,6 +49,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.json.JSONArray;
@@ -1422,6 +1423,53 @@ public class Converter {
     
     }
     
+    public static JSONObject fromSuggestionsToJSON(HashMap<String, HashMap<Integer, String>> suggestions){
+        JSONObject out = new JSONObject();
+        
+        JSONArray jTypes = new JSONArray();
+        for(HashMap.Entry<String, HashMap<Integer, String>> currType: suggestions.entrySet()){
+            JSONObject jCurrType = new JSONObject();
+            jCurrType.put("type", currType.getKey());
+            HashMap<Integer, String> suggs = currType.getValue();
+            JSONArray jSuggs = new JSONArray();
+            for(HashMap.Entry<Integer, String> currSugg: suggs.entrySet()){
+                JSONObject jCurrSugg = new JSONObject();
+                jCurrSugg.put("id", currSugg.getKey());
+                jCurrSugg.put("sugtype", currSugg.getValue());
+                jSuggs.put(jCurrSugg);
+            }
+            jCurrType.put("suggestions", jSuggs);
+        }
+        
+        out.put("types", jTypes);
+        return out;
+    }
     
+    // The id of the chosen suggestion will be set to -1
+    public static HashMap<String, HashMap<Integer, String>> fromJSONToSuggestions(JSONObject jSuggestions){
+        HashMap<String, HashMap<Integer, String>> result = new HashMap<>();
+        JSONArray jTypes = jSuggestions.getJSONArray("types");        
+
+        for(int i=0; i<jTypes.length(); i++){
+            JSONObject currType = jTypes.getJSONObject(i);
+            Integer chosenSuggestionId = -1;
+            if(currType.has("chosensuggestion"))
+                chosenSuggestionId = currType.getInt("chosensuggestion");
+            
+            JSONArray jSuggs = currType.getJSONArray("suggestions");
+            HashMap<Integer, String> suggs = new HashMap<>();
+            for(int j=0; j<jSuggs.length(); j++){
+                JSONObject currSugg = jSuggs.getJSONObject(j);
+                if(chosenSuggestionId == j)
+                    suggs.put(-1, currSugg.getString("sugtype"));   // if the client has chosen a suggestion, set the id of that suggestion to -1;
+                else               
+                    suggs.put(currSugg.getInt("id"), currSugg.getString("sugtype")); // else, just add its regular id
+            }
+            result.put(currType.getString("type"), suggs);
+        }      
+        return result;
+    }
+    
+
     
 }

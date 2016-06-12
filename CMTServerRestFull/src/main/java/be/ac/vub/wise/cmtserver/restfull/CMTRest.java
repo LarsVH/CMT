@@ -40,6 +40,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -526,7 +527,7 @@ public class CMTRest {
     @Path("/shareTemplate/{tmplname}")
     @Produces("application/json")
     public Response shareTemplate(@PathParam("tmplname") String tmplName){
-        SharingImportExport sharing = new SharingImportExport();
+        SharingImportExport sharing = SharingImportExport.get();
         
         HashSet<TemplateHA> temps = CMTDelegator.get().getAllTemplateHA(); // -> gets all HA templates| maybe narrow down to a specific one
         Iterator i = temps.iterator();
@@ -543,6 +544,36 @@ public class CMTRest {
         return Response.status(201).entity(out.toString()).build();
     }
     
+    @POST // input JSON of Template object // manually
+    @Path("/importTemplateHA")
+    @Produces("application/json")
+    @Consumes(MediaType.TEXT_PLAIN)
+    public Response importTemplateHA(String input){
+        JSONObject jInput = new JSONObject(input);
+        SharingImportExport sharing = SharingImportExport.get();
+        
+        HashMap<String, HashMap<Integer, String>> suggestions =
+                sharing.importTemplateRule(jInput);
+        JSONObject response = Converter.fromSuggestionsToJSON(suggestions);
+        
+    return Response.status(201).entity(response.toString()).build();
+    // expecting a response from client on /importSuggestionsSolved
+    }
+    
+    @POST // input JSON of Template object // manually
+    @Path("/importSuggestionsSolved")
+    @Produces("application/json")
+    @Consumes(MediaType.TEXT_PLAIN)
+    public Response importSuggestionsSolved(String input){
+        JSONObject out = new JSONObject();
+        JSONObject in = new JSONObject(input);
+        HashMap<String, HashMap<Integer, String>> solvedsuggs =
+                Converter.fromJSONToSuggestions(in);
+        SharingImportExport.onSuggestionsReceived(solvedsuggs);
+        
+        return Response.status(201).entity(out.toString()).build();
+    }
+    
     // DEBUGGING/TESTING
     @GET
     @Path("/test")
@@ -550,7 +581,7 @@ public class CMTRest {
     public Response testdebug(){
       JSONObject out = new JSONObject();
       out.put("Status", "ok");
-      SharingImportExport sharing = new SharingImportExport();
+      SharingImportExport sharing = SharingImportExport.get();
       JSONObject jOutput = new JSONObject("{\n"
               + "    \"bindings\": [\n"
               + "      {\n"
@@ -634,7 +665,7 @@ public class CMTRest {
       
       OutputHA output = Converter.fromJSONtoOutputHA(jOutput);
       System.out.println(">>>>Test: Conversion to OutputHA complete");
-      sharing.createNewEventClass(output);
+     // sharing.createNewEventClass(output);
       
       return Response.status(201).entity(out.toString()).build();
     }

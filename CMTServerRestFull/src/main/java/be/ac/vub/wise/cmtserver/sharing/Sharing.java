@@ -6,6 +6,7 @@
 package be.ac.vub.wise.cmtserver.sharing;
 
 import be.ac.vub.wise.cmtserver.blocks.Template;
+import java.util.HashMap;
 import org.json.JSONObject;
 
 /**
@@ -15,7 +16,8 @@ import org.json.JSONObject;
 public interface Sharing {
     
     public JSONObject exportActivity(Template templ);
-    public Template importTemplateRule(JSONObject json);
+    public HashMap<String, HashMap<Integer, String>> importTemplateRule(JSONObject json);
+
     
     
 }
