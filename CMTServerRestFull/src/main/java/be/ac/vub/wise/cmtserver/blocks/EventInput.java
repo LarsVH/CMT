@@ -62,6 +62,14 @@ public class EventInput implements IFactType{
         }
         return null;
     }
+    public void setFieldValueLimitation(String fieldName, FieldValueLimitation limitation){
+        for(FieldValueLimitation lim: limitations){
+            if(lim.getFieldName().equals(fieldName)){
+                limitations.remove(lim);
+                limitations.add(limitation);
+            }
+        }
+    }
     
     public boolean isFilledIn(){
         int counter = limitations.size();

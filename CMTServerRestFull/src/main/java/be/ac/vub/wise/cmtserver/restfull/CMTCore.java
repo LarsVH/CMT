@@ -112,9 +112,22 @@ public class CMTCore {
         
         return true;
     }
+    // Overload for importer
+    public void registerFactClass(FactType factType){
+        JSONObject jFactType = Converter.fromFactTypeToJSON(factType);
+        generateSourceAndCompileFactClass(jFactType);
+        CMTDelegator.get().registerFactType(factType);
+    }
+    
     // Creates *.java file to be inserted in Drools (LvH)
     // P.e. Person, Location
     public void registerFactClass(JSONObject json) {
+        generateSourceAndCompileFactClass(json);
+        FactType type = Converter.fromJSONtoFactTypeFact(json);
+        CMTDelegator.get().registerFactType(type);  // = Put FactType in db
+    }
+
+    private void generateSourceAndCompileFactClass(JSONObject json) throws JSONException {
         if (!json.getString("className").contains("java")) {
             String className = HelperClass.toUppercaseFirstLetter(json.getString("className"));
             String uriField = json.getString("uriField");
@@ -151,8 +164,53 @@ public class CMTCore {
                 HelperClass.compile(source, className, Constants.PACKAGEFACTSSLASH);
             }
         }
-        FactType type = Converter.fromJSONtoFactTypeFact(json);
-        CMTDelegator.get().registerFactType(type);  // = Put FactType in db
+    }
+    
+    /**
+     * Strategie: zie addFieldsToEventType
+     * @param type
+     * @param fields 
+     */
+    public void addFieldsToFactTypeFact(FactType type, ArrayList<CMTField> fields){
+        CMTDelegator delegator = CMTDelegator.get();
+        String className = type.getClassName();
+        
+        // 1. SQL: Add fields to the database (needed in step 4)
+        //----------------------------------------------------------------------
+        delegator.addFactTypeFields(type, fields);     
+        
+        // 2. Remove all facts of a factType from Drools
+        //----------------------------------------------------------------------
+        droolsRemoveFactsOfFactType(type);
+        
+        // 3. Remove *.java and *.class file of FactTypeEvent
+        //----------------------------------------------------------------------
+        File pathJavaSource = new File(Constants.JAVAFILEPATH
+                + Constants.PACKAGEFACTSSLASH + File.separator + className + ".java");
+        File pathClassSource = new File(Constants.CLASSPATH
+                + Constants.PACKAGEFACTSSLASH + File.separator + className + ".class");
+        boolean deleted = false;
+        if (pathJavaSource.exists()) {
+            deleted = pathJavaSource.delete();
+        }
+        if (pathClassSource.exists()) {
+            deleted = pathClassSource.delete() && deleted;
+        }
+        if (!deleted) {
+            System.out.println("CMTCORE>>>> addFieldsToFactTypeFact: " + className + " -- NOT DELETED!!!");
+        }
+        
+        // 4. Retrieve FactType (with added fields from db) and compile
+        //----------------------------------------------------------------------
+        FactType updatedFactType = delegator.getFactTypeWithName(className);
+        System.out.println("CMTCORE>>>> addFieldsToFactTypeFact: \n "
+                + "retrieved updated factType from db, #fields: " + updatedFactType.getFields().size());
+        JSONObject jUpdatedFactType = Converter.fromFactTypeToJSON(updatedFactType);  // (lowpriority) fix dat sourcegenerator werkt met FactType ipv JSON
+        generateSourceAndCompileFactClass(jUpdatedFactType);
+        
+        // 5. Re-add Facts to Drools
+        //----------------------------------------------------------------------
+        droolsAddFactsOfFactType(type);
     }
    
     public JSONObject addFact(JSONObject json){
@@ -163,16 +221,21 @@ public class CMTCore {
         return resultFact;
     }
     
+    // Overload voor default CMT 
     public JSONObject addFactInFactFormat(JSONObject json){ 
             Fact fact = Converter.fromJSONtoFact(json);
-            if(!CMTDelegator.get().getDbComponentVersion().equals("SQL")){
-                IFactType obj = Converter.fromFactToObject(fact);
-                if(obj!=null)
-                    CMTDelegator.get().addFact(obj);
-            }else{
-                CMTDelegator.get().addFactInFactFrom(fact);
-            }
+        addFactInFactFormat(fact);
         return json;
+    }
+
+    public void addFactInFactFormat(Fact fact) {
+        if(!CMTDelegator.get().getDbComponentVersion().equals("SQL")){
+            IFactType obj = Converter.fromFactToObject(fact);
+            if(obj!=null)
+                CMTDelegator.get().addFact(obj);
+        }else{  // SQL
+            CMTDelegator.get().addFactInFactFrom(fact);
+        }
     }
     
     
@@ -359,18 +422,12 @@ public class CMTCore {
         // 1. SQL: Add fields to the database (needed in step 4)
         //----------------------------------------------------------------------
         delegator.addEventTypeFields(type, fields);        
-
+        
         // 2. Remove all facts of a factType from Drools
         //----------------------------------------------------------------------
-        HashSet<Fact> facts = delegator.getFactsInFactVersionWithType(className);
-        System.out.println("CMTCORE>>>> addFieldsToFactTypeEvent: 1. found " +
-                facts.size() + "facts");
-        DroolsComponent drools = DroolsComponent.getDroolsComponent();
-        for (Fact fact : facts) {
-            drools.removeFact(fact);
-        }
+        droolsRemoveFactsOfFactType(type);
 
-        // 3. Remove *.java and *.class file of FactType
+        // 3. Remove *.java and *.class file of FactTypeEvent
         //----------------------------------------------------------------------
         File pathJavaSource = new File(Constants.JAVAFILEPATH
                 + Constants.PACKAGEEVENTSSLASH + File.separator + className + ".java");
@@ -397,6 +454,26 @@ public class CMTCore {
         
         // 5. Re-add Facts to Drools
         //----------------------------------------------------------------------
+        droolsAddFactsOfFactType(type);
+    }
+
+    private void  droolsRemoveFactsOfFactType(FactType type) {
+        CMTDelegator delegator = CMTDelegator.get();
+        String className = type.getClassName();
+        HashSet<Fact> facts = delegator.getFactsInFactVersionWithType(className);
+        System.out.println("CMTCORE>>>> removeFactTypeDrools: 1. found " +
+                facts.size() + "facts");
+        DroolsComponent drools = DroolsComponent.getDroolsComponent();
+        for (Fact fact : facts) {
+            drools.removeFact(fact);
+        }
+    }
+    
+    private void droolsAddFactsOfFactType(FactType type){
+        CMTDelegator delegator = CMTDelegator.get();
+        DroolsComponent drools = DroolsComponent.getDroolsComponent();
+        String className = type.getClassName();
+        HashSet<Fact> facts = delegator.getFactsInFactVersionWithType(className);
         for(Fact fact: facts){
             drools.addFact(fact);
         }

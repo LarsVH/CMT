@@ -61,7 +61,6 @@ import org.json.JSONObject;
  * @author Sandra
  */
 public class Converter {
-    
     /*
     shortcut when client defines new facttype in cmt
     */
@@ -232,7 +231,12 @@ public class Converter {
             // if urifield is empty look up 
             if(uriField.isEmpty()){
                 FactType type = CMTDelegator.get().getFactTypeWithName(clName);
+                if(type == null){
+                    uriField = "";
+                }
+                else {                
                 uriField = type.getUriField();
+                }
             }
             
             Fact factObject = new Fact(json.getString("className"), uriField);
@@ -599,7 +603,7 @@ public class Converter {
         }
         return publicPositions;
     }
-  
+   
     public static Template fillTemplateLS(Template temp, JSONObject json){
         try {
             JSONArray jsonIfBlocks = json.getJSONArray("ifblocks");

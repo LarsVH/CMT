@@ -1219,7 +1219,7 @@ public class DatabaseSQL implements IDbComponent{
     }
     // Overloading for registerFactType
     private void addFactTypeFields(FactType type, Connection conn) throws SQLException{
-        addFactTypeFields(type, type.getFields(), conn);
+        addFactTypeFactFields(type, type.getFields(), conn);
     }
     // Overloading for importer
     /**
@@ -1228,16 +1228,16 @@ public class DatabaseSQL implements IDbComponent{
      * @param fields: The fields that should be added (not those that are already in part of 'type'
      */
     @Override    
-    public void addFactTypeFields(FactType type, ArrayList<CMTField> fields){
+    public void addFactTypeFactFields(FactType type, ArrayList<CMTField> fields){
         try (Connection conn = ds.getConnection()) {
-            addFactTypeFields(type, fields, conn);
+            addFactTypeFactFields(type, fields, conn);
             conn.close();
         } catch (SQLException ex) {
             Logger.getLogger(DatabaseSQL.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
     
-    private void addFactTypeFields(FactType type, ArrayList<CMTField> fields, Connection conn) throws SQLException {
+    private void addFactTypeFactFields(FactType type, ArrayList<CMTField> fields, Connection conn) throws SQLException {
         System.out.println("DB2>>>> addFields -- type: " + type.getClassName() + " -- #fields: " + fields.size());
         PreparedStatement ps;
         for (CMTField field : fields) {            
