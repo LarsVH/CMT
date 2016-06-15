@@ -5,4 +5,5 @@ import java.io.Serializable;
 public interface BindingParameter {
 
 	public int getIndexObj(); 
+        public void setIndexObj(int indexObj);
 }
