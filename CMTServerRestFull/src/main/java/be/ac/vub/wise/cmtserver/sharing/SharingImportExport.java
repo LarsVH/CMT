@@ -875,11 +875,13 @@ public class SharingImportExport implements Sharing {
     // >> Solve met aangepaste solveFactTypeFact(): bij perfecte match -> vergeet de import gewoon, MAAR:
     //      Zorg er dan wel voor dat de geimporteerde template die dit event genereert point naar.... (? vraag Sandra)
     public static void importTemplate(JSONObject jTemplate) {
-        ArrayList<String> resolvedTypes = new ArrayList<>();
         
-        importTemplateRec(jTemplate, resolvedTypes);
+        importTemplateRec(jTemplate);
     }
-    public static void importTemplateRec(JSONObject jTemplate, ArrayList<String> resolvedTypes){
+     
+    public static void importTemplateRec(JSONObject jTemplate){
+        ArrayList<String> resolvedTypes = new ArrayList<>();
+
         TemplateHA tmpl = Converter.fromJSONtoTemplateHA(jTemplate);
 
         
@@ -897,30 +899,16 @@ public class SharingImportExport implements Sharing {
 
         // toFillInBlocksToIndex -> ALTIJD BY REFERENCE DOORGEVEN!!
         processToFillInBlocks(indexToToFillInBlocks, toFillInBlocksToIndex,
-                classNameToEventType, dbFactTypes);
+                classNameToEventType, dbFactTypes, jTemplate);
         
         // Using the modified indexToToFillInBlocks to change the Template
         setInputsTemplate(tmpl, indexToToFillInBlocks);
         
         // TODO: register template in CMT (use standard registration mechanism)
         //..
-        
-        // Recursion
-        JSONArray jIFBlocks = jTemplate.getJSONArray("ifblocks");
-        for(int i=0; i<jIFBlocks.length(); i++){
-            JSONObject jIFBlock = jIFBlocks.getJSONObject(i);
-            JSONArray jBindings = jIFBlock.getJSONArray("bindings");
-            for(int j=0; j<jBindings.length(); j++){
-                JSONObject jBinding = jBindings.getJSONObject(j);
-                JSONArray jDeclarations = jBinding.getJSONArray("declarations");
-                for(int k=0; k<jDeclarations.length(); k++){
-                    JSONObject jTemplateDecl = jDeclarations.getJSONObject(k);
-                    importTemplateRec(jTemplateDecl, resolvedTypes);    // Recursive call
-                }
-            }
-        }
-        
+
     }
+    
 /**
  * 
  * @param toFillInBlocks: 
@@ -930,10 +918,10 @@ public class SharingImportExport implements Sharing {
  */
     private static void processToFillInBlocks(HashMap<Integer, IFactType> indexToToFillInBlocks,
             HashMap<IFactType, Integer> toFillInBlocksToIndex, HashMap<String,FactType> classNameToEventType,
-            HashSet<FactType> dbFactTypes) {
+            HashSet<FactType> dbFactTypes, JSONObject jTemplate) {
         // Make toFillInBlocksToIndex readable/mutable
-        HashMap<IFactType, Integer> toFillInBlocksToIndexIter = (HashMap<IFactType, Integer>) toFillInBlocksToIndex.clone();
-        // TODO: loop over values indextToToFillInBlock
+        HashMap<IFactType, Integer> toFillInBlocksToIndexIter = (HashMap<IFactType, Integer>) toFillInBlocksToIndex.clone(); // TODO maak hier hard-copy van
+
         for (Map.Entry<IFactType, Integer> entry : toFillInBlocksToIndexIter.entrySet()) {
             IFactType toFillInBlock = entry.getKey();
             
@@ -951,7 +939,7 @@ public class SharingImportExport implements Sharing {
 
             } else if (toFillInBlock instanceof EventInput) {
                  solveFactTypeEvent((EventInput) toFillInBlock, classNameToEventType,
-                         dbFactTypes, indexToToFillInBlocks, toFillInBlocksToIndex);
+                         dbFactTypes, indexToToFillInBlocks, toFillInBlocksToIndex, jTemplate);
             }
         }
     }
@@ -1235,7 +1223,8 @@ public class SharingImportExport implements Sharing {
     public static void solveFactTypeEvent(EventInput eventInput,
             HashMap<String, FactType> classNameToEventType, HashSet<FactType> dbTypes,
             HashMap<Integer, IFactType> indexToToFillInBlocks,
-            HashMap<IFactType, Integer> toFillInBlocksToIndex) {
+            HashMap<IFactType, Integer> toFillInBlocksToIndex,
+            JSONObject jTemplate) {
 
         FactType eventType = classNameToEventType.get(eventInput.getClassName());
         ArrayList<Pair<Double, FactType>> scores
@@ -1259,7 +1248,6 @@ public class SharingImportExport implements Sharing {
                         toFillInBlocksToIndex.remove(eventInput);
                         toFillInBlocksToIndex.put(dbInput, idx);
                         return;
-
                     }
                 }
             } 
@@ -1285,7 +1273,6 @@ public class SharingImportExport implements Sharing {
             if (chosenDbFactType == null) {
                 // User wil nieuw type (zelfde voor fix als custom event)
                 createNewEventType(eventType);
-
             } else {
                 EventInput dbInput = getEventInputOfEventType(chosenDbFactType);
                 // User heeft een suggestie gekozen
@@ -1305,9 +1292,35 @@ public class SharingImportExport implements Sharing {
             //------------------------
             createNewEventType(eventType); // same for custom/non-custom
     }
+        if(eventType.isIsCustom()){
+            JSONObject jDeclaringTemplate = getDeclaringJTemplateOfCustomEvent(jTemplate, eventType);
+            // RECURSIE
+            importTemplateRec(jTemplate);
+        }
 
 }
-    
+    // Gegeven de huidige template "jTemplate" waarin "eventType" zich bevindt, geeft de JSONRepresentatie
+    // van de template terug die "eventType" representeert
+    public static JSONObject getDeclaringJTemplateOfCustomEvent(JSONObject jTemplate, FactType eventType) {
+        JSONArray jIFBlocks = jTemplate.getJSONArray("ifblocks");
+        for (int i = 0; i < jIFBlocks.length(); i++) {
+            JSONObject jIFBlock = jIFBlocks.getJSONObject(i);
+            JSONArray jBindings = jIFBlock.getJSONArray("bindings");
+            for (int j = 0; j < jBindings.length(); j++) {
+                JSONObject jBinding = jBindings.getJSONObject(j);
+                JSONArray jDeclarations = jBinding.getJSONArray("declarations");
+                for (int k = 0; k < jDeclarations.length(); k++) {
+                    JSONObject jTemplateDecl = jDeclarations.getJSONObject(k);
+                    JSONObject jOutput = jTemplateDecl.getJSONObject("output");
+                    if (jOutput.getString("name").equals(eventType.getClassName())) {
+                        return jTemplateDecl;
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
 
     // IFBlockLoop
     @Deprecated
