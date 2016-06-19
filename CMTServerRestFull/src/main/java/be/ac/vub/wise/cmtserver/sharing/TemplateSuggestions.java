@@ -47,5 +47,7 @@ public class TemplateSuggestions {
         return eventType;
     }
     
-    
+    public void addIFactTypeSuggestions(Integer index, IFactTypeSuggestions suggs){
+        indexToSuggestions.put(index, suggs);
+    }   
 }

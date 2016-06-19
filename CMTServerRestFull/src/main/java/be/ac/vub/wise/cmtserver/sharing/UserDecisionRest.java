@@ -30,7 +30,7 @@ public class UserDecisionRest {
     private HashMap<Integer, SolveState> idToSolveState = new HashMap<>(); // Hou id bij en stuur die mee met request naar de client (later nodig om state terug op te halen)
     
     // Overload FactType
-    public void requestUserDecision(FactType factType, Integer index,
+  /*  public void requestUserDecision(FactType factType, Integer index,
             ArrayList<FactType> suggestions, TemplateHA tmpl, Integer recursionlevel, SolveState state) {
         ArrayList<IFactType> iSuggestions = new ArrayList<>();
         for (FactType sugg : suggestions) {
@@ -70,7 +70,7 @@ public class UserDecisionRest {
         IFactTypeSuggestions iFactSuggs = new IFactTypeSuggestions(stateId, index, fact_type, iSuggestions);
         HashMap<Integer, IFactTypeSuggestions> indexToSuggestions = tmplSuggs.getIndexToSuggestions();
         indexToSuggestions.put(index, iFactSuggs);         
-    }
+    }*/
     
     private Integer addSolveState(SolveState state){
         idToSolveState.put(id, state);
@@ -112,23 +112,4 @@ public class UserDecisionRest {
         
     }
     
-    public FactType getEventTypeTemplateProducing(TemplateHA tmpl) {
-        OutputHA output = tmpl.getOutput();
-        LinkedList<Binding> bindings = output.getBindings();
-        if (bindings != null) {
-            ArrayList<CMTField> fields = new ArrayList<>();
-            for (Binding b : bindings) {
-                BindingParameter endBinding = b.getEndBinding();
-                if (endBinding instanceof BindingOutput) {
-                    BindingOutput bindingOut = (BindingOutput) endBinding;
-                    CMTField f = new CMTField(bindingOut.getParameter(), bindingOut.getParType());
-                    fields.add(f);
-                }
-            }
-            FactType eventType = new FactType(output.getName(), "activity", "", fields);
-            return eventType;
-        } else {
-            return null;
-        }
-    }
 }

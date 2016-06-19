@@ -559,7 +559,7 @@ public class CMTRest {
     return Response.status(201).entity(response.toString()).build();
     // expecting a response from client on /importSuggestionsSolved
     }
-    
+    @Deprecated
     @POST // input JSON of Template object // manually
     @Path("/importSuggestionsSolved")
     @Produces("application/json")
@@ -569,7 +569,6 @@ public class CMTRest {
         JSONObject in = new JSONObject(input);
         HashMap<String, HashMap<Integer, String>> solvedsuggs =
                 Converter.fromJSONToSuggestions(in);
-        SharingImportExport.onSuggestionsReceived(solvedsuggs);
         
         return Response.status(201).entity(out.toString()).build();
     }

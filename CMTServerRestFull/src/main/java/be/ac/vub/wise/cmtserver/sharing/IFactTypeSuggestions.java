@@ -14,21 +14,29 @@ import java.util.ArrayList;
  */
 public class IFactTypeSuggestions {
     
-    Integer id;
     Integer index;
     IFactType iFactType;
-    ArrayList<IFactType> suggestions;
-    IFactType selectedSuggestion;
+    ArrayList<IFactType> suggestions;   // !! kan null zijn
+    IFactType chosenSuggestion;         // kan null zijn
 
-    public IFactTypeSuggestions(Integer id, Integer index, IFactType factType, ArrayList<IFactType> suggestions) {
-        this.id = id;
+    // CASE 3: No match
+    public IFactTypeSuggestions(Integer index, IFactType iFactType) {
+        this.index = index;
+        this.iFactType = iFactType;
+    }
+    
+    // CASE 2: Partial Match
+    public IFactTypeSuggestions(Integer index, IFactType iFactType, ArrayList<IFactType> suggestions) {
+        this.index = index;
+        this.iFactType = iFactType;
+        this.suggestions = suggestions;
+    }
+    // CASE 1: PerfectMatch
+    public IFactTypeSuggestions(Integer index, IFactType factType, ArrayList<IFactType> suggestions, IFactType chosenSuggestion) {
         this.index = index;
         this.iFactType = factType;
         this.suggestions = suggestions;
-    }
-
-    public Integer getId() {
-        return id;
+        this.chosenSuggestion = chosenSuggestion;
     }
 
     public Integer getIndex() {
@@ -43,11 +51,11 @@ public class IFactTypeSuggestions {
         return suggestions;
     }
 
-    public IFactType getSelectedSuggestion() {
-        return selectedSuggestion;
+    public IFactType getChosenSuggestion() {
+        return chosenSuggestion;
     }
 
-    public void setSelectedSuggestion(IFactType selectedSuggestion) {
-        this.selectedSuggestion = selectedSuggestion;
+    public void setChosenSuggestion(IFactType chosenSuggestion) {
+        this.chosenSuggestion = chosenSuggestion;
     }    
 }

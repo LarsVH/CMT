@@ -874,47 +874,66 @@ public class SharingImportExport implements Sharing {
     // > Custom: (hier bestaan geen limitations), wordt gedeft door een template
     // >> Solve met aangepaste solveFactTypeFact(): bij perfecte match -> vergeet de import gewoon, MAAR:
     //      Zorg er dan wel voor dat de geimporteerde template die dit event genereert point naar.... (? vraag Sandra)
-    private Integer importRecursionLevel;
-    private UserDecisionRest suggestionsPool;
+    private ArrayList<TemplateSuggestions> suggestionsPool;
     public void importTemplate(JSONObject jTemplate) {
-        importRecursionLevel = 0;
         // suggestionPool
         // + houdt ook alle Template HashMaps bij (we moeten die op de één of de andere manier achteraf nog zien aan te passen
         // wanneer de suggesties binnenkomen
-        suggestionsPool = new UserDecisionRest();
+        suggestionsPool = new ArrayList<>();  
         
-        
-        importTemplateRec(jTemplate);
+        importTemplateRec(jTemplate, 0);
     }
      
-    public void importTemplateRec(JSONObject jTemplate){
+    public void importTemplateRec(JSONObject jTemplate, Integer recursionLevel){
         ArrayList<Integer> resolvedIndexes = new ArrayList<>();
+        TemplateSuggestions currTmplSuggs;
 
         TemplateHA tmpl = Converter.fromJSONtoTemplateHA(jTemplate);
-
+        FactType eventTypeOfTmpl = getEventTypeTemplateProducing(tmpl);
         
-        // Voor event processing (EventInputs kunnen mappen op hun EventType)(! enkel eventTypes)
-        HashMap<String, FactType> classNameToEventType = generateClassNameToEventType(tmpl);
+        // Create TemplateSuggestions object
+        if(eventTypeOfTmpl != null){
+           currTmplSuggs = new TemplateSuggestions(recursionLevel, tmpl, eventTypeOfTmpl);
+        } else {
+           currTmplSuggs = new TemplateSuggestions(recursionLevel, tmpl);
+        }
+           
         
-        // Bookkeeping: de originele houden we mutable, de andere gebruiken we om
-        // over te itereren
-        HashMap<Integer, IFactType> indexToToFillInBlocks = getInputsTemplate(tmpl); // Sandra Functie, MUTABLE
-        HashMap<IFactType, Integer> toFillInBlocksToIndex = new HashMap<>(); // UNMUTABLE, iterable        
+        // Bookkeeping
+        HashMap<Integer, IFactType> indexToToFillInBlocks = getInputsTemplate(tmpl); // Sandra Functie, 
+        HashMap<IFactType, Integer> toFillInBlocksToIndex = new HashMap<>();    
         for(Map.Entry<Integer, IFactType> entry: indexToToFillInBlocks.entrySet()){
             toFillInBlocksToIndex.put(entry.getValue(), entry.getKey());
         }
         HashSet<FactType> dbFactTypes = CMTDelegator.get().getAvailableFactTypes();
 
         // toFillInBlocksToIndex -> ALTIJD BY REFERENCE DOORGEVEN!!
-        processToFillInBlocks(indexToToFillInBlocks, toFillInBlocksToIndex,
-                classNameToEventType, dbFactTypes, resolvedIndexes, jTemplate, tmpl);
+        processToFillInBlocks(indexToToFillInBlocks, toFillInBlocksToIndex, recursionLevel,
+                dbFactTypes, resolvedIndexes, jTemplate, tmpl, currTmplSuggs);
         
-        // Using the modified indexToToFillInBlocks to change the Template
-        setInputsTemplate(tmpl, indexToToFillInBlocks);
+        // Put TemplateSuggestions object in list
+        suggestionsPool.add(currTmplSuggs);
         
-        // TODO: register template in CMT (use standard registration mechanism) .. na suggestions
-        //..
-
+    }
+    
+        public FactType getEventTypeTemplateProducing(TemplateHA tmpl) {
+        OutputHA output = tmpl.getOutput();
+        LinkedList<Binding> bindings = output.getBindings();
+        if (bindings != null) {
+            ArrayList<CMTField> fields = new ArrayList<>();
+            for (Binding b : bindings) {
+                BindingParameter endBinding = b.getEndBinding();
+                if (endBinding instanceof BindingOutput) {
+                    BindingOutput bindingOut = (BindingOutput) endBinding;
+                    CMTField f = new CMTField(bindingOut.getParameter(), bindingOut.getParType());
+                    fields.add(f);
+                }
+            }
+            FactType eventType = new FactType(output.getName(), "activity", "", fields);
+            return eventType;
+        } else {
+            return null;
+        }
     }
     
 /**
@@ -925,9 +944,9 @@ public class SharingImportExport implements Sharing {
  * @param dbFactTypes 
  */
     private void processToFillInBlocks(HashMap<Integer, IFactType> indexToToFillInBlocks,
-            HashMap<IFactType, Integer> toFillInBlocksToIndex, HashMap<String,FactType> classNameToEventType,
+            HashMap<IFactType, Integer> toFillInBlocksToIndex, Integer recursionLevel,
             HashSet<FactType> dbFactTypes, ArrayList<Integer> resolvedIndexes , JSONObject jTemplate,
-            TemplateHA tmpl) {
+            TemplateHA tmpl, TemplateSuggestions currTmplSuggs) {
         // Make toFillInBlocksToIndex readable/mutable
         HashMap<IFactType, Integer> toFillInBlocksToIndexIter = (HashMap<IFactType, Integer>) toFillInBlocksToIndex.clone(); // TODO maak hier hard-copy van
 
@@ -939,18 +958,18 @@ public class SharingImportExport implements Sharing {
                 
                 FactType fType = (FactType) toFillInBlock;                
                 solveFactTypeFact(fType, dbFactTypes, indexToToFillInBlocks,
-                        toFillInBlocksToIndex, resolvedIndexes, tmpl);
+                        toFillInBlocksToIndex, resolvedIndexes, tmpl, currTmplSuggs);
                 
             } else if (toFillInBlock instanceof Fact) {
                 // Fact
                 // ==> solveFact
                 solveFact((Fact) toFillInBlock, indexToToFillInBlocks,
-                        toFillInBlocksToIndex, dbFactTypes, resolvedIndexes, tmpl);
+                        toFillInBlocksToIndex, dbFactTypes, resolvedIndexes, tmpl, currTmplSuggs);
 
             } else if (toFillInBlock instanceof EventInput) {
-                 solveFactTypeEvent((EventInput) toFillInBlock, classNameToEventType,
-                         dbFactTypes, indexToToFillInBlocks, toFillInBlocksToIndex,
-                         resolvedIndexes, jTemplate, tmpl);
+                 solveFactTypeEvent((EventInput) toFillInBlock, dbFactTypes,
+                         indexToToFillInBlocks, toFillInBlocksToIndex, recursionLevel
+                         resolvedIndexes, jTemplate, tmpl, currTmplSuggs);
             }
         }
     }
@@ -1047,6 +1066,14 @@ public class SharingImportExport implements Sharing {
         }        
         return result;
     }
+
+    private ArrayList<IFactType> factTypeListToIFactTypeList(ArrayList<FactType> ftlist){
+      return new ArrayList<>(ftlist);
+    }
+    
+    private ArrayList<IFactType> factListToIFactTypeList(ArrayList<Fact> flist){
+        return new ArrayList<>(flist);
+    }
     
     private void mergeFactTypeFacts(FactType toMerge, FactType dbType){
         ArrayList<CMTField> toMergeFields = toMerge.getFields();
@@ -1113,40 +1140,36 @@ public class SharingImportExport implements Sharing {
         }
     }
 
+    
     /**
      * @param factType
      * @param dbTypes
+     * @param indexToToFillInBlocks
      * @param toFillInBlocksToIndex
      * @param resolvedIndexes
+     * @param tmpl
+     * @param currTmplSuggs
      * @return : returns the FactType from DB with which has been merged. In case
      * a new FactType has been created, this FactType will be returned
      */
     // DONE except suggestions
-    public FactType solveFactTypeFact(FactType factType, HashSet<FactType> dbTypes, 
+    public void solveFactTypeFact(FactType factType, HashSet<FactType> dbTypes, 
             HashMap<Integer, IFactType> indexToToFillInBlocks,
             HashMap<IFactType, Integer> toFillInBlocksToIndex, 
-            ArrayList<Integer> resolvedIndexes, TemplateHA tmpl) {
+            ArrayList<Integer> resolvedIndexes, TemplateHA tmpl,
+            TemplateSuggestions currTmplSuggs) {
         
         // Type is already resolved
         if(resolvedIndexes.contains(toFillInBlocksToIndex.get(factType))){
-            return factType;
-        }
+            return;
+        }        
         resolvedIndexes.add(toFillInBlocksToIndex.get(factType)); // BOOKKEEPING (this FactType will be resolved) at the end of this function
         
+        Integer currIndex = toFillInBlocksToIndex.get(factType);
         ArrayList<Pair<Double, FactType>> scores
                 = generateJaroWinklerScores(factType.getClassName(), dbTypes, scoreTreshold);
         if (!scores.isEmpty()) {
-            for (Pair<Double, FactType> score : scores) {
-                if (score.getKey().equals(1.0)) {
-                    // PerfectMatch
-                    // automerge
-                    mergeFactTypeFacts(factType, score.getValue());
-                    return score.getValue();        // CASE1: perfectMatch
-                }
-            }
-            // Suggestions
-            // => ask suggestions to user            
-            // First sort the scores
+            // Create Suggestions (sorted)
             scores.sort(new Comparator<Pair<Double,FactType>>() {
                         @Override
                         public int compare(Pair<Double, FactType> o1, Pair<Double, FactType> o2) {
@@ -1161,50 +1184,76 @@ public class SharingImportExport implements Sharing {
                     .map(scorepair -> scorepair.getValue())
                     .collect(Collectors.toCollection(ArrayList::new));
             
-            // sent suggestions to user (arraylist "suggestions")
-            // requestUserFactTypeDecision(suggestions) <<<<<<<<<<<<<<<<<<<<<<<<TODO Suggestions
-            SolveState currState = new SolveState(indexToToFillInBlocks, toFillInBlocksToIndex);
-            suggestionsPool.requestUserDecision(factType, 
-                    toFillInBlocksToIndex.get(factType), suggestions, tmpl,
-                    importRecursionLevel, currState);
             
-            FactType chosenDbFactType = null; // DUMMY !let op: user kan ook gekozen hebben om een nieuwe class aan te maken!!
-            mergeFactTypeFacts(factType, chosenDbFactType);
-            return chosenDbFactType; // CASE 2: user suggestion
+            for (Pair<Double, FactType> score : scores) {
+                if (score.getKey().equals(1.0)) {
+                    // CASE1: perfectMatch
+                    // => vul chosenSuggestion al in
+                    IFactTypeSuggestions suggs = new IFactTypeSuggestions(
+                            currIndex, factType,factTypeListToIFactTypeList(suggestions),
+                            score.getValue());
+                    currTmplSuggs.addIFactTypeSuggestions(currIndex, suggs);
+                    return;
+                }
+            }
+            // CASE 2: no perfect match, but suggestions
+            IFactTypeSuggestions suggs = new IFactTypeSuggestions(currIndex,
+                    factType, factTypeListToIFactTypeList(suggestions));
+            currTmplSuggs.addIFactTypeSuggestions(currIndex, suggs);
         } else {
+            // CASE 3: No matches
             // Scores is empty -> no match
-            // => create new class
-            createNewFactType(factType);
-            return factType; // CASE 3: No matches, completely new import
+            IFactTypeSuggestions suggs = new IFactTypeSuggestions(currIndex,
+                    factType);
+            currTmplSuggs.addIFactTypeSuggestions(currIndex, suggs);
         }
     }
     
+    // TODO
+    public void doSolveFactType(){
+        // CASE 1 & 2: mergeFactTypeFacts(factType, chosenDbFactType);
+        // CASE 3 : createNewFactType(factType);
+    
+}
 
     // DONE except suggestions
     public void solveFact(Fact fact, HashMap<Integer, IFactType> indexToToFillInBlocks, 
             HashMap<IFactType, Integer> toFillInBlocksToIndex, HashSet<FactType> dbTypes,
-            ArrayList<Integer> resolvedIndexes, TemplateHA tmpl) {
+            ArrayList<Integer> resolvedIndexes, TemplateHA tmpl, TemplateSuggestions currTmplSuggs) {
         
         if(resolvedIndexes.contains(toFillInBlocksToIndex.get(fact))){
             return; // fact already resolved
         }
         resolvedIndexes.add(toFillInBlocksToIndex.get(fact)); // BOOKKEEPING (this Fact will be resolved) at the end of this function
         
+        Integer currIndex = toFillInBlocksToIndex.get(fact);
+        
         // First: solve the FactType
         FactType factTypeFact = fromFactToFactType(fact);
-        FactType resolvedFactType = solveFactTypeFact(factTypeFact, dbTypes, 
-                indexToToFillInBlocks, toFillInBlocksToIndex, resolvedIndexes, tmpl);
+        solveFactTypeFact(factTypeFact, dbTypes, indexToToFillInBlocks,
+                toFillInBlocksToIndex, resolvedIndexes, tmpl, currTmplSuggs);
         // Fetch the Facts of the resolved FactType
         HashSet<Fact> dbFacts = CMTDelegator.get()
-                .getFactsInFactVersionWithType(resolvedFactType.getClassName());
+                .getFactsInFactVersionWithType(factTypeFact.getClassName());
         
+        // CASE 3: geen facts voor dit factType
+        if (dbFacts.isEmpty()) {
+            IFactTypeSuggestions suggs = new IFactTypeSuggestions(currIndex,
+                    fact);
+            currTmplSuggs.addIFactTypeSuggestions(currIndex, suggs);
+        } else {
+        // CASE 2: er bestaan Facts in Db voor FactType
+            ArrayList<IFactType> factsuggs = factListToIFactTypeList(new ArrayList<>(dbFacts));
+            IFactTypeSuggestions suggs = new IFactTypeSuggestions(currIndex,
+                    fact, factListToIFactTypeList(new ArrayList<>(dbFacts)));
+            currTmplSuggs.addIFactTypeSuggestions(currIndex, suggs);
+        }
+    }
+    // Callback when suggestions are received (extracted) // <<<<<<<<<<<<<<<<<  TODO
+    private void doSolveFact(HashMap<IFactType, Integer> toFillInBlocksToIndex, Fact fact, HashMap<Integer, IFactType> indexToToFillInBlocks) {
         // TODO: SUGGESTIONS to user: (user moet ALTIJD kiezen hier! Geen matches in DB -> kies het geimporteerde Fact)
-        // TODO: requestUserFactDecision(ArrayList<Fact> dbFacts, Fact importFact)
         //----------------------------
         // USER CHOSE DBFact => boekhouding aanpassen (hashmap)
-        SolveState currState = new SolveState(indexToToFillInBlocks, toFillInBlocksToIndex);
-        suggestionsPool.requestUserDecision(fact, importRecursionLevel, new ArrayList<>(dbFacts), tmpl, importRecursionLevel, currState);
-        
         Fact chosenDbFact = null; // TODO
         if (chosenDbFact != null) {
             Integer index = toFillInBlocksToIndex.get(fact);
@@ -1214,10 +1263,9 @@ public class SharingImportExport implements Sharing {
         } else {
             // USER CHOSE TO IMPORT FACT
             // Voeg fact toe (geen veranderingen in boekhouding nodig)
-
+            
             CMTCore.get().addFactInFactFormat(fact);            
         }
-
     }
     
     public FactType fromFactToFactType(Fact fact){
@@ -1229,44 +1277,24 @@ public class SharingImportExport implements Sharing {
     /*
      *   Both HashMaps are mutable :)
      */
-    public void solveFactTypeEvent(EventInput eventInput,
-            HashMap<String, FactType> classNameToEventType, HashSet<FactType> dbTypes,
+    public void solveFactTypeEvent(EventInput eventInput, HashSet<FactType> dbTypes,
             HashMap<Integer, IFactType> indexToToFillInBlocks,
-            HashMap<IFactType, Integer> toFillInBlocksToIndex, 
+            HashMap<IFactType, Integer> toFillInBlocksToIndex, Integer recursionLevel,
             ArrayList<Integer> resolvedIndexes, JSONObject jTemplate,
-            TemplateHA tmpl) {
-        
-        if(resolvedIndexes.contains(toFillInBlocksToIndex.get(eventInput))){
+            TemplateHA tmpl, TemplateSuggestions currTmplSuggs) {
+
+        if (resolvedIndexes.contains(toFillInBlocksToIndex.get(eventInput))) {
             return; // eventInput already resolved
         }
         resolvedIndexes.add(toFillInBlocksToIndex.get(eventInput)); // BOOKKEEPING (this event will be resolved) at the end of this function
 
+        HashMap<String, FactType> classNameToEventType = generateClassNameToEventType(tmpl);
         FactType eventType = classNameToEventType.get(eventInput.getClassName());
         ArrayList<Pair<Double, FactType>> scores
                 = generateJaroWinklerScores(eventType.getClassName(), dbTypes, scoreTreshold);
-        if (!scores.isEmpty()) {
-            for (Pair<Double, FactType> score : scores) {
-                if (score.getKey().equals(1.0)) {
-                    // PerfectMatch
-                    //--------------------------
-                    FactType dbType = score.getValue();
-                    EventInput dbInput = getEventInputOfEventType(dbType);
-                    if (!eventType.isIsCustom()) { // Non-Custom eventType                          
-                        mergeEventTypes(eventType, eventInput, dbType, dbInput);
-                        return;
-                    } else { // Custom eventType (hier bestaan geen limitations)
-                        // -> neem user zijn eigen Event dat al in de db zit,
-                        // negeer de import, maar pas wel aan in de TemplateHashMap
-                        // Hou beide hashMaps up to date
-                        Integer idx = toFillInBlocksToIndex.get(eventInput);
-                        indexToToFillInBlocks.replace(idx, dbInput);
-                        toFillInBlocksToIndex.remove(eventInput);
-                        toFillInBlocksToIndex.put(dbInput, idx);
-                        return;
-                    }
-                }
-            } 
-            // Partial match
+
+        Integer currIndex = toFillInBlocksToIndex.get(eventType);
+        if (!scores.isEmpty()) {        // If there are matches with the database, first sort them            
             scores.sort(new Comparator<Pair<Double, FactType>>() {
                 @Override
                 public int compare(Pair<Double, FactType> o1, Pair<Double, FactType> o2) {
@@ -1277,16 +1305,28 @@ public class SharingImportExport implements Sharing {
                     }
                 }
             });
-            // PartialMatch
-            //--------------------------
+
+            // Then retrieve the suggestions:
             ArrayList<FactType> suggestions = scores.stream()
                     .map(scorepair -> scorepair.getValue())
                     .collect(Collectors.toCollection(ArrayList::new));
-            // sent suggestions to user (arraylist "suggestions")
-            // requestUserFactTypeDecision(suggestions) <<<<<<<<<<<<<<<<<<<<<<<<TODO Suggestions: Voor events gaan we ook EventInput ergens moeten bijhouden...
-            SolveState currState = new SolveState(indexToToFillInBlocks, toFillInBlocksToIndex, eventInput);
-            suggestionsPool.requestUserDecision(eventType, importRecursionLevel, new ArrayList<>(suggestions), tmpl, importRecursionLevel, currState);
-            
+
+            // Create suggestions object
+            IFactTypeSuggestions suggs = new IFactTypeSuggestions(
+                    currIndex, eventInput, factTypeListToIFactTypeList(suggestions));
+            currTmplSuggs.addIFactTypeSuggestions(currIndex, suggs);
+
+              if (eventType.isIsCustom()) {
+                JSONObject jDeclaringTemplate = getDeclaringJTemplateOfCustomEvent(jTemplate, eventType);
+                // RECURSIE                
+                importTemplateRec(jDeclaringTemplate, recursionLevel + 1);
+            }
+        }
+
+    }
+    // volledig herchecken!!
+    public void doSolveEventType(){
+                    
             FactType chosenDbEventType = null;
             if (chosenDbEventType == null) {
                 // User wil nieuw type (zelfde voor fix als custom event)
@@ -1310,14 +1350,8 @@ public class SharingImportExport implements Sharing {
             //------------------------
             createNewEventType(eventType); // same for custom/non-custom
     }
-        if(eventType.isIsCustom()){
-            JSONObject jDeclaringTemplate = getDeclaringJTemplateOfCustomEvent(jTemplate, eventType);
-            // RECURSIE
-            importRecursionLevel = importRecursionLevel + 1; // increase recursionlevel
-            importTemplateRec(jTemplate);
-        }
-
-}
+    
+    
     // Gegeven de huidige template "jTemplate" waarin "eventType" zich bevindt, geeft de JSONRepresentatie
     // van de template terug die "eventType" representeert
     public JSONObject getDeclaringJTemplateOfCustomEvent(JSONObject jTemplate, FactType eventType) {
