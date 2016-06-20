@@ -5,6 +5,7 @@
  */
 package be.ac.vub.wise.cmtserver.sharing;
 
+import be.ac.vub.wise.cmtserver.blocks.FactType;
 import be.ac.vub.wise.cmtserver.blocks.IFactType;
 import java.util.ArrayList;
 
@@ -16,9 +17,9 @@ public class IFactTypeSuggestions {
     
     Integer index;
     IFactType iFactType;
-    ArrayList<IFactType> suggestions;   // !! kan null zijn
+    ArrayList<FactType> suggestions;   // !! kan null zijn
     IFactType chosenSuggestion;         // kan null zijn
-
+   
     // CASE 3: No match
     public IFactTypeSuggestions(Integer index, IFactType iFactType) {
         this.index = index;
@@ -26,13 +27,13 @@ public class IFactTypeSuggestions {
     }
     
     // CASE 2: Partial Match
-    public IFactTypeSuggestions(Integer index, IFactType iFactType, ArrayList<IFactType> suggestions) {
+    public IFactTypeSuggestions(Integer index, IFactType iFactType, ArrayList<FactType> suggestions) {
         this.index = index;
         this.iFactType = iFactType;
         this.suggestions = suggestions;
     }
     // CASE 1: PerfectMatch
-    public IFactTypeSuggestions(Integer index, IFactType factType, ArrayList<IFactType> suggestions, IFactType chosenSuggestion) {
+    public IFactTypeSuggestions(Integer index, IFactType factType, ArrayList<FactType> suggestions, IFactType chosenSuggestion) {
         this.index = index;
         this.iFactType = factType;
         this.suggestions = suggestions;
@@ -47,7 +48,7 @@ public class IFactTypeSuggestions {
         return iFactType;
     }
 
-    public ArrayList<IFactType> getSuggestions() {
+    public ArrayList<FactType> getSuggestions() {
         return suggestions;
     }
 

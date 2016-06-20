@@ -882,6 +882,9 @@ public class SharingImportExport implements Sharing {
         suggestionsPool = new ArrayList<>();  
         
         importTemplateRec(jTemplate, 0);
+        
+        // TODO: send to client
+ 
     }
      
     public void importTemplateRec(JSONObject jTemplate, Integer recursionLevel){
@@ -905,11 +908,10 @@ public class SharingImportExport implements Sharing {
         for(Map.Entry<Integer, IFactType> entry: indexToToFillInBlocks.entrySet()){
             toFillInBlocksToIndex.put(entry.getValue(), entry.getKey());
         }
-        HashSet<FactType> dbFactTypes = CMTDelegator.get().getAvailableFactTypes();
 
         // toFillInBlocksToIndex -> ALTIJD BY REFERENCE DOORGEVEN!!
         processToFillInBlocks(indexToToFillInBlocks, toFillInBlocksToIndex, recursionLevel,
-                dbFactTypes, resolvedIndexes, jTemplate, tmpl, currTmplSuggs);
+                resolvedIndexes, jTemplate, tmpl, currTmplSuggs);
         
         // Put TemplateSuggestions object in list
         suggestionsPool.add(currTmplSuggs);
@@ -941,11 +943,10 @@ public class SharingImportExport implements Sharing {
  * @param toFillInBlocks: 
  * @param indexToToFillInBlocks: bookkeeping: used to change indexes of the imported template to
  * a local Fact (by solveFact)
- * @param dbFactTypes 
  */
     private void processToFillInBlocks(HashMap<Integer, IFactType> indexToToFillInBlocks,
             HashMap<IFactType, Integer> toFillInBlocksToIndex, Integer recursionLevel,
-            HashSet<FactType> dbFactTypes, ArrayList<Integer> resolvedIndexes , JSONObject jTemplate,
+            ArrayList<Integer> resolvedIndexes , JSONObject jTemplate,
             TemplateHA tmpl, TemplateSuggestions currTmplSuggs) {
         // Make toFillInBlocksToIndex readable/mutable
         HashMap<IFactType, Integer> toFillInBlocksToIndexIter = (HashMap<IFactType, Integer>) toFillInBlocksToIndex.clone(); // TODO maak hier hard-copy van
@@ -957,18 +958,18 @@ public class SharingImportExport implements Sharing {
                 // ??LET OP: onderscheid maken tussen FactTypeFact en FactTypeEvent!! (volgens Sandra: enkel FactTypeFact)
                 
                 FactType fType = (FactType) toFillInBlock;                
-                solveFactTypeFact(fType, dbFactTypes, indexToToFillInBlocks,
+                solveFactType(fType, indexToToFillInBlocks,
                         toFillInBlocksToIndex, resolvedIndexes, tmpl, currTmplSuggs);
                 
             } else if (toFillInBlock instanceof Fact) {
                 // Fact
                 // ==> solveFact
                 solveFact((Fact) toFillInBlock, indexToToFillInBlocks,
-                        toFillInBlocksToIndex, dbFactTypes, resolvedIndexes, tmpl, currTmplSuggs);
+                        toFillInBlocksToIndex, resolvedIndexes, currTmplSuggs);
 
             } else if (toFillInBlock instanceof EventInput) {
-                 solveFactTypeEvent((EventInput) toFillInBlock, dbFactTypes,
-                         indexToToFillInBlocks, toFillInBlocksToIndex, recursionLevel
+                 solveEventInput((EventInput) toFillInBlock,
+                         indexToToFillInBlocks, toFillInBlocksToIndex, recursionLevel,
                          resolvedIndexes, jTemplate, tmpl, currTmplSuggs);
             }
         }
@@ -1075,7 +1076,7 @@ public class SharingImportExport implements Sharing {
         return new ArrayList<>(flist);
     }
     
-    private void mergeFactTypeFacts(FactType toMerge, FactType dbType){
+    private void mergeFactTypeFact(FactType toMerge, FactType dbType){
         ArrayList<CMTField> toMergeFields = toMerge.getFields();
         ArrayList<CMTField> dbFields = dbType.getFields();
         ArrayList<CMTField> fieldsToCreate = new ArrayList<>();
@@ -1102,7 +1103,7 @@ public class SharingImportExport implements Sharing {
         core.addFieldsToFactTypeFact(dbType, checkedFieldsToCreate);
         
     }
-    
+    @Deprecated // = neem gewoon het db event???
     private void mergeEventTypes(FactType toMerge, EventInput toMergeInput,
             FactType dbType, EventInput dbInput) {
         if(!(toMerge.getFields().equals(toMergeInput.getFields()) && dbType.getFields().equals(dbInput.getFields()))){
@@ -1140,144 +1141,171 @@ public class SharingImportExport implements Sharing {
         }
     }
 
-    
-    /**
-     * @param factType
-     * @param dbTypes
-     * @param indexToToFillInBlocks
-     * @param toFillInBlocksToIndex
-     * @param resolvedIndexes
-     * @param tmpl
-     * @param currTmplSuggs
-     * @return : returns the FactType from DB with which has been merged. In case
-     * a new FactType has been created, this FactType will be returned
-     */
-    // DONE except suggestions
-    public void solveFactTypeFact(FactType factType, HashSet<FactType> dbTypes, 
+    // Computes Jaro-Winkler scores for each of the FactTypes against the Database, sorts by highest score first
+    private ArrayList<Pair<Double, FactType>> getFactTypeScores(FactType factType) {
+        HashSet<FactType> dbFactTypes = CMTDelegator.get().getAvailableFactTypes();
+        ArrayList<Pair<Double, FactType>> scores
+                = generateJaroWinklerScores(factType.getClassName(), dbFactTypes, scoreTreshold);
+        scores.sort(new Comparator<Pair<Double, FactType>>() {
+            @Override
+            public int compare(Pair<Double, FactType> o1, Pair<Double, FactType> o2) {
+                if (o2.getKey() > o1.getKey()) {
+                    return 1;
+                } else {
+                    return -1;
+                }
+            }
+        });
+        return scores;
+    }
+    // Compute suggestions for a given FactType (uses getFactTypeScores)
+    private ArrayList<FactType> getFactTypeSuggestions(FactType factType) {
+        ArrayList<Pair<Double, FactType>> scores = getFactTypeScores(factType);
+
+        // Then retrieve the FactTypes in the same order
+        ArrayList<FactType> suggestions = scores.stream()
+                .map(scorepair -> scorepair.getValue())
+                .collect(Collectors.toCollection(ArrayList::new));
+
+        return suggestions;
+    }
+    // DONE
+    public void solveFactType(FactType factType,
             HashMap<Integer, IFactType> indexToToFillInBlocks,
             HashMap<IFactType, Integer> toFillInBlocksToIndex, 
             ArrayList<Integer> resolvedIndexes, TemplateHA tmpl,
-            TemplateSuggestions currTmplSuggs) {
-        
+            TemplateSuggestions currTmplSuggs){
         // Type is already resolved
         if(resolvedIndexes.contains(toFillInBlocksToIndex.get(factType))){
             return;
         }        
         resolvedIndexes.add(toFillInBlocksToIndex.get(factType)); // BOOKKEEPING (this FactType will be resolved) at the end of this function
         
-        Integer currIndex = toFillInBlocksToIndex.get(factType);
-        ArrayList<Pair<Double, FactType>> scores
-                = generateJaroWinklerScores(factType.getClassName(), dbTypes, scoreTreshold);
+        Integer index = toFillInBlocksToIndex.get(factType); 
+        
+        ArrayList<Pair<Double, FactType>> scores = getFactTypeScores(factType);
         if (!scores.isEmpty()) {
-            // Create Suggestions (sorted)
-            scores.sort(new Comparator<Pair<Double,FactType>>() {
-                        @Override
-                        public int compare(Pair<Double, FactType> o1, Pair<Double, FactType> o2) {
-                            if(o2.getKey()> o1.getKey())
-                                return 1;
-                            else return -1;
-                        }
-                    });
-            
-            // Then retrieve the FactTypes in the same order
+            // Retrieve suggestions from scores
             ArrayList<FactType> suggestions = scores.stream()
                     .map(scorepair -> scorepair.getValue())
                     .collect(Collectors.toCollection(ArrayList::new));
-            
-            
+
+            // Loop over the scores to check for perfectmatches           
             for (Pair<Double, FactType> score : scores) {
                 if (score.getKey().equals(1.0)) {
                     // CASE1: perfectMatch
                     // => vul chosenSuggestion al in
                     IFactTypeSuggestions suggs = new IFactTypeSuggestions(
-                            currIndex, factType,factTypeListToIFactTypeList(suggestions),
+                            index, factType, suggestions,
                             score.getValue());
-                    currTmplSuggs.addIFactTypeSuggestions(currIndex, suggs);
+                    currTmplSuggs.addIFactTypeSuggestions(index, suggs);
                     return;
                 }
             }
             // CASE 2: no perfect match, but suggestions
-            IFactTypeSuggestions suggs = new IFactTypeSuggestions(currIndex,
-                    factType, factTypeListToIFactTypeList(suggestions));
-            currTmplSuggs.addIFactTypeSuggestions(currIndex, suggs);
+            IFactTypeSuggestions suggs = new IFactTypeSuggestions(index,
+                    factType, suggestions);
+            currTmplSuggs.addIFactTypeSuggestions(index, suggs);
         } else {
             // CASE 3: No matches
             // Scores is empty -> no match
-            IFactTypeSuggestions suggs = new IFactTypeSuggestions(currIndex,
+            IFactTypeSuggestions suggs = new IFactTypeSuggestions(index,
                     factType);
-            currTmplSuggs.addIFactTypeSuggestions(currIndex, suggs);
+            currTmplSuggs.addIFactTypeSuggestions(index, suggs);
         }
     }
     
-    // TODO
-    public void doSolveFactType(){
-        // CASE 1 & 2: mergeFactTypeFacts(factType, chosenDbFactType);
-        // CASE 3 : createNewFactType(factType);
-    
-}
+    // TODO: recheck
+    // CASE 1 & 2: mergeFactTypeFacts(factType, chosenDbFactType);
+    // CASE 3 : createNewFactType(factType);
+    public void doSolveFactType(IFactTypeSuggestions iSuggs,
+            HashMap<Integer, IFactType> indexToToFillInBlocks) {
+        FactType importFT = (FactType) iSuggs.getIFactType();
+        FactType chosenFT = (FactType) iSuggs.getChosenSuggestion();
 
-    // DONE except suggestions
+        if (chosenFT.equals(importFT)) {    // CASE 3: user chose the importFT => createNewFactType
+            System.out.println("INFO -- ShIX -- creating new Facttype -- " + chosenFT.getClassName());
+            createNewFactType(chosenFT);
+            return;
+        } else {
+            // check of selectedFT in lijst van suggesties zit => daarmee weet je dat het gekozen ft al in de db zit
+            ArrayList<IFactType> iSuggslst = iSuggs.getSuggestions();
+            for (IFactType iFT : iSuggslst) {
+                FactType currFT = (FactType) iFT;
+
+                if (currFT.equals(chosenFT)) {
+                    // CASE 1 & 2: user chose a suggestion (which is already in the db) => mergeFactTypeFacts
+                    FactType dbFTCheck = CMTDelegator.get().getFactTypeWithName(currFT.getClassName());
+                    if (dbFTCheck != null) { // Safety check: suggestion must be in db!
+                        mergeFactTypeFact(chosenFT, dbFTCheck);
+                        return;
+                    }
+                }
+            }
+        }
+        // If this is reached, chosenFT is not the same as the importFT, nor is it in suggestion
+        System.out.println("ERROR -- ShIX -- doSolveFactType: user didn't select a (compatible) FactType:"
+                + " eg. does not equal the importFactType nor one of the suggestions, ImportFactType: " + importFT.getClassName());
+    }
+    
     public void solveFact(Fact fact, HashMap<Integer, IFactType> indexToToFillInBlocks, 
-            HashMap<IFactType, Integer> toFillInBlocksToIndex, HashSet<FactType> dbTypes,
-            ArrayList<Integer> resolvedIndexes, TemplateHA tmpl, TemplateSuggestions currTmplSuggs) {
+            HashMap<IFactType, Integer> toFillInBlocksToIndex,
+            ArrayList<Integer> resolvedIndexes, TemplateSuggestions currTmplSuggs) {
         
         if(resolvedIndexes.contains(toFillInBlocksToIndex.get(fact))){
             return; // fact already resolved
         }
         resolvedIndexes.add(toFillInBlocksToIndex.get(fact)); // BOOKKEEPING (this Fact will be resolved) at the end of this function
         
-        Integer currIndex = toFillInBlocksToIndex.get(fact);
+        Integer index = toFillInBlocksToIndex.get(fact);        
+        // Create FactType from the Fact
+        FactType factTypeFact = createFactTypeFromFact(fact);        
+        // Retrieve suggestions for factTypeFact
+        ArrayList<FactType> suggestions = getFactTypeSuggestions(factTypeFact);
         
-        // First: solve the FactType
-        FactType factTypeFact = fromFactToFactType(fact);
-        solveFactTypeFact(factTypeFact, dbTypes, indexToToFillInBlocks,
-                toFillInBlocksToIndex, resolvedIndexes, tmpl, currTmplSuggs);
-        // Fetch the Facts of the resolved FactType
-        HashSet<Fact> dbFacts = CMTDelegator.get()
-                .getFactsInFactVersionWithType(factTypeFact.getClassName());
-        
-        // CASE 3: geen facts voor dit factType
-        if (dbFacts.isEmpty()) {
-            IFactTypeSuggestions suggs = new IFactTypeSuggestions(currIndex,
-                    fact);
-            currTmplSuggs.addIFactTypeSuggestions(currIndex, suggs);
-        } else {
-        // CASE 2: er bestaan Facts in Db voor FactType
-            ArrayList<IFactType> factsuggs = factListToIFactTypeList(new ArrayList<>(dbFacts));
-            IFactTypeSuggestions suggs = new IFactTypeSuggestions(currIndex,
-                    fact, factListToIFactTypeList(new ArrayList<>(dbFacts)));
-            currTmplSuggs.addIFactTypeSuggestions(currIndex, suggs);
-        }
+        IFactTypeSuggestions suggs = new IFactTypeSuggestions(index, fact, suggestions);
+        currTmplSuggs.addIFactTypeSuggestions(index, suggs);
     }
-    // Callback when suggestions are received (extracted) // <<<<<<<<<<<<<<<<<  TODO
-    private void doSolveFact(HashMap<IFactType, Integer> toFillInBlocksToIndex, Fact fact, HashMap<Integer, IFactType> indexToToFillInBlocks) {
-        // TODO: SUGGESTIONS to user: (user moet ALTIJD kiezen hier! Geen matches in DB -> kies het geimporteerde Fact)
-        //----------------------------
-        // USER CHOSE DBFact => boekhouding aanpassen (hashmap)
-        Fact chosenDbFact = null; // TODO
-        if (chosenDbFact != null) {
-            Integer index = toFillInBlocksToIndex.get(fact);
-            indexToToFillInBlocks.replace(index, chosenDbFact); // change the importtemplate to the db fact the user has chosen
-            toFillInBlocksToIndex.remove(fact);
-            toFillInBlocksToIndex.put(chosenDbFact, index);
-        } else {
-            // USER CHOSE TO IMPORT FACT
-            // Voeg fact toe (geen veranderingen in boekhouding nodig)
-            
-            CMTCore.get().addFactInFactFormat(fact);            
+    
+    // TODO: recheck
+    // !!! ASSUMPTION: FACTTYPE of Fact is ALREADY RESOLVED !!!
+    public void doSolveFact(IFactTypeSuggestions iSuggs,
+            HashMap<Integer, IFactType> indexToToFillInBlocks) {
+        Fact importF = (Fact) iSuggs.getIFactType();
+        Fact chosenF = (Fact) iSuggs.getChosenSuggestion();
+        FactType ft = CMTDelegator.get().getFactTypeWithName(chosenF.getClassName());
+
+        if (ft == null) {
+            System.out.println("ERROR -- ShIX -- doSolveFact -- Could not find FactType of Fact, aborting... -- FactType: " + chosenF.getClassName());
+        } else if (!chosenF.equals(importF)) {// CASE 2: user chose another fact than the one in the import template, ASSUMPTION, the factType of this fact is already resolved
+            // => point the template to that Fact, no need to add it to the db as it should be already in there (client retrieved Facts by REST from Db)
+            HashSet<Fact> dbFacts =  CMTDelegator.get().getFactsInFactVersionWithType(chosenF.getClassName());
+            if(dbFacts.contains(chosenF)){
+                // We only have to change the pointer of the importTemplate to that dbFact
+                Integer index = iSuggs.getIndex();    
+                indexToToFillInBlocks.replace(index, chosenF);
+                    System.out.println("INFO -- ShIX -- change importTemplate pointer to dbFact: " 
+                            + chosenF.getClassName() + ", " + chosenF.getUriValue());                
+            } else {
+                System.out.println("ERROR -- ShIX -- doSolveFact --"
+                        + " User selected a Fact not in Db or importTemplate... "
+                        + "-- " + chosenF.getClassName() + ", " + chosenF.getUriValue());  
+            }
+        } else {    // CASE 3: user chose the importF => add that Fact to the db
+            System.out.println("INFO -- ShIX -- adding fact -- " + chosenF.getClassName() + ", " + chosenF.getUriValue());
+            CMTCore.get().addFactInFactFormat(chosenF);
         }
     }
     
-    public FactType fromFactToFactType(Fact fact){
+    public FactType createFactTypeFromFact(Fact fact){
         FactType factTypeFact = new FactType(fact.getClassName(), "fact", fact.getUriField(), fact.getFields());
         factTypeFact.setIsCustom(false);
         factTypeFact.setCategory("Code");        
         return factTypeFact;
     }
-    /*
-     *   Both HashMaps are mutable :)
-     */
-    public void solveFactTypeEvent(EventInput eventInput, HashSet<FactType> dbTypes,
+
+ // DONE
+    public void solveEventInput(EventInput eventInput,
             HashMap<Integer, IFactType> indexToToFillInBlocks,
             HashMap<IFactType, Integer> toFillInBlocksToIndex, Integer recursionLevel,
             ArrayList<Integer> resolvedIndexes, JSONObject jTemplate,
@@ -1286,47 +1314,37 @@ public class SharingImportExport implements Sharing {
         if (resolvedIndexes.contains(toFillInBlocksToIndex.get(eventInput))) {
             return; // eventInput already resolved
         }
-        resolvedIndexes.add(toFillInBlocksToIndex.get(eventInput)); // BOOKKEEPING (this event will be resolved) at the end of this function
+        resolvedIndexes.add(toFillInBlocksToIndex.get(eventInput)); // bookkeeping
 
         HashMap<String, FactType> classNameToEventType = generateClassNameToEventType(tmpl);
         FactType eventType = classNameToEventType.get(eventInput.getClassName());
-        ArrayList<Pair<Double, FactType>> scores
-                = generateJaroWinklerScores(eventType.getClassName(), dbTypes, scoreTreshold);
 
-        Integer currIndex = toFillInBlocksToIndex.get(eventType);
-        if (!scores.isEmpty()) {        // If there are matches with the database, first sort them            
-            scores.sort(new Comparator<Pair<Double, FactType>>() {
-                @Override
-                public int compare(Pair<Double, FactType> o1, Pair<Double, FactType> o2) {
-                    if (o2.getKey() > o1.getKey()) {
-                        return 1;
-                    } else {
-                        return -1;
-                    }
-                }
-            });
+        Integer index = toFillInBlocksToIndex.get(eventInput);
 
-            // Then retrieve the suggestions:
-            ArrayList<FactType> suggestions = scores.stream()
-                    .map(scorepair -> scorepair.getValue())
-                    .collect(Collectors.toCollection(ArrayList::new));
+        ArrayList<FactType> suggestions = getFactTypeSuggestions(eventType);
 
-            // Create suggestions object
-            IFactTypeSuggestions suggs = new IFactTypeSuggestions(
-                    currIndex, eventInput, factTypeListToIFactTypeList(suggestions));
-            currTmplSuggs.addIFactTypeSuggestions(currIndex, suggs);
-
-              if (eventType.isIsCustom()) {
-                JSONObject jDeclaringTemplate = getDeclaringJTemplateOfCustomEvent(jTemplate, eventType);
-                // RECURSIE                
-                importTemplateRec(jDeclaringTemplate, recursionLevel + 1);
-            }
+        IFactTypeSuggestions suggs = new IFactTypeSuggestions(index, eventInput, suggestions);
+        currTmplSuggs.addIFactTypeSuggestions(index, suggs);
+        
+        // Recursie<<<<<<<
+     if(eventType.isIsCustom()){
+           JSONObject jDeclaringTemplate = getDeclaringJTemplateOfCustomEvent(jTemplate, eventType);
+           // RECURSIE
+            importTemplateRec(jDeclaringTemplate, recursionLevel + 1);
         }
-
+        
     }
-    // volledig herchecken!!
-    public void doSolveEventType(){
-                    
+
+
+// ASSUMPTION: FactType of EventInput is already resolved: GAAT NIET: FactType v.e. event moet door "createNewEventType" geregistreerd worden
+    // Toch wel: check op "type" van FactType: fact <-> activity
+    public void doSolveEventInput(IFactTypeSuggestions iSuggs,
+            HashMap<Integer, IFactType> indexToToFillInBlocks){
+            EventInput importEI = (EventInput) iSuggs.getIFactType();
+            EventInput chosenEI = (EventInput) iSuggs.getChosenSuggestion();
+            
+            
+            
             FactType chosenDbEventType = null;
             if (chosenDbEventType == null) {
                 // User wil nieuw type (zelfde voor fix als custom event)

@@ -14,6 +14,7 @@ import be.ac.vub.wise.cmtserver.blocks.Fact;
 import be.ac.vub.wise.cmtserver.blocks.FactType;
 import be.ac.vub.wise.cmtserver.blocks.IFactType;
 import be.ac.vub.wise.cmtserver.blocks.OutputHA;
+import be.ac.vub.wise.cmtserver.blocks.Template;
 import be.ac.vub.wise.cmtserver.blocks.TemplateHA;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -27,65 +28,27 @@ import java.util.Map;
 public class UserDecisionRest {
     static int id = 0;
     private HashMap<TemplateHA, TemplateSuggestions> tmplToTmplSuggs = new HashMap<>(); // Mapt een template op zijn suggestions object
-    private HashMap<Integer, SolveState> idToSolveState = new HashMap<>(); // Hou id bij en stuur die mee met request naar de client (later nodig om state terug op te halen)
     
-    // Overload FactType
-  /*  public void requestUserDecision(FactType factType, Integer index,
-            ArrayList<FactType> suggestions, TemplateHA tmpl, Integer recursionlevel, SolveState state) {
-        ArrayList<IFactType> iSuggestions = new ArrayList<>();
-        for (FactType sugg : suggestions) {
-            iSuggestions.add(sugg);
-        }
-        requestUserDecision(factType, index, iSuggestions, tmpl, recursionlevel, state);
-    }
-
-    // Overload Fact
-    public void requestUserDecision(Fact fact, Integer index,
-            ArrayList<Fact> suggestions, TemplateHA tmpl, Integer recursionlevel, SolveState state) {        
-        ArrayList<IFactType> iSuggestions = new ArrayList<>();
-        for (Fact sugg : suggestions) {
-            iSuggestions.add(sugg);
-        }
-        requestUserDecision(fact, index, iSuggestions, tmpl, recursionlevel, state);
-
+    private ArrayList<TemplateSuggestions> suggestionsPool = new ArrayList<>();
+    
+    public void addTemplateSuggestions(TemplateSuggestions tmplsuggs) {
+        suggestionsPool.add(tmplsuggs);
     }
     
-    private void requestUserDecision(IFactType fact_type, Integer index,
-            ArrayList<IFactType> iSuggestions, TemplateHA tmpl, Integer recursionlevel, SolveState state) {
-        
-        Integer stateId = addSolveState(state); // Bookkeeping
-        TemplateSuggestions tmplSuggs;
-        if(tmplToTmplSuggs.containsKey(tmpl)){
-            tmplSuggs = tmplToTmplSuggs.get(tmpl);
-        } else {
-            FactType tmplEventType = getEventTypeTemplateProducing(tmpl);
-            if (tmplEventType != null) {// Template produces an event => include it
-                tmplSuggs = new TemplateSuggestions(recursionlevel, tmpl, tmplEventType);
-            } else {
-                tmplSuggs = new TemplateSuggestions(recursionlevel, tmpl);
+    public void addIFactTypeSuggestions(TemplateHA tmpl, Integer index, IFactTypeSuggestions suggs){
+        for(TemplateSuggestions tmplsuggs: suggestionsPool){
+            if(tmplsuggs.getTemplate().equals(tmpl)){
+                tmplsuggs.addIFactTypeSuggestions(index, suggs);
+                return;
             }
-            addTemplateSuggestion(tmpl, tmplSuggs); // Bookkeeping
         }
-
-        IFactTypeSuggestions iFactSuggs = new IFactTypeSuggestions(stateId, index, fact_type, iSuggestions);
-        HashMap<Integer, IFactTypeSuggestions> indexToSuggestions = tmplSuggs.getIndexToSuggestions();
-        indexToSuggestions.put(index, iFactSuggs);         
-    }*/
-    
-    private Integer addSolveState(SolveState state){
-        idToSolveState.put(id, state);
-        id = id + 1;
-        return id;
     }
-    
-    private void addTemplateSuggestion(TemplateHA tmpl, TemplateSuggestions tmplSuggs){
-        tmplToTmplSuggs.put(tmpl, tmplSuggs);     
-    }
-    
+ 
     public void sendToClient(){
         // TODO : loop over tmplToTmplSuggestions
         // Convert to JSON, sent to client
     }
+    
     public void onSuggestionsReceived(ArrayList<TemplateSuggestions> tmplSuggsList){
         // TODO
         for(TemplateSuggestions tmplSuggs: tmplSuggsList){
@@ -95,7 +58,6 @@ public class UserDecisionRest {
                 Integer index = entry.getKey();
                 IFactTypeSuggestions iFTSuggs = entry.getValue();
                 IFactType fTypeToResolve = iFTSuggs.getIFactType();
-                SolveState state = idToSolveState.get(iFTSuggs.getId());
                 if(fTypeToResolve instanceof FactType){
                     // TODO: resolve FactType
                     
