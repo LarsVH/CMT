@@ -1651,4 +1651,23 @@ public class Converter {
        }    
        return result;
     }
+    
+    public JSONArray templateSuggestionsToJSON(ArrayList<TemplateSuggestions> tmplSuggs){
+        JSONArray jTmplSuggs = new JSONArray();
+        
+        for(int i=0; i<tmplSuggs.size(); i++){
+            TemplateSuggestions currTmplSuggs = tmplSuggs.get(i);
+            JSONObject jTemplateSuggestions = fromTemplateSuggestionsToJSON(currTmplSuggs);
+            jTmplSuggs.put(jTemplateSuggestions);
+        }
+    return jTmplSuggs;
+    }
+    public ArrayList<TemplateSuggestions> fromJSONToTemplateSuggestions(JSONArray jTmplSuggs){
+        ArrayList<TemplateSuggestions> result = new ArrayList<>();
+        for(int i=0; i < jTmplSuggs.length(); i++){
+            JSONObject jCurr = jTmplSuggs.getJSONObject(i);
+            result.add(fromJSONToTemplateSuggestions(jCurr));
+        }        
+        return result;
+    }
 }
