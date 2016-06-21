@@ -17,9 +17,12 @@ public class TemplateSuggestions {
     
     Integer recursionLevel;
     TemplateHA template;
-    HashMap<Integer, IFactTypeSuggestions> indexToSuggestions = new HashMap<>();  // Mapt de index van een template (ToFillInBlocks) op het suggestiesobject voor die index
+    HashMap<Integer, IFactTypeSuggestions> indexToSuggestions;  // Mapt de index van een template (ToFillInBlocks) op het suggestiesobject voor die index
     FactType eventType; // Als template een event genereert, dat event ook bijhouden (voor GUI)
 
+    // For Converter
+    public TemplateSuggestions(){}
+    
     public TemplateSuggestions(Integer recursionLevel, TemplateHA template) {
         this.recursionLevel = recursionLevel;
         this.template = template;
@@ -35,19 +38,38 @@ public class TemplateSuggestions {
         return recursionLevel;
     }
 
+    public void setRecursionLevel(Integer recursionLevel) {
+        this.recursionLevel = recursionLevel;
+    }
+
     public TemplateHA getTemplate() {
         return template;
+    }
+
+    public void setTemplate(TemplateHA template) {
+        this.template = template;
     }
 
     public HashMap<Integer, IFactTypeSuggestions> getIndexToSuggestions() {
         return indexToSuggestions;
     }
 
+    public void setIndexToSuggestions(HashMap<Integer, IFactTypeSuggestions> indexToSuggestions) {
+        this.indexToSuggestions = indexToSuggestions;
+    }
+
     public FactType getEventType() {
         return eventType;
     }
+
+    public void setEventType(FactType eventType) {
+        this.eventType = eventType;
+    }
+
     
     public void addIFactTypeSuggestions(Integer index, IFactTypeSuggestions suggs){
+        if(indexToSuggestions == null)
+            indexToSuggestions = new HashMap<>();        
         indexToSuggestions.put(index, suggs);
     }   
 }

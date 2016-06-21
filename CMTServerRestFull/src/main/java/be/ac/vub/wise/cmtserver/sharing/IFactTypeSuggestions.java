@@ -16,26 +16,30 @@ import java.util.ArrayList;
 public class IFactTypeSuggestions {
     
     Integer index;
-    IFactType iFactType;
+    IFactType importIFactType;
     ArrayList<FactType> suggestions;   // !! kan null zijn
     IFactType chosenSuggestion;         // kan null zijn
+    FactType eventType;                // in case of a custom event -> zijn eventType bijhouden (kan null zijn)
    
+    // Converter
+    public IFactTypeSuggestions(){};
+    
     // CASE 3: No match
     public IFactTypeSuggestions(Integer index, IFactType iFactType) {
         this.index = index;
-        this.iFactType = iFactType;
+        this.importIFactType = iFactType;
     }
     
     // CASE 2: Partial Match
     public IFactTypeSuggestions(Integer index, IFactType iFactType, ArrayList<FactType> suggestions) {
         this.index = index;
-        this.iFactType = iFactType;
+        this.importIFactType = iFactType;
         this.suggestions = suggestions;
     }
     // CASE 1: PerfectMatch
     public IFactTypeSuggestions(Integer index, IFactType factType, ArrayList<FactType> suggestions, IFactType chosenSuggestion) {
         this.index = index;
-        this.iFactType = factType;
+        this.importIFactType = factType;
         this.suggestions = suggestions;
         this.chosenSuggestion = chosenSuggestion;
     }
@@ -44,12 +48,24 @@ public class IFactTypeSuggestions {
         return index;
     }
 
-    public IFactType getIFactType() {
-        return iFactType;
+    public void setIndex(Integer index) {
+        this.index = index;
+    }
+
+    public IFactType getImportIFactType() {
+        return importIFactType;
+    }
+
+    public void setImportIFactType(IFactType importIFactType) {
+        this.importIFactType = importIFactType;
     }
 
     public ArrayList<FactType> getSuggestions() {
         return suggestions;
+    }
+
+    public void setSuggestions(ArrayList<FactType> suggestions) {
+        this.suggestions = suggestions;
     }
 
     public IFactType getChosenSuggestion() {
@@ -58,5 +74,15 @@ public class IFactTypeSuggestions {
 
     public void setChosenSuggestion(IFactType chosenSuggestion) {
         this.chosenSuggestion = chosenSuggestion;
-    }    
+    }
+
+    public FactType getEventType() {
+        return eventType;
+    }
+
+    public void setEventType(FactType eventType) {
+        this.eventType = eventType;
+    }
+
+ 
 }
