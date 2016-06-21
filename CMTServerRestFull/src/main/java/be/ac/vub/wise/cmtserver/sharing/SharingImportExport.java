@@ -63,8 +63,7 @@ public class SharingImportExport implements Sharing {
     private static HashSet<String> resolvedTypesInThisImport = new HashSet<>();
 
     // Make default constructor private: SharingImportExport must always be accessed via get singleton
-    private SharingImportExport() {
-    }
+    private SharingImportExport() {}
 
     //Singleton (necessary for importer)
     // Override not possible due to staticness
@@ -102,6 +101,17 @@ public class SharingImportExport implements Sharing {
 
         res.put("ifblocks", nestedIFBlocks);
 
+        // Steek in JSON representatie een key een extra key "eventTypes" (nodig voor importer)
+        ArrayList<FactType> eventTypes = new ArrayList<>();
+        for(IFBlock ifblock : templ.getIfBlocks()){
+            if(ifblock.getEvent() != null){ // Dit ifblock bevat een event
+                FactType eventType = ifblock.getEvent();         
+                eventTypes.add(eventType);
+            }
+        }
+        JSONArray tmplEventTypes = Converter.fromEventTypeListToJSON(eventTypes);
+        res.put("tmplEventTypes", tmplEventTypes);
+        
         return res;
     }
 
@@ -181,7 +191,6 @@ public class SharingImportExport implements Sharing {
 
             if (currBlock.getEvent() != null) {
                 jFuncEvent = Converter.fromFactTypeToJSON(currBlock.getEvent());
-                //jRecArray = processEvent(currBlock.getEvent()); // FIXME: MAJOR BUG <<< JRecArray wordt op 145 overschreven
 
                 System.out.print("; name " + currBlock.getEvent().getClassName());
                 jIFBlock.put("event", jFuncEvent);
@@ -333,7 +342,7 @@ public class SharingImportExport implements Sharing {
                 // Normally, we should be able to get these fields from the database when loading the event class (Lvh)
                 ArrayList<CMTField> fields = event.getFields();
                 for (CMTField field : fields) {
-                    String fieldType = field.getType(); // TODO: MAJOR FIX needed -> just the type is not enough to reconstruct the field
+                    String fieldType = field.getType(); // MAJOR FIX needed -> just the type is not enough to reconstruct the field
                     types.add(fieldType);                    
                 }          */
             } else if (currBlock.getFunction() != null) {
@@ -364,8 +373,6 @@ public class SharingImportExport implements Sharing {
             jFunctions.put(Converter.fromFunctionToJSON(currfunc));
             functions.markProcessed(currfunc);
         }
-
-        // TODO: retrieve parameters and put in types; convert currfunc to JSON and mark as processed in functions
     }
 
     @Deprecated
@@ -374,13 +381,12 @@ public class SharingImportExport implements Sharing {
             //String pmName = pm.getKey();            
             String pmType = pm.getType();
             if (!types.isProcessed(pmType)) {
-                types.add(pmType);  // TODO: include instance
+                types.add(pmType);
             }
         }
     }
 
     @Deprecated
-    // TODO: how to make the determination of the type more generic
     public void processTypes(IndexableArraySet<String> types, HashMap<String, TemplateHA> outputIdx, JSONArray jFacts, IndexableArraySet<Template> tmpls) {
         for (String type : types) {
             Class s = type.getClass();
@@ -410,7 +416,6 @@ public class SharingImportExport implements Sharing {
             // DB Operations....
 
         }
-        // TODO
     }
 
     @Deprecated
@@ -446,6 +451,7 @@ public class SharingImportExport implements Sharing {
     private JSONObject jInput;
 
     @Override
+    @Deprecated
     public HashMap<String, HashMap<Integer, String>> importTemplateRule(JSONObject jInput) {
 
         // Werk verder uit (bottom-up)
@@ -462,9 +468,9 @@ public class SharingImportExport implements Sharing {
         //**********************************************************************
         // DEPRECATED
         /*String tmplType = jInput.getString("tempType");
-               switch (tmplType){       //TODO
+               switch (tmplType){       
            case "TemplateActions":
-               //resTmpl = Converter.fromJSONtoTemplateAction(json); //TODO
+               //resTmpl = Converter.fromJSONtoTemplateAction(json); 
                break;
            case "TemplateHA":
                TemplateHA tHA = new TemplateHA();
@@ -563,7 +569,7 @@ public class SharingImportExport implements Sharing {
         }
         return collectedScores;
     }
-
+    @Deprecated
     public void onSuggestionsReceived(HashMap<String, HashMap<Integer, String>> solvedSuggestions) {
         // de effectieve import
         HashSet<FactType> dbEventTypes = CMTDelegator.get().getAvailableEventTypes();
@@ -584,6 +590,7 @@ public class SharingImportExport implements Sharing {
      * @param jInputTemplate
      * @param dbEventTypes: alle CUSTOM EventTypes in de database
      */
+    @Deprecated
     private void loopDownDeclarations(JSONObject jInputTemplate,
             HashMap<String, HashMap<Integer, String>> solvedSuggestions,
             HashMap<String, FactType> dbClassNameToEventType) {
@@ -637,7 +644,7 @@ public class SharingImportExport implements Sharing {
                         
                         boolean userDecisionNewClass = false;   // -> True = user wil nieuwe classe; False = user wil mergen met een bepaalde classe
                         if (userDecisionNewClass) {
-                            createNewClass(className); //TODO
+                            createNewClass(className);
                         } else {
                             FactType userChoice = new FactType(); // << retrieve from SQL
                             // MergeFields
@@ -655,12 +662,12 @@ public class SharingImportExport implements Sharing {
                             else return -1;
                         }
                     });*/
-            processSuggestions(solvedSuggestions.get(eventTypeName), dbClassNameToEventType, output); // TODO/FIXME: zorg voor een directe mapping op het FactType van elke suggestie
+            processSuggestions(solvedSuggestions.get(eventTypeName), dbClassNameToEventType, output); //  zorg voor een directe mapping op het FactType van elke suggestie
             // Bookkeeping
             addResolvedTypeField(eventTypeName);    // Types is resolved => add to bookkeeping     
         }
 
-        // TODO: alle IFBlocks afgewerkt, importeer nu de TEMPLATE ZELF!!!!!!!!!!!!!!!!!!!!!
+        // : alle IFBlocks afgewerkt, importeer nu de TEMPLATE ZELF!!!!!!!!!!!!!!!!!!!!!
     }
 
     /**
@@ -700,11 +707,11 @@ public class SharingImportExport implements Sharing {
                 // CASE 1:  1 perfect match => mergeFields (no user interaction)
                 mergeFields(templateOutput, perfectMatches.get(0));
             }
-            else{ // TODO
+            else{ // 
                 // CASE 2: Multiple perfect matches -> ask client for suggestions between these matches
             }
         }
-        else if (!scoreSortedFactTypes.isEmpty()){ // TODO
+        else if (!scoreSortedFactTypes.isEmpty()){ // 
             // CASE 3: No perfect matches: take the ?5 first elements of the index and ask the user to choose the closest one
             // OR let him decide to create a new class
         }
@@ -788,7 +795,7 @@ public class SharingImportExport implements Sharing {
 
         return result;
     }
-
+    @Deprecated
     private void createNewEventType(OutputHA templateOutput) {   // DONE
         // gebruik standaard registratie mechanisme voor event van CMT
 
@@ -805,7 +812,8 @@ public class SharingImportExport implements Sharing {
         eventType.setIsCustom(true);
         createNewEventType(eventType);
     }
-    // Refactor voor "nieuwe importer"
+    
+// Refactor voor "nieuwe importer"
     private void createNewEventType(FactType eventType) {
         if (eventType.getCategory() == null) {
             eventType.setCategory("Code");
@@ -883,8 +891,8 @@ public class SharingImportExport implements Sharing {
         
         importTemplateRec(jTemplate, 0);
         
-        // TODO: send to client
- 
+        // TODO: send to client -> WEBSOCKET
+        UserDecisionRest clientRest = new UserDecisionRest(this, suggestionsPool);
     }
      
     public void importTemplateRec(JSONObject jTemplate, Integer recursionLevel){
@@ -949,7 +957,7 @@ public class SharingImportExport implements Sharing {
             ArrayList<Integer> resolvedIndexes , JSONObject jTemplate,
             TemplateHA tmpl, TemplateSuggestions currTmplSuggs) {
         // Make toFillInBlocksToIndex readable/mutable
-        HashMap<IFactType, Integer> toFillInBlocksToIndexIter = (HashMap<IFactType, Integer>) toFillInBlocksToIndex.clone(); // TODO maak hier hard-copy van
+        HashMap<IFactType, Integer> toFillInBlocksToIndexIter = (HashMap<IFactType, Integer>) toFillInBlocksToIndex.clone();
 
         for (Map.Entry<IFactType, Integer> entry : toFillInBlocksToIndexIter.entrySet()) {
             IFactType toFillInBlock = entry.getKey();
@@ -1008,9 +1016,9 @@ public class SharingImportExport implements Sharing {
                         ((BindingInputField) bind).setInputObject(newInputObject);
                     }
                     if(newInputObject instanceof EventInput){
-                        // PAS de startbinding aan
+                        // PAS de startbinding aan -> Moet niet worden aangepast
                         BindingParameter startBind = binding.getStartBinding();
-                        // TODO -------------->>> VRAAG SANDRA WAT ER PRECIES AAN DE STARTBIDING MOET WORDEN AANGEPAST
+                        
                     }
                 }
             }
@@ -1067,14 +1075,14 @@ public class SharingImportExport implements Sharing {
         }        
         return result;
     }
-
+/*
     private ArrayList<IFactType> factTypeListToIFactTypeList(ArrayList<FactType> ftlist){
       return new ArrayList<>(ftlist);
     }
     
     private ArrayList<IFactType> factListToIFactTypeList(ArrayList<Fact> flist){
         return new ArrayList<>(flist);
-    }
+    }*/
     
     private void mergeFactTypeFact(FactType toMerge, FactType dbType){
         ArrayList<CMTField> toMergeFields = toMerge.getFields();
@@ -1103,7 +1111,7 @@ public class SharingImportExport implements Sharing {
         core.addFieldsToFactTypeFact(dbType, checkedFieldsToCreate);
         
     }
-    @Deprecated // = neem gewoon het db event???
+    @Deprecated // niet verwijderen !! (als Sandra later nog beslist om eventTypes te mergen...
     private void mergeEventTypes(FactType toMerge, EventInput toMergeInput,
             FactType dbType, EventInput dbInput) {
         if(!(toMerge.getFields().equals(toMergeInput.getFields()) && dbType.getFields().equals(dbInput.getFields()))){
@@ -1125,7 +1133,6 @@ public class SharingImportExport implements Sharing {
                     FieldValueLimitation toMergeLim = 
                             toMergeInput.getFieldValueLimitation(importField.getName());
                     FieldValueLimitation dbLim = dbInput.getFieldValueLimitation(dbField.getName());
-                    // TODO: SUGGESTIONS: limitations <<<<<<<<<<<<<<<<<<<<<<<<<< SUGGESTIONS
                     // requestUserDecision(Lim 1 , Lim 2), return decision
                     FieldValueLimitation decidedLimitation = null; // DUMMY
                     dbInput.setFieldValueLimitation(dbField.getName(), decidedLimitation); 
@@ -1135,7 +1142,6 @@ public class SharingImportExport implements Sharing {
                     fieldsToCreate.add(importField);
                 }
             }
-            // TODO
             ArrayList<CMTField> checkedFieldsToCreate = checkSameNameDifferentType(dbFields, fieldsToCreate);
             CMTCore.get().addFieldsToEventType(dbType, checkedFieldsToCreate);
         }
@@ -1215,22 +1221,26 @@ public class SharingImportExport implements Sharing {
         }
     }
     
-    // TODO: recheck
     // CASE 1 & 2: mergeFactTypeFacts(factType, chosenDbFactType);
     // CASE 3 : createNewFactType(factType);
     public void doSolveFactType(IFactTypeSuggestions iSuggs,
             HashMap<Integer, IFactType> indexToToFillInBlocks) {
-        FactType importFT = (FactType) iSuggs.getIFactType();
+        FactType importFT = (FactType) iSuggs.getImportIFactType();
         FactType chosenFT = (FactType) iSuggs.getChosenSuggestion();
 
         if (chosenFT.equals(importFT)) {    // CASE 3: user chose the importFT => createNewFactType
             System.out.println("INFO -- ShIX -- creating new Facttype -- " + chosenFT.getClassName());
             createNewFactType(chosenFT);
+            Integer index = iSuggs.getIndex();
+            indexToToFillInBlocks.replace(index, chosenFT); // change template pointer to chosen FactType
+            
+            System.out.println("INFO -- ShIX -- change importTemplate pointer to dbFactType: "
+                    + chosenFT.getClassName());
             return;
         } else {
             // check of selectedFT in lijst van suggesties zit => daarmee weet je dat het gekozen ft al in de db zit
-            ArrayList<IFactType> iSuggslst = iSuggs.getSuggestions();
-            for (IFactType iFT : iSuggslst) {
+            ArrayList<FactType> suggslst = iSuggs.getSuggestions();
+            for (IFactType iFT : suggslst) {
                 FactType currFT = (FactType) iFT;
 
                 if (currFT.equals(chosenFT)) {
@@ -1267,33 +1277,30 @@ public class SharingImportExport implements Sharing {
         currTmplSuggs.addIFactTypeSuggestions(index, suggs);
     }
     
-    // TODO: recheck
-    // !!! ASSUMPTION: FACTTYPE of Fact is ALREADY RESOLVED !!!
+    // DONE
     public void doSolveFact(IFactTypeSuggestions iSuggs,
             HashMap<Integer, IFactType> indexToToFillInBlocks) {
-        Fact importF = (Fact) iSuggs.getIFactType();
+        Fact importF = (Fact) iSuggs.getImportIFactType();
         Fact chosenF = (Fact) iSuggs.getChosenSuggestion();
-        FactType ft = CMTDelegator.get().getFactTypeWithName(chosenF.getClassName());
 
-        if (ft == null) {
-            System.out.println("ERROR -- ShIX -- doSolveFact -- Could not find FactType of Fact, aborting... -- FactType: " + chosenF.getClassName());
-        } else if (!chosenF.equals(importF)) {// CASE 2: user chose another fact than the one in the import template, ASSUMPTION, the factType of this fact is already resolved
-            // => point the template to that Fact, no need to add it to the db as it should be already in there (client retrieved Facts by REST from Db)
-            HashSet<Fact> dbFacts =  CMTDelegator.get().getFactsInFactVersionWithType(chosenF.getClassName());
-            if(dbFacts.contains(chosenF)){
-                // We only have to change the pointer of the importTemplate to that dbFact
-                Integer index = iSuggs.getIndex();    
-                indexToToFillInBlocks.replace(index, chosenF);
-                    System.out.println("INFO -- ShIX -- change importTemplate pointer to dbFact: " 
-                            + chosenF.getClassName() + ", " + chosenF.getUriValue());                
+        if (importF.equals(chosenF)) {    // CASE 3: user chose the importFact => create new FactType for this fact
+            System.out.println("INFO -- ShIX -- adding Fact & FactType -- " + chosenF.getClassName() + ", " + chosenF.getUriValue());
+            FactType ftFact = createFactTypeFromFact(chosenF);
+            CMTDelegator.get().registerFactType(ftFact);
+            CMTDelegator.get().addFactInFactFrom(chosenF);
+        } else {
+            FactType check = CMTDelegator.get().getFactTypeWithName(chosenF.getClassName());
+            if (check != null) {
+                System.out.println("INFO -- ShIX -- change importTemplate pointer to dbFact: "
+                        + chosenF.getClassName() + ", " + chosenF.getUriValue());
+                CMTDelegator.get().addFactInFactFrom(chosenF);
+                Integer index = iSuggs.getIndex();
+                indexToToFillInBlocks.replace(index, chosenF);      // Change de pointer of template to new Fact                
             } else {
                 System.out.println("ERROR -- ShIX -- doSolveFact --"
                         + " User selected a Fact not in Db or importTemplate... "
-                        + "-- " + chosenF.getClassName() + ", " + chosenF.getUriValue());  
+                        + "-- " + chosenF.getClassName() + ", " + chosenF.getUriValue());
             }
-        } else {    // CASE 3: user chose the importF => add that Fact to the db
-            System.out.println("INFO -- ShIX -- adding fact -- " + chosenF.getClassName() + ", " + chosenF.getUriValue());
-            CMTCore.get().addFactInFactFormat(chosenF);
         }
     }
     
@@ -1315,15 +1322,27 @@ public class SharingImportExport implements Sharing {
             return; // eventInput already resolved
         }
         resolvedIndexes.add(toFillInBlocksToIndex.get(eventInput)); // bookkeeping
-
-        HashMap<String, FactType> classNameToEventType = generateClassNameToEventType(tmpl);
-        FactType eventType = classNameToEventType.get(eventInput.getClassName());
+        
+        FactType eventType = null;          // Retrieving the EventType from template JSONDeclaration
+        if (jTemplate.has("tmplEventTypes")) {
+            JSONArray jEventTypes = jTemplate.getJSONArray("tmplEventTypes");
+            ArrayList<FactType> eventTypes = Converter.fromJSONToEventTypeList(jEventTypes);
+            for (FactType currEventType : eventTypes) {
+                if (currEventType.getClassName().equals(eventInput.getClassName())) {
+                    eventType = currEventType;
+                    break;
+                }
+            }
+        } else {
+            System.out.println("ERROR -- ShIX -- solveEventInput -- Template has no EventTypes declared...");
+        }
 
         Integer index = toFillInBlocksToIndex.get(eventInput);
 
         ArrayList<FactType> suggestions = getFactTypeSuggestions(eventType);
 
         IFactTypeSuggestions suggs = new IFactTypeSuggestions(index, eventInput, suggestions);
+        suggs.eventType = eventType;    // bij events -> eventType meegeven
         currTmplSuggs.addIFactTypeSuggestions(index, suggs);
         
         // Recursie<<<<<<<
@@ -1331,44 +1350,41 @@ public class SharingImportExport implements Sharing {
            JSONObject jDeclaringTemplate = getDeclaringJTemplateOfCustomEvent(jTemplate, eventType);
            // RECURSIE
             importTemplateRec(jDeclaringTemplate, recursionLevel + 1);
-        }
-        
+        }        
     }
 
 
 // ASSUMPTION: FactType of EventInput is already resolved: GAAT NIET: FactType v.e. event moet door "createNewEventType" geregistreerd worden
     // Toch wel: check op "type" van FactType: fact <-> activity
-    public void doSolveEventInput(IFactTypeSuggestions iSuggs,
-            HashMap<Integer, IFactType> indexToToFillInBlocks){
-            EventInput importEI = (EventInput) iSuggs.getIFactType();
-            EventInput chosenEI = (EventInput) iSuggs.getChosenSuggestion();
-            
-            
-            
-            FactType chosenDbEventType = null;
-            if (chosenDbEventType == null) {
-                // User wil nieuw type (zelfde voor fix als custom event)
-                createNewEventType(eventType);
+    public void doSolveEventInput(IFactTypeSuggestions iSuggs, TemplateSuggestions tmplSuggs,
+            HashMap<Integer, IFactType> indexToToFillInBlocks) {
+        EventInput importEI = (EventInput) iSuggs.getImportIFactType();
+        EventInput chosenEI = (EventInput) iSuggs.getChosenSuggestion();
+        FactType ET = iSuggs.eventType;
+
+        if (ET == null) {
+            System.out.println("ERROR -- ShIX -- doSolveEventInput -- no eventType in suggestionsobject -- aborting... --"
+                    + importEI.getClassName());
+        }
+
+        if (importEI.equals(chosenEI)) {  // CASE3: user chose importEvent
+            createNewEventType(ET);
+        } else {    // CASE 2: user chose a suggestion => EventType is already in Db
+            FactType check = CMTDelegator.get().getFactTypeWithName(importEI.getClassName());
+            if (check != null) {
+                System.out.println("INFO -- ShIX -- change importTemplate pointer to dbFact: "
+                        + chosenEI.getClassName());
+                // change template pointers
+                Integer index = iSuggs.getIndex();
+                indexToToFillInBlocks.replace(index, chosenEI);
             } else {
-                EventInput dbInput = getEventInputOfEventType(chosenDbEventType);
-                // User heeft een suggestie gekozen
-                if (!eventType.isIsCustom()) { // non-custom event                            
-                    mergeEventTypes(eventType, eventInput, chosenDbEventType, dbInput);
-                } else { // Custom event
-                    // ignore import, pas aan in de hashmap van de importTemplate
-                    Integer idx = toFillInBlocksToIndex.get(eventInput);
-                    indexToToFillInBlocks.replace(idx, dbInput);
-                    toFillInBlocksToIndex.remove(eventInput);
-                    toFillInBlocksToIndex.put(dbInput, idx);
-                }
+                System.out.println("ERROR -- ShIX -- doSolveEventInput --"
+                        + " User selected an EventInput not in Db or importTemplate... "
+                        + "-- " + chosenEI.getClassName());
             }
-        }    
-        else { 
-            // No Matches
-            //------------------------
-            createNewEventType(eventType); // same for custom/non-custom
+        }
     }
-    
+   
     
     // Gegeven de huidige template "jTemplate" waarin "eventType" zich bevindt, geeft de JSONRepresentatie
     // van de template terug die "eventType" representeert
@@ -1436,9 +1452,9 @@ public class SharingImportExport implements Sharing {
                     } else if (score >= scoreTreshold) {
                         // CASE2: Partial Match: let user decide
                         // suggestions (classA, classB,...,newClass) -> check fields OR createNewClass 
-                        boolean userDecisionNewClass = false;   //TODO
+                        boolean userDecisionNewClass = false;  
                         if (!userDecisionNewClass) {
-                            createNewClassDepr(fieldType, fieldName); //TODO
+                            createNewClassDepr(fieldType, fieldName); 
                         } else {
                             FactType userChoice = new FactType(); // << retrieve from SQL
                             mergeFieldFields(fieldType, fieldName, jDeclarations, userChoice);

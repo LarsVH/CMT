@@ -599,8 +599,11 @@ public class CMTCore {
    public void addTemplateHA(JSONObject json){ 
        
        TemplateHA temp = Converter.fromJSONtoTemplateHA(json);
-       
-        CMTDelegator.get().addTemplate(temp);
+       addTemplateHA(temp);
+   }
+   // Overload for importer
+   public void addTemplateHA(TemplateHA tmpl){       
+       CMTDelegator.get().addTemplate(tmpl);
    }
    
    

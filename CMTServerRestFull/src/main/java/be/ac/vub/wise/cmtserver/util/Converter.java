@@ -1424,6 +1424,23 @@ public class Converter {
     
     }
     
+    public static JSONArray fromEventTypeListToJSON(ArrayList<FactType> eventTypes){
+        JSONArray jEventTypes = new JSONArray();
+        for(int i=0; i<jEventTypes.length(); i++){
+            jEventTypes.put(i, fromFactTypeToJSON(eventTypes.get(i)));
+        }        
+        return jEventTypes;
+    }
+    
+    public static ArrayList<FactType> fromJSONToEventTypeList(JSONArray jEventTypes){
+        ArrayList<FactType> eventTypes = new ArrayList<>();
+        for(int i=0; i<jEventTypes.length(); i++){
+            eventTypes.add(fromJSONtoFactTypeEvent(jEventTypes.getJSONObject(i)));
+        }
+        return eventTypes;
+    }
+     
+    @Deprecated
     public static JSONObject fromSuggestionsToJSON(HashMap<String, HashMap<Integer, String>> suggestions){
         JSONObject out = new JSONObject();
         
@@ -1652,7 +1669,7 @@ public class Converter {
        return result;
     }
     
-    public JSONArray templateSuggestionsToJSON(ArrayList<TemplateSuggestions> tmplSuggs){
+    public static JSONArray fromTemplateSuggestionsListToJSON(ArrayList<TemplateSuggestions> tmplSuggs){
         JSONArray jTmplSuggs = new JSONArray();
         
         for(int i=0; i<tmplSuggs.size(); i++){
@@ -1662,7 +1679,7 @@ public class Converter {
         }
     return jTmplSuggs;
     }
-    public ArrayList<TemplateSuggestions> fromJSONToTemplateSuggestions(JSONArray jTmplSuggs){
+    public static ArrayList<TemplateSuggestions> fromJSONToTemplateSuggestionsList(JSONArray jTmplSuggs){
         ArrayList<TemplateSuggestions> result = new ArrayList<>();
         for(int i=0; i < jTmplSuggs.length(); i++){
             JSONObject jCurr = jTmplSuggs.getJSONObject(i);

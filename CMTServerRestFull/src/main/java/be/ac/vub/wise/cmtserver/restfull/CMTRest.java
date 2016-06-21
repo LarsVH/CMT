@@ -550,12 +550,10 @@ public class CMTRest {
     @Consumes(MediaType.TEXT_PLAIN)
     public Response importTemplateHA(String input){
         JSONObject jInput = new JSONObject(input);
-        SharingImportExport sharing = SharingImportExport.get();
         
-        HashMap<String, HashMap<Integer, String>> suggestions =
-                sharing.importTemplateRule(jInput);
-        JSONObject response = Converter.fromSuggestionsToJSON(suggestions);
         
+        
+        JSONObject response = new JSONObject();        
     return Response.status(201).entity(response.toString()).build();
     // expecting a response from client on /importSuggestionsSolved
     }

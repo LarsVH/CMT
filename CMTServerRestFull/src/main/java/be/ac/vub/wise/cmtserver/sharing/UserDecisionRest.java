@@ -16,60 +16,69 @@ import be.ac.vub.wise.cmtserver.blocks.IFactType;
 import be.ac.vub.wise.cmtserver.blocks.OutputHA;
 import be.ac.vub.wise.cmtserver.blocks.Template;
 import be.ac.vub.wise.cmtserver.blocks.TemplateHA;
+import be.ac.vub.wise.cmtserver.restfull.CMTCore;
+import be.ac.vub.wise.cmtserver.util.Converter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
+import org.json.JSONArray;
 
 /**
  *
  * @author lars
  */
 public class UserDecisionRest {
-    static int id = 0;
-    private HashMap<TemplateHA, TemplateSuggestions> tmplToTmplSuggs = new HashMap<>(); // Mapt een template op zijn suggestions object
+    private SharingImportExport iX;
+    private ArrayList<TemplateSuggestions> suggestionsPool;
+
     
-    private ArrayList<TemplateSuggestions> suggestionsPool = new ArrayList<>();
+    public UserDecisionRest(SharingImportExport iX, ArrayList<TemplateSuggestions> suggestionsPool) {
+        this.iX = iX;
+        this.suggestionsPool = suggestionsPool;
+    }    
     
-    public void addTemplateSuggestions(TemplateSuggestions tmplsuggs) {
-        suggestionsPool.add(tmplsuggs);
+    public ArrayList<TemplateSuggestions> getSuggestionsPool() {
+        return suggestionsPool;
+    }    
+    
+    public JSONArray sendToClient(){
+        JSONArray jSuggPool = Converter.fromTemplateSuggestionsListToJSON(suggestionsPool);
+        
+        // TODO: ask Sandra hoe we dit praktisch naar de client moeten sturen<<<<<<<<<<<<<<<<<<<<<<<<<<<
+        
+        return jSuggPool;
     }
     
-    public void addIFactTypeSuggestions(TemplateHA tmpl, Integer index, IFactTypeSuggestions suggs){
-        for(TemplateSuggestions tmplsuggs: suggestionsPool){
-            if(tmplsuggs.getTemplate().equals(tmpl)){
-                tmplsuggs.addIFactTypeSuggestions(index, suggs);
-                return;
-            }
-        }
-    }
- 
-    public void sendToClient(){
-        // TODO : loop over tmplToTmplSuggestions
-        // Convert to JSON, sent to client
-    }
     
-    public void onSuggestionsReceived(ArrayList<TemplateSuggestions> tmplSuggsList){
-        // TODO
+    
+    // TODO
+    public void onSuggestionsReceived(JSONArray jSuggsList){
+        ArrayList<TemplateSuggestions> tmplSuggsList = Converter.fromJSONToTemplateSuggestionsList(jSuggsList);
+        
         for(TemplateSuggestions tmplSuggs: tmplSuggsList){
             TemplateHA tmpl = tmplSuggs.getTemplate();
             HashMap<Integer, IFactTypeSuggestions> indexToSuggs = tmplSuggs.getIndexToSuggestions();
+            HashMap<Integer, IFactType> indexToToFillInBlocks = iX.getInputsTemplate(tmpl);
+            
             for(Map.Entry<Integer, IFactTypeSuggestions> entry: indexToSuggs.entrySet()){
                 Integer index = entry.getKey();
                 IFactTypeSuggestions iFTSuggs = entry.getValue();
-                IFactType fTypeToResolve = iFTSuggs.getIFactType();
+                IFactType fTypeToResolve = iFTSuggs.getImportIFactType();
                 if(fTypeToResolve instanceof FactType){
-                    // TODO: resolve FactType
+                    iX.doSolveFactType(iFTSuggs, indexToToFillInBlocks);
                     
                 } else if(fTypeToResolve instanceof Fact){
-                    // TODO: resolve FactType
+                    iX.doSolveFact(iFTSuggs, indexToToFillInBlocks);
                     
                 } else if(fTypeToResolve instanceof EventInput){
-                    // TODO: resolve FactType
-                    
+                    iX.doSolveEventInput(iFTSuggs, tmplSuggs, indexToToFillInBlocks);                    
                 }
-
             }
+                iX.setInputsTemplate(tmpl, indexToToFillInBlocks);
+                // TODO registreer template
+                CMTCore.get().addTemplateHA(tmpl);
+                    
         }
         
     }
