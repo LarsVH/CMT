@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 import org.json.JSONArray;
+import org.json.JSONObject;
 
 /**
  *
@@ -44,6 +45,9 @@ public class UserDecisionRest {
     
     public JSONArray sendToClient(){
         JSONArray jSuggPool = Converter.fromTemplateSuggestionsListToJSON(suggestionsPool);
+        JSONObject out = new JSONObject();
+        out.put("suggestions", jSuggPool);
+        System.out.println("Output -- Suggestions: \n" + out);    // huidig testing
         
         // TODO: ask Sandra hoe we dit praktisch naar de client moeten sturen<<<<<<<<<<<<<<<<<<<<<<<<<<<
         
@@ -51,8 +55,7 @@ public class UserDecisionRest {
     }
     
     
-    
-    // TODO
+
     public void onSuggestionsReceived(JSONArray jSuggsList){
         ArrayList<TemplateSuggestions> tmplSuggsList = Converter.fromJSONToTemplateSuggestionsList(jSuggsList);
         
@@ -76,7 +79,7 @@ public class UserDecisionRest {
                 }
             }
                 iX.setInputsTemplate(tmpl, indexToToFillInBlocks);
-                // TODO registreer template
+                
                 CMTCore.get().addTemplateHA(tmpl);
                     
         }

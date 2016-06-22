@@ -49,3 +49,18 @@ $4:Location(room== "Kitchen" )
 insert( new EveryInKitchSit()); 
  end 
  
+import be.ac.vub.wise.cmtserver.facts.Person
+import function be.ac.vub.wise.cmtserver.functions.Func.PersonInLocation
+import be.ac.vub.wise.cmtserver.facts.Location
+import be.ac.vub.wise.cmtserver.events.VinceInKitch
+rule "ruleVinceInKitch" 
+  when 
+ $0:Location(room== "Kitchen" ) 
+ $2:Person(name== "Vince" ) 
+ eval(PersonInLocation($0, $2)) 
+
+ then 
+VinceInKitch VinceInKitchVinceInKitch= new VinceInKitch(); 
+ VinceInKitchVinceInKitch.setName1( $2.name); 
+insert(VinceInKitchVinceInKitch); 
+ end 

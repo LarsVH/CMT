@@ -883,6 +883,7 @@ public class SharingImportExport implements Sharing {
     // >> Solve met aangepaste solveFactTypeFact(): bij perfecte match -> vergeet de import gewoon, MAAR:
     //      Zorg er dan wel voor dat de geimporteerde template die dit event genereert point naar.... (? vraag Sandra)
     private ArrayList<TemplateSuggestions> suggestionsPool;
+    public UserDecisionRest clientRest;
     public void importTemplate(JSONObject jTemplate) {
         // suggestionPool
         // + houdt ook alle Template HashMaps bij (we moeten die op de één of de andere manier achteraf nog zien aan te passen
@@ -892,7 +893,8 @@ public class SharingImportExport implements Sharing {
         importTemplateRec(jTemplate, 0);
         
         // TODO: send to client -> WEBSOCKET
-        UserDecisionRest clientRest = new UserDecisionRest(this, suggestionsPool);
+        clientRest = new UserDecisionRest(this, suggestionsPool);
+        clientRest.sendToClient();  // Huidige testing
     }
      
     public void importTemplateRec(JSONObject jTemplate, Integer recursionLevel){

@@ -41,20 +41,16 @@ public class TestPlugins {
         
         
       //------------------------------------------------------------------------
-      /*
-       ArrayList<CMTField> fieldsString = new ArrayList<>();
-       CMTField f = new CMTField("value", "java.lang.String");
-       fieldsString.add(f);
-       FactType string = new FactType("java.lang.String", "fact", "value", fieldsString);
-       string.setCategory("Code");
-       CMTClient.registerFacttypeInCMT(string);
+      /****************************************
+       */
+       registerString();
        /**/
           
        //////////////////////
-        //populateForTest();
+        populateForTest();
        //////////////////////
        
-       /***********RegisterFactTypeTest*******************/
+       /***********RegisterFactTypeTest*******************/ // Class Lamp registreren
        ArrayList<String> vars = new ArrayList<>();
        vars.add("on");
        vars.add("off");
@@ -243,6 +239,17 @@ CMTClient.shortcutRegisterEventInCMT(me, true, true, "day", days, "", "Code");
   System.exit(0);
   
     }
+    
+    public static void registerString(){
+       ArrayList<CMTField> fieldsString = new ArrayList<>();
+       CMTField f = new CMTField("value", "java.lang.String");
+       fieldsString.add(f);
+       FactType string = new FactType("java.lang.String", "fact", "value", fieldsString);
+       string.setCategory("Code");
+       CMTClient.registerFacttypeInCMT(string);
+    }
+    
+    
     // TODO Test
     public static void populateForTest(){
         // FactType: Location, Person, Phone

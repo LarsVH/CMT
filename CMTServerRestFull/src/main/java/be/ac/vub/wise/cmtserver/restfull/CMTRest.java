@@ -550,24 +550,32 @@ public class CMTRest {
     @Consumes(MediaType.TEXT_PLAIN)
     public Response importTemplateHA(String input){
         JSONObject jInput = new JSONObject(input);
+        SharingImportExport sharing = SharingImportExport.get();
         
+        sharing.importTemplate(jInput);     
         
-        
-        JSONObject response = new JSONObject();        
+        JSONObject response = new JSONObject("Import ok");        
     return Response.status(201).entity(response.toString()).build();
     // expecting a response from client on /importSuggestionsSolved
     }
-    @Deprecated
+
     @POST // input JSON of Template object // manually
-    @Path("/importSuggestionsSolved")
+    @Path("/clientSuggestions")
     @Produces("application/json")
     @Consumes(MediaType.TEXT_PLAIN)
-    public Response importSuggestionsSolved(String input){
-        JSONObject out = new JSONObject();
+    public Response clientSuggestions(String input){
         JSONObject in = new JSONObject(input);
-        HashMap<String, HashMap<Integer, String>> solvedsuggs =
-                Converter.fromJSONToSuggestions(in);
+        JSONArray jSuggs = in.getJSONArray("suggestions");
         
+        
+        SharingImportExport sharing = SharingImportExport.get();
+        
+        if(sharing.clientRest != null){
+            sharing.clientRest.onSuggestionsReceived(jSuggs);
+        } else {
+            System.out.println("ERROR -- CMTRest -- ShIX does not have clientRest initialized");
+        }
+        JSONObject out = new JSONObject("User Decision Received");
         return Response.status(201).entity(out.toString()).build();
     }
     
@@ -579,90 +587,6 @@ public class CMTRest {
       JSONObject out = new JSONObject();
       out.put("Status", "ok");
       SharingImportExport sharing = SharingImportExport.get();
-      JSONObject jOutput = new JSONObject("{\n"
-              + "    \"bindings\": [\n"
-              + "      {\n"
-              + "        \"endBinding\": {\n"
-              + "          \"parType\": \"Location\",\n"
-              + "          \"parName\": \"LocLabel1\",\n"
-              + "          \"type\": \"BindingOutput\"\n"
-              + "        },\n"
-              + "        \"index\": 0,\n"
-              + "        \"startBinding\": {\n"
-              + "          \"indexObj\": 0,\n"
-              + "          \"inputObject\": {\n"
-              + "            \"varList\": [],\n"
-              + "            \"uriField\": \"room\",\n"
-              + "            \"varFormat\": \"\",\n"
-              + "            \"isCustom\": false,\n"
-              + "            \"className\": \"Location\",\n"
-              + "            \"type\": \"fact\",\n"
-              + "            \"category\": \"Code\",\n"
-              + "            \"fields\": [\n"
-              + "              {\n"
-              + "                \"sqlId\": 135,\n"
-              + "                \"input\": false,\n"
-              + "                \"fieldName\": \"room\",\n"
-              + "                \"format\": \"\",\n"
-              + "                \"options\": [],\n"
-              + "                \"fieldType\": \"java.lang.String\",\n"
-              + "                \"fieldValue\": {}\n"
-              + "              }\n"
-              + "            ]\n"
-              + "          },\n"
-              + "          \"inputObjectType\": \"facttype\",\n"
-              + "          \"type\": \"BindingInputFact\"\n"
-              + "        }\n"
-              + "      },\n"
-              + "      {\n"
-              + "        \"endBinding\": {\n"
-              + "          \"parType\": \"Person\",\n"
-              + "          \"parName\": \"PersLabel2\",\n"
-              + "          \"type\": \"BindingOutput\"\n"
-              + "        },\n"
-              + "        \"index\": 1,\n"
-              + "        \"startBinding\": {\n"
-              + "          \"indexObj\": 2,\n"
-              + "          \"inputObject\": {\n"
-              + "            \"varList\": [],\n"
-              + "            \"uriField\": \"name\",\n"
-              + "            \"varFormat\": \"\",\n"
-              + "            \"isCustom\": false,\n"
-              + "            \"className\": \"Person\",\n"
-              + "            \"type\": \"fact\",\n"
-              + "            \"category\": \"Code\",\n"
-              + "            \"fields\": [\n"
-              + "              {\n"
-              + "                \"sqlId\": 136,\n"
-              + "                \"input\": false,\n"
-              + "                \"fieldName\": \"name\",\n"
-              + "                \"format\": \"\",\n"
-              + "                \"options\": [],\n"
-              + "                \"fieldType\": \"java.lang.String\",\n"
-              + "                \"fieldValue\": {}\n"
-              + "              },\n"
-              + "              {\n"
-              + "                \"sqlId\": 137,\n"
-              + "                \"input\": false,\n"
-              + "                \"fieldName\": \"room\",\n"
-              + "                \"format\": \"\",\n"
-              + "                \"options\": [],\n"
-              + "                \"fieldType\": \"Location\",\n"
-              + "                \"fieldValue\": {}\n"
-              + "              }\n"
-              + "            ]\n"
-              + "          },\n"
-              + "          \"inputObjectType\": \"facttype\",\n"
-              + "          \"type\": \"BindingInputFact\"\n"
-              + "        }\n"
-              + "      }\n"
-              + "    ],\n"
-              + "    \"name\": \"PersInLocSit\"\n"
-              + "  },");
-      
-      OutputHA output = Converter.fromJSONtoOutputHA(jOutput);
-      System.out.println(">>>>Test: Conversion to OutputHA complete");
-     // sharing.createNewEventClass(output);
       
       return Response.status(201).entity(out.toString()).build();
     }
