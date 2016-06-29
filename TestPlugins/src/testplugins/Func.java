@@ -17,8 +17,4 @@ public class Func {
     public static boolean PersonInLocation(Location room, Person person){
 		return true;
 	}
-    @Parameters(parameters = "person1 person2")
-    public static boolean SamePerson(Person person1, Person person2){
-        return true;
-    }
 }

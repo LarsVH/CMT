@@ -227,7 +227,7 @@ public class CMTRest {
     @Consumes(MediaType.TEXT_PLAIN) 
     public Response addTemplateHA(String input){
         JSONObject in = new JSONObject(input);
-        
+        System.out.println("CMTREST -- Template not added: JSON: \n" +in);
         CMTCore.get().addTemplateHA(in);
         notify("addTemplateHA", in);
         JSONObject obj = new JSONObject();
@@ -554,7 +554,8 @@ public class CMTRest {
         
         sharing.importTemplate(jInput);     
         
-        JSONObject response = new JSONObject("Import ok");        
+        JSONObject response = new JSONObject();
+        response.put("Import", "ok");
     return Response.status(201).entity(response.toString()).build();
     // expecting a response from client on /importSuggestionsSolved
     }

@@ -64,6 +64,25 @@ public class Fact implements IFactType, Serializable{
         this.id = id;
     }
     
+    public boolean semanticEquals(IFactType ift){
+        if(ift instanceof Fact){
+            Fact toCompare = (Fact) ift;
+            return (toCompare.getClassName().equals(this.className) && fieldsEqual(toCompare.getFields()));
+        }
+        return false;
+    }
+    
+    public boolean fieldsEqual(ArrayList<CMTField> compFields){
+        if(compFields.size() != fields.size())
+            return false;
+        for(CMTField field: compFields){
+            if(!fields.contains(field)){
+                return false;
+            }
+        }
+        return true;       
+    }
+    
     
     
     

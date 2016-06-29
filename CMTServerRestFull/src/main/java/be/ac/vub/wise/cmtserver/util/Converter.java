@@ -315,7 +315,6 @@ public class Converter {
     }
     
     public static FactType fromJSONtoFactTypeFact(JSONObject object){
-      
         try {
             String name = object.getString("className"); // simple name
        
@@ -1198,11 +1197,14 @@ public class Converter {
     
     public static LinkedList<Binding> fromJSONtoListBindings(JSONArray arrbindings){
         LinkedList<Binding> bindings = new LinkedList<Binding>();
+        System.out.println("Inbound jBindings #: " + arrbindings.length());
         try{
             for(int i= 0; i<arrbindings.length();i++){
                 for(int ii = 0; ii<arrbindings.length();ii++){
                     JSONObject ob = arrbindings.getJSONObject(ii);
+                    System.out.println("curr i: " + i + " -- ii: " + ii);
                     if(ob.getInt("index") == i){
+                        System.out.println("Creating New Binding");
                         Binding binding = new Binding();
                         binding.setStartBinding(fromJSONtoBindingParameter(ob.getJSONObject("startBinding")));
                         binding.setEndBinding(fromJSONtoBindingParameter(ob.getJSONObject("endBinding")));
@@ -1627,7 +1629,7 @@ public class Converter {
             for (Map.Entry<Integer, IFactTypeSuggestions> entry : indexToSuggestions.entrySet()) {
                 JSONObject jIdxToSugg = new JSONObject();
                 jIdxToSugg.put("index", entry.getKey());
-                jIdxToSugg.put("suggestions", fromIFactTypeSuggestionsToJSON(entry.getValue()));
+                jIdxToSugg.put("iftsuggestions", fromIFactTypeSuggestionsToJSON(entry.getValue()));
                 jIdxToSuggestions.put(jIdxToSugg);
             }
             result.put("indexToSuggestions", jIdxToSuggestions);
@@ -1650,7 +1652,7 @@ public class Converter {
            for(int i=0; i < jIdxToSuggestions.length(); i++){
                JSONObject jIdxToSugg = jIdxToSuggestions.getJSONObject(i);
                Integer index = jIdxToSugg.getInt("index");
-               IFactTypeSuggestions iftSuggs = fromJSONToIFactTypeSuggestions(jIdxToSugg.getJSONObject("suggestions"));
+               IFactTypeSuggestions iftSuggs = fromJSONToIFactTypeSuggestions(jIdxToSugg.getJSONObject("iftsuggestions"));
                indexToSuggestions.put(index, iftSuggs);
            }
            result.setIndexToSuggestions(indexToSuggestions);           

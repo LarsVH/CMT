@@ -175,13 +175,16 @@ public class CMTCore {
         CMTDelegator delegator = CMTDelegator.get();
         String className = type.getClassName();
         
+        System.out.println("DEBUG -- CMTCore -- addFieldsToFactTypeFact "
+                + "-- #fields to add: " + fields.size() + " -- FactType: " + type.getClassName());
+        
         // 1. SQL: Add fields to the database (needed in step 4)
         //----------------------------------------------------------------------
         delegator.addFactTypeFields(type, fields);     
         
         // 2. Remove all facts of a factType from Drools
         //----------------------------------------------------------------------
-        droolsRemoveFactsOfFactType(type);
+        //droolsRemoveFactsOfFactType(type);
         
         // 3. Remove *.java and *.class file of FactTypeEvent
         //----------------------------------------------------------------------
@@ -210,7 +213,7 @@ public class CMTCore {
         
         // 5. Re-add Facts to Drools
         //----------------------------------------------------------------------
-        droolsAddFactsOfFactType(type);
+        //droolsAddFactsOfFactType(type);
     }
    
     public JSONObject addFact(JSONObject json){
@@ -425,7 +428,7 @@ public class CMTCore {
         
         // 2. Remove all facts of a factType from Drools
         //----------------------------------------------------------------------
-        droolsRemoveFactsOfFactType(type);
+       // droolsRemoveFactsOfFactType(type);    // normaal gezien niet nodig
 
         // 3. Remove *.java and *.class file of FactTypeEvent
         //----------------------------------------------------------------------
@@ -454,7 +457,7 @@ public class CMTCore {
         
         // 5. Re-add Facts to Drools
         //----------------------------------------------------------------------
-        droolsAddFactsOfFactType(type);
+        //droolsAddFactsOfFactType(type);   // normaal gezien niet nodig
     }
 
     private void  droolsRemoveFactsOfFactType(FactType type) {
@@ -602,7 +605,9 @@ public class CMTCore {
        addTemplateHA(temp);
    }
    // Overload for importer
-   public void addTemplateHA(TemplateHA tmpl){       
+   public void addTemplateHA(TemplateHA tmpl){
+       System.out.println("DEBUG -- CMTCore -- ResultJSON of template: \n "+ Converter.fromTemplateToJSON(tmpl));
+       
        CMTDelegator.get().addTemplate(tmpl);
    }
    

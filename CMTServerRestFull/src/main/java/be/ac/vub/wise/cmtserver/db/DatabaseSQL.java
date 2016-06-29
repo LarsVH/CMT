@@ -115,6 +115,10 @@ public class DatabaseSQL implements IDbComponent{
                         if(ifblock.getFunction() != null){
                             System.out.println("-------------- temp id " + ifblock.getFunction().getSql_id());
                             ps = conn.prepareStatement("INSERT INTO ifblock_function (template_position, function_id, template_id, operator) VALUES (?,?,?,?)", Statement.RETURN_GENERATED_KEYS);
+                            System.out.println("DEBUG -- DBSql -- addContextForm -- ");
+                            System.out.println("i: " + i);
+                            System.out.println("ifblock function" + ifblock.getFunction().getSql_id());
+                            System.out.println("operators: " + form.getOperators().get(i));                            
                             ps.setInt(1, i);
                             ps.setInt(2, ifblock.getFunction().getSql_id());
                             ps.setInt(3, tempId);
