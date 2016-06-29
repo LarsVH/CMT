@@ -1426,7 +1426,7 @@ public class SharingImportExport implements Sharing {
     }
    
     
-    // Bij registreren van nieuwe types -> SQL ids clearen
+    // IGNORE
     public void clearAllIds(IFactType ift) {
         ArrayList<CMTField> fields = new ArrayList<>();
         if (ift instanceof FactType) {

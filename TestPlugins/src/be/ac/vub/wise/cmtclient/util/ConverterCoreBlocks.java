@@ -434,25 +434,25 @@ public class ConverterCoreBlocks {
      
     }
 
-    public static Function fromJSONtoFunction(JSONObject object){
-         try {
+public static Function fromJSONtoFunction(JSONObject object) {
+        try {
             Function func = new Function();
             func.setName(object.getString("methodName"));
             func.setEncapClass(object.getString("encapClass"));
             func.setSql_id(object.getInt("sqlId"));
+            func.setBody(object.getString("body"));
             ArrayList<CMTParameter> pars = new ArrayList<>();
             JSONArray arrPars = object.getJSONArray("pars");
-            
-            for(int a= 0; a<arrPars.length(); a++){
+            HashMap<Integer, CMTParameter> indexFunctions = new HashMap<Integer, CMTParameter>();
+            for (int a = 0; a < arrPars.length(); a++) {
                 JSONObject parO = arrPars.getJSONObject(a);
                 CMTParameter p = new CMTParameter();
                 p.setParName(parO.getString("parName"));
                 p.setType(parO.getString("parType"));
-                p.setPosition(parO.getInt("index"));   
+                p.setPosition(parO.getInt("index"));
                 p.setSql_id(parO.getInt("sqlId"));
                 pars.add(p);
             }
-            
             func.setParameters(pars);
             return func;
         } catch (JSONException ex) {
@@ -460,18 +460,18 @@ public class ConverterCoreBlocks {
         }
         return null;
     }
-    
-    public static JSONObject fromFunctionToJSON(Function func){
-        if(func != null){
+
+    public static JSONObject fromFunctionToJSON(Function func) {
+        if (func != null) {
             JSONObject result = new JSONObject();
             try {
-                result.put("methodName", func.getName());
                 result.put("encapClass", func.getEncapClass());
+                result.put("methodName", func.getName());
                 result.put("sqlId", func.getSql_id());
+                result.put("body", func.getBody());
                 ArrayList<CMTParameter> parameters = func.getParameters();
                 JSONArray arrPars = new JSONArray();
-                
-                for(CMTParameter p : parameters){
+                for (CMTParameter p : parameters) {
                     JSONObject parObj = new JSONObject();
                     parObj.put("parName", p.getParName());
                     parObj.put("parType", p.getType());

@@ -1344,13 +1344,15 @@ public class DatabaseSQL implements IDbComponent{
     }
 
     @Override
+
     public void addFunction(Function function) {
         try {
             System.out.println("-------------- in add function" + function.getParameters().size());
             Connection conn = ds.getConnection();
-            PreparedStatement ps = conn.prepareStatement("INSERT INTO function (function_name, encap_class) VALUES (?,?)", Statement.RETURN_GENERATED_KEYS);
+            PreparedStatement ps = conn.prepareStatement("INSERT INTO function (function_name, encap_class, body) VALUES (?,?,?)", Statement.RETURN_GENERATED_KEYS);
             ps.setString(1, function.getName());
             ps.setString(2, function.getEncapClass());
+            ps.setString(3, function.getBody());
             ps.executeUpdate();
             ps.closeOnCompletion();
             ResultSet rs = ps.getGeneratedKeys();
@@ -1378,9 +1380,8 @@ public class DatabaseSQL implements IDbComponent{
         } catch (SQLException ex) {
             Logger.getLogger(DatabaseSQL.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
-    }
-    
+    }   
+
     public Function getFunction (int sqlId){
         try {
                 Connection conn = ds.getConnection();
@@ -1392,6 +1393,7 @@ public class DatabaseSQL implements IDbComponent{
                     Function func = new Function();
                     func.setName(rs.getString("function_name"));
                     func.setEncapClass(rs.getString("encap_class"));
+                    func.setBody(rs.getString("body"));
                     ArrayList<CMTParameter> pars = new ArrayList<>();
                     ps = conn.prepareStatement("SELECT parameters.* FROM parameters"
                                                 + " INNER JOIN function_parameters ON parameters.idfunction_parameters = function_parameters.parameter_id "
@@ -1418,8 +1420,8 @@ public class DatabaseSQL implements IDbComponent{
 
             } catch (SQLException ex) {
                 Logger.getLogger(DatabaseSQL.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        
+            }    
+
         return null;
     }
 

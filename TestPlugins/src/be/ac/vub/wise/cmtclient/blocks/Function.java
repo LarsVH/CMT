@@ -12,6 +12,7 @@ public class Function implements IFunctionClass, Serializable{
 
     public String name;
     public ArrayList<CMTParameter> parameters;
+    public String body;
     public String encapClass;
     public int sql_id =0;
     
@@ -43,6 +44,14 @@ public class Function implements IFunctionClass, Serializable{
 
     public void addParameter(CMTParameter par){
         this.parameters.add(par);
+    }
+
+    public String getBody() {
+        return body;
+    }
+
+    public void setBody(String body) {
+        this.body = body;
     }
 
     @Override

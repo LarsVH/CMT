@@ -11,16 +11,11 @@ import be.ac.vub.wise.cmtserver.core.CMTDelegator;
 import be.ac.vub.wise.cmtserver.blocks.Action;
 import be.ac.vub.wise.cmtserver.blocks.ActionClient;
 import be.ac.vub.wise.cmtserver.blocks.Activity;
-import be.ac.vub.wise.cmtserver.blocks.Binding;
-import be.ac.vub.wise.cmtserver.blocks.BindingInputFact;
-import be.ac.vub.wise.cmtserver.blocks.BindingInputField;
-import be.ac.vub.wise.cmtserver.blocks.BindingParameter;
 import be.ac.vub.wise.cmtserver.blocks.CMTField;
 import be.ac.vub.wise.cmtserver.blocks.Event;
 import be.ac.vub.wise.cmtserver.blocks.Fact;
 import be.ac.vub.wise.cmtserver.blocks.FactType;
 import be.ac.vub.wise.cmtserver.blocks.Function;
-import be.ac.vub.wise.cmtserver.blocks.IFBlock;
 import be.ac.vub.wise.cmtserver.blocks.IFactType;
 import be.ac.vub.wise.cmtserver.blocks.Rule;
 import be.ac.vub.wise.cmtserver.blocks.Template;
@@ -42,7 +37,6 @@ import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.io.FileUtils;
@@ -482,90 +476,110 @@ public class CMTCore {
         }
     }
     
-    public void registerFunctionClass(JSONObject json){
-      
+    public void registerFunctionClass(JSONObject json) {
+
         String className = json.getString("encapClass");
         JSONArray mets = json.getJSONArray("methods");
         ArrayList<Function> funclist = new ArrayList<Function>();
-        String source = "package "+ Constants.PACKAGEFUNCTIONS+ ";"
-                        + " import be.ac.vub.wise.cmtserver.blocks.IFunctionClass; import be.ac.vub.wise.cmtserver.blocks.Parameters; import java.io.Serializable; "
-                        + " public class " + className + " implements IFunctionClass, Serializable{ ";
-        
-        for(int i = 0; i<mets.length(); i++){
-            
-            
+        String source = "package " + Constants.PACKAGEFUNCTIONS + ";"
+                + " import be.ac.vub.wise.cmtserver.blocks.IFunctionClass; import be.ac.vub.wise.cmtserver.blocks.Parameters; import java.io.Serializable; "
+                + " public class " + className + " implements IFunctionClass, Serializable{ ";
+
+        for (int i = 0; i < mets.length(); i++) {
+            String method = "";
             JSONObject ob = mets.getJSONObject(i);
             Function fu = Converter.fromJSONtoFunction(ob);
-           // fu.setEncapClass(className);
+            // fu.setEncapClass(className);
             funclist.add(fu);
-            CMTDelegator.get().addFunction(fu);
-        
-            
             String methodName = ob.getString("methodName");
             String methodBody = ob.getString("methodBody");
             JSONArray arrPars = ob.getJSONArray("pars");
+
             fu.setName(methodName);
-            source += "@Parameters(parameters = \"" ; 
-            for(int b=0; b<arrPars.length();b++){
+            method += "@Parameters(parameters = \"";
+            for (int b = 0; b < arrPars.length(); b++) {
                 JSONObject objPar = getParIndex(b, arrPars);
                 String namePar = objPar.getString("parName");
-                source += namePar + " ";
-            }        
-            source +="\") ";
-            source += "public static boolean " +methodName+" (";
-           
-            for(int a=0;a<arrPars.length();a++){
+                method += namePar + " ";
+            }
+            
+            method += "\") ";
+            method += "public static boolean " + methodName + " (";
+            for (int a = 0; a < arrPars.length(); a++) {
                 JSONObject obPar = getParIndex(a, arrPars);
-               
                 String parName = obPar.getString("parName");
                 String parType = obPar.getString("parType");
-               
-                if(!parType.contains("java")){  // No default Java type parameter
-                   
+                if (!parType.contains("java")) {
                     String[] splitLastPoint = parType.split("\\.");
                     int z = splitLastPoint.length;
                     String simpleClassName = parType;
                     String finalBinaryTypeName = "";
-                    if(z>0){
-                        simpleClassName= splitLastPoint[z-1];
+                    if (z > 0) {
+                        simpleClassName = splitLastPoint[z - 1];
                     }
-                    
-                    if(checkTypeClassPath(simpleClassName)){
-                        if(isEvent(simpleClassName)){
+                    if (checkTypeClassPath(simpleClassName)) {
+                        if (isEvent(simpleClassName)) {
                             finalBinaryTypeName = Constants.PACKAGEEVENTS + "." + simpleClassName;
-                        }else{
-                            finalBinaryTypeName = Constants.PACKAGEFACTS + "." +simpleClassName;
+                        } else {
+                            finalBinaryTypeName = Constants.PACKAGEFACTS + "." + simpleClassName;
                         }
-                        
-                        source += " "+finalBinaryTypeName+" " +parName;
-                        if(a != arrPars.length()-1){
-                            source += ",";
+                        method += " " + finalBinaryTypeName + " " + parName;
+                        if (a != arrPars.length() - 1) {
+                            method += ",";
                         }
                     }
-                }else{
-                    source += " " +parType + " " + parName;
-                    if(a != arrPars.length()-1){
-                        source += ",";
+                } else {
+                    method += " " + parType + " " + parName;
+                    if (a != arrPars.length() - 1) {
+                        method += ",";
                     }
                 }
             }
-            source +=  " ){" + methodBody + "} ";
+            method += " ){" + methodBody + "} ";
+            source += "  " + method + "  ";
+            fu.setBody(method);
+            CMTDelegator.get().addFunction(fu);
         }
-        
         source += "}";
         HelperClass.compile(source, className, Constants.PACKAGEFUNCTIONSSLASH);
-         Class<?> cl;
+        Class<?> cl;
         try {
             URLClassLoader l = new URLClassLoader(new URL[]{new File(Constants.CLASSPATH+"/").toURI().toURL()}, Thread.currentThread().getContextClassLoader());
               // l.loadClass(Constants.PACKAGERMI + "IFunctionClass");
             cl = Class.forName(Constants.PACKAGEFUNCTIONS + "."+ className, true, l);
-         
+            Object object = cl.newInstance();
+            //  IFunctionClass func = (IFunctionClass) object;
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(CMTCore.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InstantiationException ex) {
+            Logger.getLogger(CMTCore.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IllegalAccessException ex) {
+            Logger.getLogger(CMTCore.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (MalformedURLException ex) {
+            Logger.getLogger(CMTCore.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
+    //TODO (from Sandra): Deze methode roep je aan als je een function importeerd en de gebruiker hem nog niet heeft:
+public void addFunction(JSONObject json){
+        String className = json.getString("encapClass");
+        String methodName = json.getString("methodName");
+        Function fu = Converter.fromJSONtoFunction(json);
+        fu.setEncapClass("C"+methodName);
+        String source = "package "+ Constants.PACKAGEFUNCTIONS+ ";"
+                        + " import be.ac.vub.wise.cmtserver.blocks.IFunctionClass; import be.ac.vub.wise.cmtserver.blocks.Parameters; import java.io.Serializable; "
+                        + " public class " + "C"+methodName + " implements IFunctionClass, Serializable{ ";
+        source += fu.getBody();
+        source += "}";
+        HelperClass.compile(source, className, Constants.PACKAGEFUNCTIONSSLASH);
+         Class<?> cl;
+        try {
+            URLClassLoader l = new URLClassLoader(new URL[]{new File(Constants.CLASSPATH+"\\").toURI().toURL()}, Thread.currentThread().getContextClassLoader());
+              // l.loadClass(Constants.PACKAGERMI + "IFunctionClass");
+            cl = Class.forName(Constants.PACKAGEFUNCTIONS + "."+ className, true, l);        
         Object object = cl.newInstance();
       //  IFunctionClass func = (IFunctionClass) object;
-        
-        for(Function fun : funclist){
-            CMTDelegator.get().addFunction(fun);
-        }
+        CMTDelegator.get().addFunction(fu);
         } catch (ClassNotFoundException ex) {
             Logger.getLogger(CMTCore.class.getName()).log(Level.SEVERE, null, ex);
         } catch (InstantiationException ex) {
