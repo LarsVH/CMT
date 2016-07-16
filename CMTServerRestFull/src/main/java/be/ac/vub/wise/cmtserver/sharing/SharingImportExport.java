@@ -1096,7 +1096,7 @@ public class SharingImportExport implements Sharing {
         return new ArrayList<>(flist);
     }*/
     
-    private void mergeFactTypeFact(FactType toMerge, FactType dbType){
+    private FactType mergeFactTypeFact(FactType toMerge, FactType dbType){
         ArrayList<CMTField> toMergeFields = toMerge.getFields();
         ArrayList<CMTField> dbFields = dbType.getFields();
         ArrayList<CMTField> fieldsToCreate = (ArrayList<CMTField>) toMergeFields.clone();
@@ -1125,8 +1125,8 @@ public class SharingImportExport implements Sharing {
         // Adding the new fields
         clearCMTFieldIds(fieldsToCreate);
         CMTCore core = CMTCore.get();
-        core.addFieldsToFactTypeFact(dbType, checkedFieldsToCreate);
-        
+        FactType updatedFactType = core.addFieldsToFactTypeFact(dbType, checkedFieldsToCreate);
+        return updatedFactType;
     }
     
     public void clearCMTFieldIds(ArrayList<CMTField> fields){
@@ -1260,11 +1260,13 @@ public class SharingImportExport implements Sharing {
         for (IFactType iFT : suggslst) {
             FactType currFT = (FactType) iFT;
             if (currFT.equals(chosenFT)) {
-                // CASE 1 & 2: user chose a suggestion (which is already in the db) => mergeFactTypeFacts
+                // CASE 1 & 2: user chose a suggestion (which is already in the db) => mergeFactTypeFacts + change tmpl pointer
                 FactType dbFTCheck = CMTDelegator.get().getFactTypeWithName(currFT.getClassName());
                 if (dbFTCheck != null) { // Safety check: suggestion must be in db!
                     System.out.println();
-                    mergeFactTypeFact(importFT, dbFTCheck);
+                    FactType updatedFactType = mergeFactTypeFact(importFT, dbFTCheck);
+                    Integer index = iSuggs.getIndex();
+                    indexToToFillInBlocks.replace(index, updatedFactType); // change template pointer to the new merged FactType
                     return;
                 } else {
                     System.out.println("ERROR -- ShIX -- doSolveFactType --"
@@ -1277,8 +1279,8 @@ public class SharingImportExport implements Sharing {
         if (chosenFT.equals(importFT)) {    // CASE 3: user chose the importFT => createNewFactType
             System.out.println("INFO -- ShIX -- creating new Facttype -- " + chosenFT.getClassName());
             createNewFactType(chosenFT);
-            Integer index = iSuggs.getIndex();
-            indexToToFillInBlocks.replace(index, chosenFT); // change template pointer to chosen FactType
+            //Integer index = iSuggs.getIndex();
+            //indexToToFillInBlocks.replace(index, chosenFT); // change template pointer to chosen FactType
 
             System.out.println("INFO -- ShIX -- change importTemplate pointer to dbFactType: "
                     + chosenFT.getClassName());

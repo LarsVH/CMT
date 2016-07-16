@@ -165,7 +165,7 @@ public class CMTCore {
      * @param type
      * @param fields 
      */
-    public void addFieldsToFactTypeFact(FactType type, ArrayList<CMTField> fields){
+    public FactType addFieldsToFactTypeFact(FactType type, ArrayList<CMTField> fields){
         CMTDelegator delegator = CMTDelegator.get();
         String className = type.getClassName();
         
@@ -208,6 +208,8 @@ public class CMTCore {
         // 5. Re-add Facts to Drools
         //----------------------------------------------------------------------
         //droolsAddFactsOfFactType(type);
+        
+        return updatedFactType;
     }
    
     public JSONObject addFact(JSONObject json){
