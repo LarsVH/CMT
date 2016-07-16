@@ -1334,10 +1334,12 @@ public class SharingImportExport implements Sharing {
                 indexToToFillInBlocks.replace(index, chosenF);      // Change de pointer of template to new Fact           
             }
         } else if (importF.semanticEquals(chosenF)) {    // CASE 3: user chose the importFact => create new FactType for this fact
-            System.out.println("INFO -- ShIX -- adding Fact & FactType -- " + chosenF.getClassName() + ", " + chosenF.getUriValue());            
+            System.out.println("INFO -- ShIX -- adding Fact & FactType -- " + chosenF.getClassName() + ", " + chosenF.getUriValue());
             clearAllIds(chosenF);
-            FactType ftFact = createFactTypeFromFact(chosenF);
-            CMTDelegator.get().registerFactType(ftFact);
+            if (ftcheck == null) {
+                FactType ftFact = createFactTypeFromFact(chosenF);
+                CMTDelegator.get().registerFactType(ftFact);
+            }
             CMTDelegator.get().addFactInFactFrom(chosenF);
         } else {
             System.out.println("ERROR -- ShIX -- doSolveFact --"
