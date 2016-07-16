@@ -182,7 +182,6 @@ public class SharingImportExport implements Sharing {
         LinkedList<IFBlock> ifBlocks = t.getIfBlocks();
 
         for (int i = 0; i < ifBlocks.size(); i++) {
-
             IFBlock currBlock = ifBlocks.get(i);
             JSONObject jIFBlock = new JSONObject();
             JSONObject jFuncEvent;
@@ -1221,7 +1220,8 @@ public class SharingImportExport implements Sharing {
                     .map(scorepair -> scorepair.getValue())
                     .collect(Collectors.toCollection(ArrayList::new));
 
-            // Loop over the scores to check for perfectmatches           
+            // Loop over the scores to check for perfectmatches          
+            //!!!! TODO: scores ook meegeven, anders kan client niet sorteren !!!
             for (Pair<Double, FactType> score : scores) {
                 if (score.getKey().equals(1.0)) {
                     // CASE1: perfectMatch
@@ -1229,17 +1229,19 @@ public class SharingImportExport implements Sharing {
                     IFactTypeSuggestions suggs = new IFactTypeSuggestions(
                             index, factType, suggestions,
                             score.getValue());
-                    currTmplSuggs.addIFactTypeSuggestions(index, suggs);
+                    currTmplSuggs.addIFactTypeSuggestions(index, suggs); 
                     return;
                 }
             }
             // CASE 2: no perfect match, but suggestions
+            //!!!! TODO: scores ook meegeven, anders kan client niet sorteren !!!
             IFactTypeSuggestions suggs = new IFactTypeSuggestions(index,
                     factType, suggestions);
             currTmplSuggs.addIFactTypeSuggestions(index, suggs);
         } else {
             // CASE 3: No matches
             // Scores is empty -> no match
+            //!!!! TODO: scores ook meegeven, anders kan client niet sorteren !!!
             IFactTypeSuggestions suggs = new IFactTypeSuggestions(index,
                     factType);
             currTmplSuggs.addIFactTypeSuggestions(index, suggs);
@@ -1262,7 +1264,7 @@ public class SharingImportExport implements Sharing {
                 FactType dbFTCheck = CMTDelegator.get().getFactTypeWithName(currFT.getClassName());
                 if (dbFTCheck != null) { // Safety check: suggestion must be in db!
                     System.out.println();
-                    mergeFactTypeFact(chosenFT, dbFTCheck);
+                    mergeFactTypeFact(importFT, dbFTCheck);
                     return;
                 } else {
                     System.out.println("ERROR -- ShIX -- doSolveFactType --"
@@ -1310,7 +1312,7 @@ public class SharingImportExport implements Sharing {
     public void doSolveFact(IFactTypeSuggestions iSuggs,
             HashMap<Integer, IFactType> indexToToFillInBlocks) {
         Fact importF = (Fact) iSuggs.getImportIFactType();
-        Fact chosenF = (Fact) iSuggs.getChosenSuggestion();
+        Fact chosenF = (Fact) iSuggs.getChosenSuggestion(); // chosenF is always a Fact: user can do REST call to retrieve Facts
 
         // CASE 2: user chose an existing fact (if we can find it in de db)
         FactType ftcheck = CMTDelegator.get().getFactTypeWithName(chosenF.getClassName());    // First check if FactType is in Db
